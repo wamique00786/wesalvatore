@@ -1,0 +1,34 @@
+{% extends "accounts/volunteer_dashboard.html" %}
+
+{% block content %}
+<h1>Assign Tasks</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Assign Task</button>
+</form>
+
+<h2>Existing Tasks</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Volunteer</th>
+            <th>User</th>
+            <th>Batch Number</th>
+            <th>Task Details</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.volunteer.user.username }}</td>
+            <td>{{ task.user.username }}</td>
+            <td>{{ task.batch_number }}</td>
+            <td>{{ task.task_details }}</td>
+            <td>{{ task.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

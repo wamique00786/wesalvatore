@@ -1,0 +1,24 @@
+{% extends "accounts/volunteer_dashboard.html" %}
+{% block content %}
+    <h1>Manage Volunteers</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Volunteer Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for volunteer in volunteers %}
+            <tr>
+                <td>{{ volunteer.user.username }}</td>
+                <td>{{ volunteer.user.email }}</td>
+                <td>{{ volunteer.user.phone_number }}</td>
+                <td><a href="{% url 'assign_batch' %}?volunteer_id={{ volunteer.id }}">Assign Batch</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

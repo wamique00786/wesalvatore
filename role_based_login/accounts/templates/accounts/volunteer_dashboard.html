@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Welcome, {{ request.user.username }}!</h1>
+        <p>Manage your tasks and view your current location here.</p>
+        <nav>
+            <ul>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Current Location -->
+        <section id="current-location">
+            <h2>Your Current Location</h2>
+            <p id="location">Loading location...</p>
+        </section>
+
+        <!-- Assigned Tasks -->
+        <section id="assigned-tasks">
+            <h2>Your Assigned Tasks</h2>
+            {% if assigned_tasks %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Name</th>
+                        <th>Batch Number</th>
+                        <th>Task Details</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in assigned_tasks %}
+                    <tr>
+                        <td>{{ task.user.username }}</td>
+                        <td>{{ task.batch_number }}</td>
+                        <td>{{ task.task_details }}</td>
+                        <td>{{ task.status }}</td>
+                        <td>
+                            {% if task.status == 'Pending' %}
+                            <form method="POST" action="{% url 'mark_task_completed' task.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-complete">Mark as Completed</button>
+                            </form>
+                            {% else %}
+                            <span class="status-completed">Completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No tasks assigned to you yet.</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} Volunteer Management System</p>
+    </footer>
+
+    <script>
+        // Show volunteer's current location
+        document.addEventListener("DOMContentLoaded", function() {
+            const locationElement = document.getElementById('location');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        const latitude = position.coords.latitude.toFixed(6);
+                        const longitude = position.coords.longitude.toFixed(6);
+                        locationElement.innerText = `Latitude: ${latitude}, Longitude: ${longitude}`;
+                    },
+                    function (error) {
+                        locationElement.innerText = 'Unable to retrieve location.';
+                    }
+                );
+            } else {
+                locationElement.innerText = 'Geolocation is not supported by this browser.';
+            }
+        });
+    </script>
+</body>
+</html>
