@@ -1,0 +1,45 @@
+<!-- templates/rescue/volunteer_dashboard.html -->
+{% extends 'rescue/base.html' %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Volunteer Dashboard</h2>
+    <div id="map" style="height: 500px;"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the map
+    var map = L.map('map').setView([0, 0], 2);  // Default view
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+    // Fetch volunteer locations
+    fetch("{% url 'volunteer_locations' %}")
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(volunteer => {
+                // Add a marker for each volunteer
+                L.marker([volunteer.latitude, volunteer.longitude])
+                    .addTo(map)
+                    .bindPopup(`Volunteer: ${volunteer.username}`);
+            });
+
+            // Adjust map view to fit all markers
+            var bounds = data.map(volunteer => [volunteer.latitude, volunteer.longitude]);
+            if (bounds.length > 0) {
+                map.fitBounds(bounds);
+            }
+        })
+        .catch(error => console.error('Error fetching volunteer locations:', error));
+});
+</script>
+{% endblock %}
