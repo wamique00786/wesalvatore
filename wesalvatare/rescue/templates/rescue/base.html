@@ -46,6 +46,19 @@
                                 <i class="fas fa-plus me-1"></i> Add Animal
                             </a>
                         </li>
+                        <!-- New Links -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'adopt_animal' %}active{% endif %}" 
+                               href="{% url 'adopt_animal' %}">
+                                <i class="fas fa-heart me-1"></i> Adopt Animal
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" 
+                               href="{% url 'donations' %}">
+                                <i class="fas fa-donate me-1"></i> Donations
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Location</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ animal.name }}'s Location</h1>
+    <div id="map"></div>
+
+    <h2>Medical Records</h2>
+    <ul>
+        {% for record in medical_records %}
+            <li>
+                <strong>Date:</strong> {{ record.date }}<br>
+                <strong>Treatment:</strong> {{ record.treatment }}<br>
+                <strong>Notes:</strong> {{ record.notes }}<br>
+                <strong>Created by:</strong> {{ record.created_by.username if record.created_by else "Unknown" }}
+            </li>
+        {% empty %}
+            <li>No medical records available.</li>
+        {% endfor %}
+    </ul>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([{{ animal.latitude }}, {{ animal.longitude }}], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([{{ animal.latitude }}, {{ animal.longitude }}]).addTo(map)
+            .bindPopup('{{ animal.name }}\'s Location')
+            .openPopup();
+
+        {% for volunteer in nearby_volunteers %}
+            L.marker([{{ volunteer.latitude }}, {{ volunteer.longitude }}]).addTo(map)
+                .bindPopup('Volunteer: {{ volunteer.user.username }}');
+        {% endfor %}
+    </script>
+</body>
+</html>

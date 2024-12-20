@@ -1,0 +1,17 @@
+{% extends 'rescue/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Recent Donations</h2>
+    <ul class="list-group">
+        {% for donation in donations %}
+            <li class="list-group-item">
+                <strong>{{ donation.user.username }}</strong> donated <strong>{{ donation.amount }}</strong> on {{ donation.date }}
+            </li>
+        {% empty %}
+            <li class="list-group-item">No donations found.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

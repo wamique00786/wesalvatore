@@ -20,6 +20,12 @@ class SignUpForm(UserCreationForm):
         required=True,
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
+    mobile_number = forms.CharField(
+        max_length=15,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        help_text='Enter your mobile number.'
+    )
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
@@ -32,7 +38,7 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2', 'user_type')
+        fields = ('username', 'email', 'mobile_number', 'password1', 'password2', 'user_type')
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -42,7 +48,10 @@ class SignUpForm(UserCreationForm):
             # Create or update UserProfile
             UserProfile.objects.update_or_create(
                 user=user,
-                defaults={'user_type': self.cleaned_data['user_type']}
+                defaults={
+                    'user_type': self.cleaned_data['user_type'],
+                    'mobile_number': self.cleaned_data['mobile_number']
+                }
             )
         return user
     

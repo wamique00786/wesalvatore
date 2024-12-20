@@ -24,28 +24,43 @@ startButton.addEventListener('click', async () => {
 });
 
 captureButton.addEventListener('click', () => {
+    if (!stream) {
+        alert('Camera is not active');
+        return;
+    }
     photoCanvas.width = camera.videoWidth;
     photoCanvas.height = camera.videoHeight;
     photoCanvas.getContext('2d').drawImage(camera, 0, 0);
-    
+
     // Convert canvas to base64 image data
     photoData.value = photoCanvas.toDataURL('image/jpeg');
-    
+
     // Show preview and retake button
     photoPreview.src = photoData.value;
     photoPreview.style.display = 'block';
     camera.style.display = 'none';
     captureButton.style.display = 'none';
     retakeButton.style.display = 'block';
-    
+
     // Stop camera stream
     stream.getTracks().forEach(track => track.stop());
+    stream = null;
 });
 
 retakeButton.addEventListener('click', async () => {
     photoPreview.style.display = 'none';
     retakeButton.style.display = 'none';
     startButton.style.display = 'block';
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        camera.srcObject = stream;
+        camera.style.display = 'block';
+        startButton.style.display = 'none';
+        captureButton.style.display = 'block';
+    } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('Could not access camera');
+    }
 });
 
 // Location handling
@@ -55,7 +70,7 @@ let userMarker;
 function initMap() {
     map = L.map('map').setView([0, 0], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    
+
     // Get user's location
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -63,14 +78,14 @@ function initMap() {
                 const { latitude, longitude } = position.coords;
                 latitudeInput.value = latitude;
                 longitudeInput.value = longitude;
-                
+
                 // Update map center and add user marker
                 map.setView([latitude, longitude], 13);
                 userMarker = L.marker([latitude, longitude])
                     .addTo(map)
                     .bindPopup('Your Location')
                     .openPopup();
-                
+
                 // Fetch nearby volunteers
                 fetchNearbyVolunteers(latitude, longitude);
             },
@@ -79,14 +94,17 @@ function initMap() {
                 alert('Could not get your location');
             }
         );
+    } else {
+        alert('Geolocation is not supported by this browser.');
     }
 }
 
 async function fetchNearbyVolunteers(latitude, longitude) {
     try {
         const response = await fetch(`/api/nearby-volunteers/?lat=${latitude}&lng=${longitude}`);
+        if (!response.ok) throw new Error('Network response was not ok');
         const volunteers = await response.json();
-        
+
         volunteers.forEach(volunteer => {
             L.marker([volunteer.latitude, volunteer.longitude])
                 .addTo(map)

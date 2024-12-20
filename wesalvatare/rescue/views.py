@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import UserProfile, Animal, MedicalRecord, AnimalReport
+from .models import UserProfile, Animal, MedicalRecord, AnimalReport, Donation, AdoptableAnimal, VolunteerProfile
 from .forms import SignUpForm, AnimalForm, MedicalRecordForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
@@ -12,6 +12,7 @@ import json
 import base64
 from django.core.files.base import ContentFile
 from .utils import send_notification_to_volunteer
+from math import radians, sin, cos, sqrt, atan2
 
 def signup(request):
     if request.method == 'POST':
@@ -107,12 +108,17 @@ def user_dashboard(request):
     # Fetch recent animal reports by the user
     recent_reports = AnimalReport.objects.filter(user=request.user).order_by('-timestamp')[:5]
 
+    # Fetch donations and adoptable animals
+    donations = Donation.objects.filter(user=request.user).order_by('-date')[:5]
+    adoptable_animals = AdoptableAnimal.objects.all()[:5]
+
     context = {
         'user_profile': user_profile,
         'recent_reports': recent_reports,
+        'donations': donations,
+        'adoptable_animals': adoptable_animals,
     }
 
-    # Render the response and add CSP headers
     response = render(request, 'rescue/user_dashboard.html', context)
     response['Content-Security-Policy'] = (
         "default-src 'self'; "
@@ -320,3 +326,58 @@ def volunteer_locations(request):
         for volunteer in volunteers
     ]
     return JsonResponse(data, safe=False)
+
+def adopt_animal(request):
+    # Fetch all adoptable animals
+    adoptable_animals = AdoptableAnimal.objects.filter(is_adoptable=True)
+
+    context = {
+        'adoptable_animals': adoptable_animals,
+    }
+
+    return render(request, 'rescue/adopt_animal.html', context)
+
+def donations(request):
+    # Fetch all donations
+    donations_list = Donation.objects.all().order_by('-date')
+
+    context = {
+        'donations': donations_list,
+    }
+
+    return render(request, 'rescue/donations.html', context)
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+      # Convert latitude and longitude from degrees to radians
+      lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+      # Haversine formula
+      dlon = lon2 - lon1
+      dlat = lat2 - lat1
+      a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+      c = 2 * atan2(sqrt(a), sqrt(1-a))
+      r = 6371  # Radius of earth in kilometers
+      return r * c
+
+def get_nearest_volunteers(animal_lat, animal_lon, radius_km=10):
+    volunteers = VolunteerProfile.objects.all()
+    nearby_volunteers = []
+
+    for volunteer in volunteers:
+        distance = calculate_distance(animal_lat, animal_lon, volunteer.latitude, volunteer.longitude)
+        if distance <= radius_km:
+            nearby_volunteers.append(volunteer)
+
+    return nearby_volunteers
+
+def animal_location_view(request, animal_id):
+    animal = get_object_or_404(Animal, id=animal_id)
+    medical_records = MedicalRecord.objects.filter(animal=animal)
+    nearby_volunteers = get_nearest_volunteers(animal.latitude, animal.longitude)  # Assuming Animal has latitude and longitude
+
+    context = {
+        'animal': animal,
+        'medical_records': medical_records,
+        'nearby_volunteers': nearby_volunteers,
+    }
+    return render(request, 'rescue/animal_location.html', context)

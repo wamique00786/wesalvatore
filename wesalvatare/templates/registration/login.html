@@ -22,29 +22,40 @@
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" name="username" class="form-control" required id="username">
-                    </div>
+                        {% if form.username.errors %}
+                            <div class="text-danger">
+                                {{ form.username.errors }}
+                            </div>
+                        {% endif %}
+                    </div>    
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input type="password" name="password" class="form-control" required id="password">
+                        {% if form.password.errors %}
+                            <div class="text-danger">
+                                {{ form.password.errors }}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="user_type" class="form-label">Login As</label>
                         <select name="user_type" class="form-control" required id="user_type">
-                            <option value="USER">Regular User</option>
-                            <option value="VOLUNTEER">Volunteer</option>
-                            <option value="ADMIN">Administrator</option>
+                            <option value="USER" title="Regular User: Can browse and adopt animals.">Regular User</option>
+                            <option value="VOLUNTEER" title="Volunteer: Can assist in animal rescue operations.">Volunteer</option>
+                            <option value="ADMIN" title="Administrator: Has full access to manage the system.">Administrator</option>
                         </select>
+                        {% if form.user_type.errors %}
+                            <div class="text-danger">
+                                {{ form.user_type.errors }}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Login</button>
                     </div>
-                </form>
-                <div class="mt-3 text-center">
-                    Don't have an account? <a href="{% url 'signup' %}">Sign Up</a>
-                </div>
             </div>
         </div>
     </div>
