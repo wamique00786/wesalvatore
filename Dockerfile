@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Django project code
 COPY . /app/
-WORKDIR /app/wesalvatore
+WORKDIR /app/wesalvatore/
 # Expose port 8000 to the host
 EXPOSE 8000
 
