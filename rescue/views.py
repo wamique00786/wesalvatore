@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .models import UserProfile, Animal, MedicalRecord, AnimalReport, Donation, AdoptableAnimal, VolunteerProfile
-from .forms import SignUpForm, AnimalForm, MedicalRecordForm
+from .forms import SignUpForm, AnimalForm, MedicalRecordForm, AdoptableAnimalForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.contrib.gis.geos import Point
@@ -381,3 +381,17 @@ def animal_location_view(request, animal_id):
         'nearby_volunteers': nearby_volunteers,
     }
     return render(request, 'rescue/animal_location.html', context)
+
+@login_required
+def add_adoptable_animal(request):
+    if request.user.userprofile.user_type != 'ADMIN':
+        return redirect('not_authorized')  # Redirect to a 'not authorized' page
+
+    if request.method == 'POST':
+        form = AdoptableAnimalForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('adoptable_animals_list')
+    else:
+        form = AdoptableAnimalForm()
+    return render(request, 'rescue/add_adoptable_animal.html', {'form': form})

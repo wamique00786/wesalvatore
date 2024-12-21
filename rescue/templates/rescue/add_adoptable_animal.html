@@ -1,0 +1,17 @@
+<!-- rescue/templates/rescue/add_adoptable_animal.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Add Adoptable Animal</title>   
+</head>
+<body>
+    <h1>Add Adoptable Animal</h1>
+   <form method="post" enctype="multipart/form-data">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <button type="submit">Add Animal</button>
+   </form>
+</body>
+</html>

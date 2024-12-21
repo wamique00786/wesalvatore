@@ -44,8 +44,9 @@ INSTALLED_APPS = [
 ]
 
 CSP_DEFAULT_SRC = ["'self'"]
-CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com']
-CSP_STYLE_SRC = ["'self'", 'https://unpkg.com']
+CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net']
+CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
+CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']
 CSP_OBJECT_SRC = ["'none'"]
 
 MIDDLEWARE = [
@@ -60,11 +61,7 @@ MIDDLEWARE = [
     'rescue.csp_middleware.ContentSecurityPolicyMiddleware',
 ]
 
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "https://trusted.cdn.com")
-CSP_OBJECT_SRC = ("'none'",)
-
-ROOT_URLCONF = "wesalvatare.urls"
+ROOT_URLCONF = "wesalvatore.urls"
 
 # Add these settings
 LOGIN_URL = 'login'
@@ -87,7 +84,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "wesalvatare.wsgi.application"
+WSGI_APPLICATION = "wesalvatore.wsgi.application"
 
 
 # Database
@@ -143,7 +140,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
@@ -164,4 +161,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@example.com'
 EMAIL_HOST_PASSWORD = 'your-email-password'
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Adjust the path and filename as necessary
+GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
-from .models import Animal, MedicalRecord
+from .models import Animal, MedicalRecord, AdoptableAnimal
 
 class SignUpForm(UserCreationForm):
     USER_TYPES = [
@@ -73,4 +73,12 @@ class MedicalRecordForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date'}),
             'treatment': forms.Textarea(attrs={'rows': 3}),
             'notes': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class AdoptableAnimalForm(forms.ModelForm):
+    class Meta:
+        model = AdoptableAnimal
+        fields = ['name', 'description', 'photo', 'is_adoptable']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
         }
