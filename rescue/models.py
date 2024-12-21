@@ -11,7 +11,7 @@ class UserProfile(models.Model):
     location = models.PointField(null=True, blank=True)  # Use PointField for geographic data
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {self.get_user_type_display()}"
 
 # Signal to create user profile
 @receiver(post_save, sender=User)
@@ -94,6 +94,11 @@ class AdoptableAnimal(models.Model):
     photo = models.ImageField(upload_to='animal_photos/')
     # Add this field if it doesn't exist
     is_adoptable = models.BooleanField(default=True)
+
+    class Meta:
+        permissions = [
+            ("can_add_adoptable_animal", "Can add adoptable animal"),
+        ]
 
     def __str__(self):
         return self.name

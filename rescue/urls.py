@@ -18,4 +18,5 @@ urlpatterns = [
     path('api/volunteer-locations/', views.volunteer_locations, name='volunteer_locations'),
     path('adopt-animal/', views.adopt_animal, name='adopt_animal'),
     path('donations/', views.donations, name='donations'),
+    path('add-animal/', views.add_adoptable_animal, name='add_adoptable_animal'),
 ]
