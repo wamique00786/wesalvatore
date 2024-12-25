@@ -161,4 +161,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@example.com'
 EMAIL_HOST_PASSWORD = 'your-email-password'
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
+#GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
