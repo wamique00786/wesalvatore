@@ -9,17 +9,15 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 RUN apt-get update \
     && apt-get install -y \
-    software-properties-common \
-    && add-apt-repository ppa:ubuntugis/ppa \
-    && apt-get update \
-    && apt-get install -y \
     gdal-bin \
     libgdal-dev \
     python3-gdal \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python GDAL bindings
-ENV GDAL_VERSION 3.1.4
+RUN python -c "import gdal; print(gdal.__version__)"
+
+#ENV GDAL_VERSION 3.1.4
 ENV PATH /usr/lib/gdal:$PATH
 ENV LD_LIBRARY_PATH /usr/lib/gdal:$LD_LIBRARY_PATH
 # Install dependencies
