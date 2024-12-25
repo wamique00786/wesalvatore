@@ -7,13 +7,14 @@ ENV PYTHONUNBUFFERED=1
 
 # Set work directory
 WORKDIR /app
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gdal-bin \
     libgdal-dev \
-    && apt-get clean
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python GDAL bindings
-RUN pip install --no-cache-dir GDAL
+ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
+ENV LD_LIBRARY_PATH=/usr/lib
 # Install dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
