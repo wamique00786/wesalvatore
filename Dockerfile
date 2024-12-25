@@ -7,7 +7,12 @@ ENV PYTHONUNBUFFERED=1
 
 # Set work directory
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:ubuntugis/ppa \
+    && apt-get update \
+    && apt-get install -y \
     gdal-bin \
     libgdal-dev \
     python3-gdal \
