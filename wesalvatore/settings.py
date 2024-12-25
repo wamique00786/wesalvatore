@@ -94,7 +94,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'NAME': 'wesalvatare',
-        'USER': 'root',
+        'USER': 'wesalvatare',
         'PASSWORD': 'Asad2723',
         'HOST': 'localhost',
         'PORT': '3306',
