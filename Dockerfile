@@ -13,10 +13,6 @@ RUN apt-get update \
     libgdal-dev \
     python3-gdal \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Python GDAL bindings
-RUN python -c "import gdal; print(gdal.__version__)"
-
 #ENV GDAL_VERSION 3.1.4
 ENV PATH /usr/lib/gdal:$PATH
 ENV LD_LIBRARY_PATH /usr/lib/gdal:$LD_LIBRARY_PATH
