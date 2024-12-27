@@ -12,6 +12,7 @@ RUN apt-get update \
     gdal-bin \
     libgdal-dev \
     python3-gdal \
+    nano \
     && rm -rf /var/lib/apt/lists/*
 #ENV GDAL_VERSION 3.1.4
 ENV PATH /usr/lib/gdal:$PATH
