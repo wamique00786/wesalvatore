@@ -5,7 +5,7 @@ pipeline {
         // Environment variables
         REPO_URL = 'https://github.com/wamique00786/wesalvatore.git'
         DOCKER_IMAGE = 'wamique00786/wesalvatore'
-        CONTAINER_NAME = 'wesalvator'
+        CONTAINER_NAME = 'wesalvatore'
         DOCKER_BUILDKIT = '0' // Enable BuildKit
         TIMESTAMP = new Date().format("yyyyMMddHHmmss")
     }
@@ -46,7 +46,7 @@ pipeline {
                         docker pull ${DOCKER_IMAGE}:latest
                         '''
                         
-                        // Check if the network 'wesalvator' exists
+                        // Check if the network 'wesalvatore' exists
                         def networkExists = sh(script: "docker network ls --filter name=wesalvatore -q", returnStdout: true).trim()
 
                         // If the network doesn't exist, create it
