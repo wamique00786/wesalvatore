@@ -43,20 +43,13 @@ INSTALLED_APPS = [
     'csp',
 ]
 
-<<<<<<< HEAD
 # CSP_DEFAULT_SRC = ["'self'"]
 # CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', "'unsafe-inline'"]  # Allow inline scripts
 # CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
 # CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']  # Allow fonts from CDN
 # CSP_IMG_SRC = ["'self'", 'data:']  # Allow data URIs for images
 # CSP_OBJECT_SRC = ["'none'"]
-=======
-CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', "'unsafe-inline'"]  # Allow inline scripts
-CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
-CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']  # Allow fonts from CDN
-CSP_IMG_SRC = ["'self'", 'data:']  # Allow data URIs for images
-CSP_OBJECT_SRC = ["'none'"]
->>>>>>> c0841de1f87adc1c10600b446316e1e00785aa97
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
