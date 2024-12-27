@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:latest
+FROM python:alpine
 
 # Set environment variables to prevent .pyc files and to set the Django settings
 ENV PYTHONDONTWRITEBYTECODE=1
