@@ -44,9 +44,10 @@ INSTALLED_APPS = [
 ]
 
 CSP_DEFAULT_SRC = ["'self'"]
-CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net']
+CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', "'unsafe-inline'"]  # Allow inline scripts
 CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
-CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']
+CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']  # Allow fonts from CDN
+CSP_IMG_SRC = ["'self'", 'data:']  # Allow data URIs for images
 CSP_OBJECT_SRC = ["'none'"]
 
 MIDDLEWARE = [
@@ -92,18 +93,11 @@ WSGI_APPLICATION = "wesalvatore.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.mysql',
-        'NAME': 'wesalvatare',
-        'USER': 'root',
-        'PASSWORD': 'Asad2723',
-        'HOST': 'mysql',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'charset': 'utf8mb4',
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 
 # Password validation
