@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .models import UserProfile, Animal, MedicalRecord, AnimalReport, Donation, AdoptableAnimal, VolunteerProfile
-from .forms import SignUpForm, AnimalForm, MedicalRecordForm, AdoptableAnimalForm
+from .forms import SignUpForm, AnimalForm, MedicalRecordForm, AdoptableAnimalForm, DonationForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.contrib.gis.geos import Point
@@ -195,8 +195,13 @@ def animal_list(request):
 @login_required
 def animal_detail(request, pk):
     animal = get_object_or_404(Animal, pk=pk)
-    medical_records = animal.medicalrecord_set.all()
-    
+    print(f"Animal: {animal}")  # Debugging line
+    try:
+        medical_records = animal.medical_records.all()
+        print(f"Medical Records: {medical_records}")  # Debugging line
+    except AttributeError as e:
+        print(f"Error: {e}")  # Debugging line
+        raise
     if request.method == 'POST':
         form = MedicalRecordForm(request.POST)
         if form.is_valid():
@@ -395,3 +400,30 @@ def add_adoptable_animal(request):
     else:
         form = AdoptableAnimalForm()
     return render(request, 'rescue/add_adoptable_animal.html', {'form': form})
+
+def donations_view(request):
+   donations = Donation.objects.all()  # Fetch all donations from the database
+   return render(request, 'rescue/donations.html', {'donations': donations})
+
+@login_required
+def donate_view(request):
+    if request.method == 'POST':
+        form = DonationForm(request.POST)
+        if form.is_valid():
+            donation = Donation(
+                user=request.user,
+                amount=form.cleaned_data['amount']
+            )
+            donation.save()
+            return redirect('donation_success')  # Redirect to a success page
+    else:
+        form = DonationForm()
+    return render(request, 'rescue/donate.html', {'form': form})
+
+def donation_success_view(request):
+   return render(request, 'rescue/donation_success.html')
+
+@login_required
+def donation_list(request):
+    donations = Donation.objects.all().order_by('-date')  # Order by date, most recent first
+    return render(request, 'rescue/donation_list.html', {'donations': donations})

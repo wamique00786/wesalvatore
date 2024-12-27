@@ -19,4 +19,7 @@ urlpatterns = [
     path('adopt-animal/', views.adopt_animal, name='adopt_animal'),
     path('donations/', views.donations, name='donations'),
     path('add-animal/', views.add_adoptable_animal, name='add_adoptable_animal'),
+    path('donate/', views.donate_view, name='donate'),
+    path('donation-success/', views.donation_success_view, name='donation_success'),  # Add a success view
+    path('donations/', views.donation_list, name='donation_list'),
 ]

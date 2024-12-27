@@ -12,8 +12,6 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ animal.name }}</h5>
                         <p class="card-text">{{ animal.description }}</p>
-                        <p class="card-text"><strong>Age:</strong> {{ animal.age }}</p>
-                        <p class="card-text"><strong>Breed:</strong> {{ animal.breed }}</p>
                         <a href="{% url 'animal_detail' animal.pk %}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>

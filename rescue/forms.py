@@ -82,3 +82,6 @@ class AdoptableAnimalForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }
+
+class DonationForm(forms.Form):
+   amount = forms.DecimalField(max_digits=10, decimal_places=2, label='Donation Amount')
