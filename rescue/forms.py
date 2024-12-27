@@ -103,9 +103,12 @@ class AdoptableAnimalForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }
+
         labels = {
             'name': 'Animal Name',
             'description': 'Description',
             'photo': 'Photo',
             'is_adoptable': 'Is Adoptable',
         }
+
+

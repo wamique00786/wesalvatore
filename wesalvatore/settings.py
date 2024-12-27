@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-^5ae$7+(sa^e@k8awh6*q(l0**kl(qyg&*@dcmj51md@(k2rr6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,12 +43,20 @@ INSTALLED_APPS = [
     'csp',
 ]
 
+<<<<<<< HEAD
 # CSP_DEFAULT_SRC = ["'self'"]
 # CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', "'unsafe-inline'"]  # Allow inline scripts
 # CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
 # CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']  # Allow fonts from CDN
 # CSP_IMG_SRC = ["'self'", 'data:']  # Allow data URIs for images
 # CSP_OBJECT_SRC = ["'none'"]
+=======
+CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', "'unsafe-inline'"]  # Allow inline scripts
+CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
+CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']  # Allow fonts from CDN
+CSP_IMG_SRC = ["'self'", 'data:']  # Allow data URIs for images
+CSP_OBJECT_SRC = ["'none'"]
+>>>>>>> c0841de1f87adc1c10600b446316e1e00785aa97
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -107,6 +115,7 @@ DATABASES = {
 }
 
 
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -162,5 +171,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@example.com'
 EMAIL_HOST_PASSWORD = 'your-email-password'
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
+#GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
+
 
