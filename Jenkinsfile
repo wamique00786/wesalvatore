@@ -74,7 +74,7 @@ pipeline {
 
                 // Run the new container
                 echo 'Starting new container...'
-                sh "docker run -d  --restart=always --name ${CONTAINER_NAME} -p 80:8000 ${DOCKER_IMAGE}:latest"
+                sh "docker run -d  --restart=always --name ${CONTAINER_NAME} -p 8000:8000 ${DOCKER_IMAGE}:latest"
             }
         }
     }
