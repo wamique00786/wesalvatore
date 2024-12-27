@@ -14,9 +14,9 @@ startButton.addEventListener('click', async () => {
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
         camera.srcObject = stream;
-        camera.style.display = 'block';
-        startButton.style.display = 'none';
-        captureButton.style.display = 'block';
+        camera.style.display = 'block'; // Show the camera
+        startButton.style.display = 'none'; // Hide the start button
+        captureButton.style.display = 'block'; // Show the capture button
     } catch (err) {
         console.error('Error accessing camera:', err);
         alert('Could not access camera');
@@ -37,26 +37,26 @@ captureButton.addEventListener('click', () => {
 
     // Show preview and retake button
     photoPreview.src = photoData.value;
-    photoPreview.style.display = 'block';
-    camera.style.display = 'none';
-    captureButton.style.display = 'none';
-    retakeButton.style.display = 'block';
+    photoPreview.style.display = 'block'; // Show the photo preview
+    camera.style.display = 'none'; // Hide the camera
+    captureButton.style.display = 'none'; // Hide the capture button
+    retakeButton.style.display = 'block'; // Show the retake button
 
     // Stop camera stream
     stream.getTracks().forEach(track => track.stop());
-    stream = null;
+    stream = null; // Clear the stream variable
 });
 
 retakeButton.addEventListener('click', async () => {
-    photoPreview.style.display = 'none';
-    retakeButton.style.display = 'none';
-    startButton.style.display = 'block';
+    photoPreview.style.display = 'none'; // Hide the photo preview
+    retakeButton.style.display = 'none'; // Hide the retake button
+    startButton.style.display = 'block'; // Show the start button again
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
         camera.srcObject = stream;
-        camera.style.display = 'block';
-        startButton.style.display = 'none';
-        captureButton.style.display = 'block';
+        camera.style.display = 'block'; // Show the camera again
+        startButton.style.display = 'none'; // Hide the start button
+        captureButton.style.display = 'block'; // Show the capture button
     } catch (err) {
         console.error('Error accessing camera:', err);
         alert('Could not access camera');

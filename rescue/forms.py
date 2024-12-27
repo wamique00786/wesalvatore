@@ -14,26 +14,32 @@ class SignUpForm(UserCreationForm):
     user_type = forms.ChoiceField(
         choices=USER_TYPES,
         required=True,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label='User Type'  # Explicit label
     )
     email = forms.EmailField(
         required=True,
-        widget=forms.EmailInput(attrs={'class': 'form-control'})
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        label='Email Address'  # Explicit label
     )
     mobile_number = forms.CharField(
         max_length=15,
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        help_text='Enter your mobile number.'
+        help_text='Enter your mobile number.',
+        label='Mobile Number'  # Explicit label
     )
     username = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Username'  # Explicit label
     )
     password1 = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label='Password'  # Explicit label
     )
     password2 = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label='Confirm Password'  # Explicit label
     )
 
     class Meta:
@@ -64,6 +70,16 @@ class AnimalForm(forms.ModelForm):
             'rescue_date': forms.DateInput(attrs={'type': 'date'}),
             'medical_needs': forms.Textarea(attrs={'rows': 3}),
         }
+        labels = {
+            'name': 'Animal Name',
+            'species': 'Species',
+            'rescue_date': 'Rescue Date',
+            'status': 'Status',
+            'medical_needs': 'Medical Needs',
+            'rescue_location': 'Rescue Location',
+            'assigned_to': 'Assigned To',
+            'photo': 'Photo',
+        }
 
 class MedicalRecordForm(forms.ModelForm):
     class Meta:
@@ -74,6 +90,11 @@ class MedicalRecordForm(forms.ModelForm):
             'treatment': forms.Textarea(attrs={'rows': 3}),
             'notes': forms.Textarea(attrs={'rows': 3}),
         }
+        labels = {
+            'date': 'Date',
+            'treatment': 'Treatment',
+            'notes': 'Notes',
+        }
 
 class AdoptableAnimalForm(forms.ModelForm):
     class Meta:
@@ -81,4 +102,10 @@ class AdoptableAnimalForm(forms.ModelForm):
         fields = ['name', 'description', 'photo', 'is_adoptable']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
+        }
+        labels = {
+            'name': 'Animal Name',
+            'description': 'Description',
+            'photo': 'Photo',
+            'is_adoptable': 'Is Adoptable',
         }

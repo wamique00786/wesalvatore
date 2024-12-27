@@ -43,11 +43,12 @@ INSTALLED_APPS = [
     'csp',
 ]
 
-CSP_DEFAULT_SRC = ["'self'"]
-CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net']
-CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
-CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']
-CSP_OBJECT_SRC = ["'none'"]
+# CSP_DEFAULT_SRC = ["'self'"]
+# CSP_SCRIPT_SRC = ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', "'unsafe-inline'"]  # Allow inline scripts
+# CSP_STYLE_SRC = ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com']
+# CSP_FONT_SRC = ["'self'", 'https://cdnjs.cloudflare.com']  # Allow fonts from CDN
+# CSP_IMG_SRC = ["'self'", 'data:']  # Allow data URIs for images
+# CSP_OBJECT_SRC = ["'none'"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -95,8 +96,8 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'NAME': 'wesalvatare',
         'USER': 'root',
-        'PASSWORD': 'Asad2723',
-        'HOST': 'mysql',
+        'PASSWORD': 'A$ad2723',
+        'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -142,9 +143,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static'),  # This is where your static files should be located
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where collectstatic will gather files
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -161,4 +162,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@example.com'
 EMAIL_HOST_PASSWORD = 'your-email-password'
 
-#GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
+GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
+
