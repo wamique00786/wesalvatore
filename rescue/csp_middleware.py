@@ -9,7 +9,7 @@ class ContentSecurityPolicyMiddleware:
             "script-src 'self' https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; "  # Allow unsafe-eval
             "style-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'; "
             "font-src 'self' https://cdnjs.cloudflare.com; "
-            "img-src 'self' data:; "  # Ensure data URIs are allowed
+            "img-src 'self' data: https://*.tile.openstreetmap.org; "  # Allow OpenStreetMap tiles
             "object-src 'none';"
         )
         return response

@@ -111,4 +111,8 @@ class AdoptableAnimalForm(forms.ModelForm):
             'is_adoptable': 'Is Adoptable',
         }
 
+class DonationForm(forms.Form):
+       amount = forms.DecimalField(max_digits=10, decimal_places=2, required=True)
+       message = forms.CharField(max_length=255, required=False)
+       # Add any other fields you need for the donation form
 
