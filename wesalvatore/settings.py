@@ -97,8 +97,8 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'NAME': 'wesalvatare',
         'USER': 'root',
-        'PASSWORD': 'Asad2723',
-        'HOST': 'mysql',
+        'PASSWORD': 'A$ad2723',
+        'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

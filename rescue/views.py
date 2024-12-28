@@ -13,6 +13,9 @@ import base64
 from django.core.files.base import ContentFile
 from .utils import send_notification_to_volunteer
 from math import radians, sin, cos, sqrt, atan2
+import logging
+
+logger = logging.getLogger(__name__)
 
 def signup(request):
     if request.method == 'POST':
@@ -298,8 +301,14 @@ def report_animal(request):
 @login_required
 def nearby_volunteers(request):
     try:
-        latitude = float(request.GET.get('lat'))
-        longitude = float(request.GET.get('lng'))
+        lat = request.GET.get('lat')
+        lng = request.GET.get('lng')
+
+        if lat is None or lng is None:
+            return JsonResponse({'error': 'Missing latitude or longitude'}, status=400)
+
+        latitude = float(lat)
+        longitude = float(lng)
         user_location = Point(longitude, latitude)
 
         # Get volunteers within 10km radius
@@ -317,6 +326,8 @@ def nearby_volunteers(request):
         } for v in nearby]
 
         return JsonResponse(volunteers, safe=False)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
     
