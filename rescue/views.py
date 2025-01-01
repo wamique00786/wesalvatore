@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import UserProfile, Animal, MedicalRecord, AnimalReport, Donation, AdoptableAnimal, VolunteerProfile
+from .models import UserProfile, Animal, MedicalRecord, AnimalReport, Donation, AdoptableAnimal, VolunteerProfile, NGO
 from .forms import SignUpForm, AnimalForm, MedicalRecordForm, AdoptableAnimalForm, DonationForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
@@ -142,12 +142,23 @@ def volunteer_dashboard(request):
             messages.error(request, 'Access denied. Volunteer privileges required.')
             return redirect('user_dashboard')
         
+        # Attempt to fetch the volunteer's profile
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            messages.error(request, 'Volunteer profile not found. Please create a profile.')
+            return redirect('create_volunteer_profile')  # Redirect to a profile creation page
+
+        # Fetch all volunteers' locations
+        volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').exclude(location__isnull=True)
+
         context = {
             'user_profile': user_profile,
             'total_animals': Animal.objects.count(),
             'under_treatment': Animal.objects.filter(status='TREATMENT').count(),
             'recovered': Animal.objects.filter(status='RECOVERED').count(),
             'recent_animals': Animal.objects.order_by('-rescue_date')[:5],
+            'volunteers': volunteers,  # Pass volunteer data to the template
         }
         return render(request, 'rescue/volunteer_dashboard.html', context)
     except UserProfile.DoesNotExist:
@@ -159,6 +170,8 @@ def admin_dashboard(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if user_profile.user_type != 'ADMIN':
         return redirect(f'{user_profile.user_type.lower()}_dashboard')
+    
+    volunteers = VolunteerProfile.objects.all()
     
     context = {
         'user_profile': user_profile,
@@ -294,10 +307,11 @@ def report_animal(request):
              # Send notification to volunteer (implement your notification system)
             send_notification_to_volunteer(nearest_volunteer, report)
 
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success', 'volunteer': nearest_volunteer.user.username if nearest_volunteer else 'None'})
     except Exception as e:
+        logger.error(f"Error reporting animal: {str(e)}")  # Log the error
         return JsonResponse({'status': 'error', 'message': str(e)})
-
+    
 @login_required
 def nearby_volunteers(request):
     try:
@@ -307,12 +321,17 @@ def nearby_volunteers(request):
         if lat is None or lng is None:
             return JsonResponse({'error': 'Missing latitude or longitude'}, status=400)
 
+        # Validate latitude and longitude
         latitude = float(lat)
         longitude = float(lng)
+
+        if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+            return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
+
         user_location = Point(longitude, latitude)
 
         # Get volunteers within 10km radius
-        nearby = UserProfile.objects.filter(
+        nearby = VolunteerProfile.objects.filter(
             user_type='VOLUNTEER'
         ).annotate(
             distance=Distance('location', user_location)
@@ -330,7 +349,8 @@ def nearby_volunteers(request):
         return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
-    
+
+@login_required    
 def volunteer_locations(request):
     volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').exclude(location__isnull=True)
     data = [
@@ -376,7 +396,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
       return r * c
 
 def get_nearest_volunteers(animal_lat, animal_lon, radius_km=10):
-    volunteers = VolunteerProfile.objects.all()
+    volunteers = UserProfile.objects.all()
     nearby_volunteers = []
 
     for volunteer in volunteers:
@@ -423,18 +443,46 @@ def donate_view(request):
         if form.is_valid():
             donation = Donation(
                 user=request.user,
-                amount=form.cleaned_data['amount']
+                amount=form.cleaned_data['amount'],
+                ngo=form.cleaned_data['ngo']  # Save the selected NGO
             )
             donation.save()
             return redirect('donation_success')  # Redirect to a success page
     else:
         form = DonationForm()
-    return render(request, 'rescue/donate.html', {'form': form})
+    
+    ngos = NGO.objects.all()  # Fetch all NGOs
+    return render(request, 'rescue/donate.html', {'form': form, 'ngos': ngos})
 
 def donation_success_view(request):
    return render(request, 'rescue/donation_success.html')
 
 @login_required
 def donation_list(request):
-    donations = Donation.objects.all().order_by('-date')  # Order by date, most recent first
-    return render(request, 'rescue/donation_list.html', {'donations': donations})
+    donations = Donation.objects.all().order_by('-date')  # Fetch all donations
+    ngos = NGO.objects.all()  # Fetch all NGOs
+    return render(request, 'rescue/donation_list.html', {'donations': donations, 'ngos': ngos})
+
+@login_required
+def donate_to_ngo(request, ngo_id):
+    ngo = get_object_or_404(NGO, id=ngo_id)
+
+    if request.method == 'POST':
+        form = DonationForm(request.POST)
+        if form.is_valid():
+            donation = Donation(
+                user=request.user,
+                amount=form.cleaned_data['amount'],
+                ngo=ngo  # Set the selected NGO
+            )
+            donation.save()
+            return redirect('donation_success')  # Redirect to a success page
+    else:
+        form = DonationForm()
+
+    return render(request, 'rescue/donate_to_ngo.html', {'form': form, 'ngo': ngo})
+
+def ngo_list(request):
+    ngos = NGO.objects.all()  # Fetch all NGOs
+    return render(request, 'rescue/ngo_list.html', {'ngos': ngos})
+

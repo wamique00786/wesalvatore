@@ -23,7 +23,7 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
                 <i class="fas fa-paw me-2"></i>
-                Wesalvatare
+                Wesalvatore
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -60,6 +60,12 @@
                             <a class="nav-link {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" 
                                href="{% url 'donations' %}">
                                 <i class="fas fa-donate me-1"></i> Donations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'ngo_list' %}active{% endif %}" 
+                               href="{% url 'ngo_list' %}">
+                                <i class="fas fa-hands-helping me-1"></i> NGO's
                             </a>
                         </li>
                     {% endif %}
@@ -124,7 +130,7 @@
     <!-- Footer -->
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container text-center">
-            <span class="text-muted">© {% now "Y" %} Wesalvatare. All rights reserved.</span>
+            <span class="text-muted">© {% now "Y" %} Wesalvatore. All rights reserved.</span>
         </div>
     </footer>
 

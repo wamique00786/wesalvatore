@@ -75,6 +75,7 @@
                         <tr>
                             <th>Username</th>
                             <th>Email</th>
+                            <th>Location</th> 
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -83,6 +84,7 @@
                         <tr>
                             <td>{{ volunteer.user.username }}</td>
                             <td>{{ volunteer.user.email }}</td>
+                            <td>{{ volunteer.location|default:"Not specified" }}</td>
                             <td>
                                 <a href="#" class="btn btn-sm btn-info">View</a>
                             </td>

@@ -9,37 +9,54 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Volunteer Dashboard</h2>
+    <p><strong>Your Location:</strong> Latitude: {{ volunteer_profile.latitude }}, Longitude: {{ volunteer_profile.longitude }}</p>  <!-- Display the volunteer's location -->
+    
     <div id="map" style="height: 500px;"></div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the map
-    var map = L.map('map').setView([0, 0], 2);  // Default view
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the map
+        var map = L.map('map').setView([26.8466937, 80.946166], 10);  // Set initial view to a default location (adjust as needed)
+    
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+    
+        // Add a marker for the volunteer's own location
+        L.marker([{{ volunteer_profile.latitude }}, {{ volunteer_profile.longitude }}])
+            .addTo(map)
+            .bindPopup('Your Location')
+            .openPopup();
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-    }).addTo(map);
+        // Fetch volunteer locations
+        fetch("{% url 'volunteer_locations' %}")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Check if data is not empty
+                if (data.length > 0) {
+                    data.forEach(volunteer => {
+                        // Add a marker for each volunteer
+                        L.marker([volunteer.latitude, volunteer.longitude])
+                            .addTo(map)
+                            .bindPopup(`Volunteer: ${volunteer.username}`);
+                    });
 
-    // Fetch volunteer locations
-    fetch("{% url 'volunteer_locations' %}")
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(volunteer => {
-                // Add a marker for each volunteer
-                L.marker([volunteer.latitude, volunteer.longitude])
-                    .addTo(map)
-                    .bindPopup(`Volunteer: ${volunteer.username}`);
-            });
-
-            // Adjust map view to fit all markers
-            var bounds = data.map(volunteer => [volunteer.latitude, volunteer.longitude]);
-            if (bounds.length > 0) {
-                map.fitBounds(bounds);
-            }
-        })
-        .catch(error => console.error('Error fetching volunteer locations:', error));
-});
+                    // Adjust map view to fit all markers
+                    var bounds = data.map(volunteer => [volunteer.latitude, volunteer.longitude]);
+                    bounds.push([{{ volunteer_profile.latitude }}, {{ volunteer_profile.longitude }}]); // Include own location in bounds
+                    map.fitBounds(bounds);
+                } else {
+                    console.log('No volunteer locations found.');
+                }
+            })
+            .catch(error => console.error('Error fetching volunteer locations:', error));
+    });
 </script>
 {% endblock %}

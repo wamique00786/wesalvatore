@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
-from .models import Animal, MedicalRecord, AdoptableAnimal
+from .models import Animal, MedicalRecord, AdoptableAnimal, Donation, NGO, VolunteerProfile
 
 class SignUpForm(UserCreationForm):
     USER_TYPES = [
@@ -111,8 +111,9 @@ class AdoptableAnimalForm(forms.ModelForm):
             'is_adoptable': 'Is Adoptable',
         }
 
-class DonationForm(forms.Form):
-       amount = forms.DecimalField(max_digits=10, decimal_places=2, required=True)
-       message = forms.CharField(max_length=255, required=False)
-       # Add any other fields you need for the donation form
+class DonationForm(forms.ModelForm):
+    class Meta:
+        model = Donation
+        fields = ['amount']  # Only include the amount field
+
 
