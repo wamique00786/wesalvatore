@@ -43,6 +43,9 @@ class Animal(models.Model):
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     photo = models.ImageField(upload_to='animal_photos/', null=True, blank=True)
 
+    def __str__(self):
+        return self.name
+
 class MedicalRecord(models.Model):
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE, related_name='medical_records')
     date = models.DateField()

@@ -13,6 +13,7 @@ import base64
 from django.core.files.base import ContentFile
 from .utils import send_notification_to_volunteer
 from math import radians, sin, cos, sqrt, atan2
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -486,3 +487,12 @@ def ngo_list(request):
     ngos = NGO.objects.all()  # Fetch all NGOs
     return render(request, 'rescue/ngo_list.html', {'ngos': ngos})
 
+@login_required
+def rescued_animals_today(request):
+    today = timezone.now().date()
+    rescued_animals = Animal.objects.filter(rescue_date=today)
+
+    return render(request, 'rescue/rescued_animals_today.html', {
+        'rescued_animals': rescued_animals,
+        'total_rescued_today': rescued_animals.count(),
+    })

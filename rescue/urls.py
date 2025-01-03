@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import ngo_list, donate_to_ngo
+from .views import ngo_list, donate_to_ngo, rescued_animals_today
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('donations/', views.donation_list, name='donation_list'),
     path('ngos/', ngo_list, name='ngo_list'),  # List of NGOs
     path('donate/ngo/<int:ngo_id>/', donate_to_ngo, name='donate_to_ngo'),
+    path('rescued-animals-today/', rescued_animals_today, name='rescued_animals_today'),  # Add this line
 ]

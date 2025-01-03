@@ -68,6 +68,13 @@
                                 <i class="fas fa-hands-helping me-1"></i> NGO's
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'rescued_animals_today' %}active{% endif %}" 
+                               href="{% url 'rescued_animals_today' %}">
+                                <i class="fas fa-paw me-1"></i>  <!-- Add your desired icon here -->
+                                Total Animals Rescued Today: {{ total_rescued_today }}
+                            </a>  <!-- Updated link -->
+                        </li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
