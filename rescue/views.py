@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import UserProfile, Animal, MedicalRecord, AnimalReport, Donation, AdoptableAnimal, VolunteerProfile, NGO
-from .forms import SignUpForm, AnimalForm, MedicalRecordForm, AdoptableAnimalForm, DonationForm
+from .models import UserProfile, Animal, MedicalRecord, AnimalReport, VolunteerProfile
+from donation.models import Donation
+from adoption.models import AdoptableAnimal
+from .forms import SignUpForm, AnimalForm, MedicalRecordForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.contrib.gis.geos import Point
@@ -364,26 +366,6 @@ def volunteer_locations(request):
     ]
     return JsonResponse(data, safe=False)
 
-def adopt_animal(request):
-    # Fetch all adoptable animals
-    adoptable_animals = AdoptableAnimal.objects.filter(is_adoptable=True)
-
-    context = {
-        'adoptable_animals': adoptable_animals,
-    }
-
-    return render(request, 'rescue/adopt_animal.html', context)
-
-def donations(request):
-    # Fetch all donations
-    donations_list = Donation.objects.all().order_by('-date')
-
-    context = {
-        'donations': donations_list,
-    }
-
-    return render(request, 'rescue/donations.html', context)
-
 def calculate_distance(lat1, lon1, lat2, lon2):
       # Convert latitude and longitude from degrees to radians
       lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
@@ -418,74 +400,6 @@ def animal_location_view(request, animal_id):
         'nearby_volunteers': nearby_volunteers,
     }
     return render(request, 'rescue/animal_location.html', context)
-
-@login_required
-def add_adoptable_animal(request):
-    if request.user.userprofile.user_type != 'ADMIN':
-        return redirect('not_authorized')  # Redirect to a 'not authorized' page
-
-    if request.method == 'POST':
-        form = AdoptableAnimalForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('adoptable_animals_list')
-    else:
-        form = AdoptableAnimalForm()
-    return render(request, 'rescue/add_adoptable_animal.html', {'form': form})
-
-def donations_view(request):
-   donations = Donation.objects.all()  # Fetch all donations from the database
-   return render(request, 'rescue/donations.html', {'donations': donations})
-
-@login_required
-def donate_view(request):
-    if request.method == 'POST':
-        form = DonationForm(request.POST)
-        if form.is_valid():
-            donation = Donation(
-                user=request.user,
-                amount=form.cleaned_data['amount'],
-                ngo=form.cleaned_data['ngo']  # Save the selected NGO
-            )
-            donation.save()
-            return redirect('donation_success')  # Redirect to a success page
-    else:
-        form = DonationForm()
-    
-    ngos = NGO.objects.all()  # Fetch all NGOs
-    return render(request, 'rescue/donate.html', {'form': form, 'ngos': ngos})
-
-def donation_success_view(request):
-   return render(request, 'rescue/donation_success.html')
-
-@login_required
-def donation_list(request):
-    donations = Donation.objects.all().order_by('-date')  # Fetch all donations
-    ngos = NGO.objects.all()  # Fetch all NGOs
-    return render(request, 'rescue/donation_list.html', {'donations': donations, 'ngos': ngos})
-
-@login_required
-def donate_to_ngo(request, ngo_id):
-    ngo = get_object_or_404(NGO, id=ngo_id)
-
-    if request.method == 'POST':
-        form = DonationForm(request.POST)
-        if form.is_valid():
-            donation = Donation(
-                user=request.user,
-                amount=form.cleaned_data['amount'],
-                ngo=ngo  # Set the selected NGO
-            )
-            donation.save()
-            return redirect('donation_success')  # Redirect to a success page
-    else:
-        form = DonationForm()
-
-    return render(request, 'rescue/donate_to_ngo.html', {'form': form, 'ngo': ngo})
-
-def ngo_list(request):
-    ngos = NGO.objects.all()  # Fetch all NGOs
-    return render(request, 'rescue/ngo_list.html', {'ngos': ngos})
 
 @login_required
 def rescued_animals_today(request):

@@ -1,6 +1,6 @@
 # your_app/management/commands/populate_donations.py
 from django.core.management.base import BaseCommand
-from rescue.models import Donation, NGO
+from donation.models import Donation, NGO
 from django.contrib.auth.models import User
 
 class Command(BaseCommand):

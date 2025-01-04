@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'rescue',
     'django.contrib.gis',
     'csp',
+    'donation',
+    'adoption',
 ]
 
 # CSP_DEFAULT_SRC = ["'self'"]

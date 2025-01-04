@@ -1,6 +1,6 @@
 # your_app/management/commands/populate_ngos.py
 from django.core.management.base import BaseCommand
-from rescue.models import NGO
+from donation.models import NGO
 
 class Command(BaseCommand):
     help = 'Populate the database with sample NGOs'

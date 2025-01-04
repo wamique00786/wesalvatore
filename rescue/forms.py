@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
-from .models import Animal, MedicalRecord, AdoptableAnimal, Donation, NGO, VolunteerProfile
+from .models import Animal, MedicalRecord
 
 class SignUpForm(UserCreationForm):
     USER_TYPES = [
@@ -96,24 +96,5 @@ class MedicalRecordForm(forms.ModelForm):
             'notes': 'Notes',
         }
 
-class AdoptableAnimalForm(forms.ModelForm):
-    class Meta:
-        model = AdoptableAnimal
-        fields = ['name', 'description', 'photo', 'is_adoptable']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
-        }
-
-        labels = {
-            'name': 'Animal Name',
-            'description': 'Description',
-            'photo': 'Photo',
-            'is_adoptable': 'Is Adoptable',
-        }
-
-class DonationForm(forms.ModelForm):
-    class Meta:
-        model = Donation
-        fields = ['amount']  # Only include the amount field
 
 

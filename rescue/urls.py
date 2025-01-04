@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
-from .views import ngo_list, donate_to_ngo, rescued_animals_today
+from .views import rescued_animals_today
+#from donation.views import ngo_list  # Import ngo_list from donation.views
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -17,13 +18,6 @@ urlpatterns = [
     path('report-animal/', views.report_animal, name='report_animal'),
     path('api/nearby-volunteers/', views.nearby_volunteers, name='nearby_volunteers'),
     path('api/volunteer-locations/', views.volunteer_locations, name='volunteer_locations'),
-    path('adopt-animal/', views.adopt_animal, name='adopt_animal'),
-    path('donations/', views.donations, name='donations'),
-    path('add-animal/', views.add_adoptable_animal, name='add_adoptable_animal'),
-    path('donate/', views.donate_view, name='donate'),
-    path('donation-success/', views.donation_success_view, name='donation_success'),  # Add a success view
-    path('donations/', views.donation_list, name='donation_list'),
-    path('ngos/', ngo_list, name='ngo_list'),  # List of NGOs
-    path('donate/ngo/<int:ngo_id>/', donate_to_ngo, name='donate_to_ngo'),
     path('rescued-animals-today/', rescued_animals_today, name='rescued_animals_today'),  # Add this line
+    #path('ngos/', ngo_list, name='ngo_list'),  # Add this line if you want to access ngo_list from rescue
 ]

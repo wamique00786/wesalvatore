@@ -4,6 +4,10 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Animals Available for Adoption</h2>
+
+    <!-- Add a button to navigate to the Add Adoptable Animal page -->
+    <a href="{% url 'add_adoptable_animal' %}" class="btn btn-success mb-3">Add Animal</a>
+
     <div class="row">
         {% for animal in adoptable_animals %}
             <div class="col-md-4 mb-4">

@@ -23,6 +23,8 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('donation/', include('donation.urls')),
+    path('adoption/', include('adoption.urls')),
     path('', include('rescue.urls')),
     # Authentication URLs
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
