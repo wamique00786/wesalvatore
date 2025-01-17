@@ -11,5 +11,6 @@ class ContentSecurityPolicyMiddleware:
             "img-src 'self' data: https://*.tile.openstreetmap.org https://unpkg.com; "  # Allow images from trusted sources
             "font-src 'self' https://cdnjs.cloudflare.com; "  # Allow fonts from trusted sources
             "object-src 'none';"  # Disallow all object sources
+            "connect-src 'self' https://nominatim.openstreetmap.org; "
         )
         return response

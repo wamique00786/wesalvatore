@@ -1,16 +1,17 @@
+from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import UserProfile, Animal, MedicalRecord, AnimalReport, VolunteerProfile
+from .models import Animal, MedicalRecord, AnimalReport, RescueTask
+from accounts.models import UserProfile, VolunteerLocation
 from donation.models import Donation
 from adoption.models import AdoptableAnimal
-from .forms import SignUpForm, AnimalForm, MedicalRecordForm
-from django.contrib.auth import authenticate, login
+from .forms import AnimalForm, MedicalRecordForm
 from django.http import JsonResponse
 from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 from django.contrib.gis.db.models.functions import Distance
 from django.views.decorators.http import require_http_methods
-import json
 import base64
 from django.core.files.base import ContentFile
 from .utils import send_notification_to_volunteer
@@ -20,76 +21,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def signup(request):
-    if request.method == 'POST':
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            # Create user but don't save to database yet
-            user = form.save(commit=False)
-            user.save()  # Now save the user
-
-            # Update the UserProfile that was automatically created by the signal
-            user_type = form.cleaned_data.get('user_type')
-            try:
-                user_profile = UserProfile.objects.get(user=user)
-                user_profile.user_type = user_type
-                user_profile.save()
-            except UserProfile.DoesNotExist:
-                UserProfile.objects.create(user=user, user_type=user_type)
-
-            messages.success(request, 'Account created successfully. Please login.')
-            return redirect('login')
-    else:
-        form = SignUpForm()
-    return render(request, 'registration/signup.html', {'form': form})
-
 def home(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     return redirect('login')
-
-def custom_login(request):
-    if request.user.is_authenticated:
-        profile = UserProfile.objects.get(user=request.user)
-        if profile.user_type == 'VOLUNTEER':
-            return redirect('volunteer_dashboard')
-        elif profile.user_type == 'ADMIN':
-            return redirect('admin_dashboard')
-        return redirect('user_dashboard')
-
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user_type = request.POST['user_type']
-        
-        print(f"Login attempt - Username: {username}, User Type: {user_type}")  # Debug print
-        
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            try:
-                profile = UserProfile.objects.get(user=user)
-                print(f"Found profile type: {profile.user_type}")  # Debug print
-                
-                if profile.user_type == user_type:
-                    login(request, user)
-                    print(f"Login successful, redirecting to {user_type} dashboard")  # Debug print
-                    
-                    if user_type == 'VOLUNTEER':
-                        print("Redirecting to volunteer dashboard")  # Debug print
-                        return redirect('volunteer_dashboard')
-                    elif user_type == 'ADMIN':
-                        return redirect('admin_dashboard')
-                    else:
-                        return redirect('user_dashboard')
-                else:
-                    messages.error(request, f'This account is not registered as {user_type}')
-            except UserProfile.DoesNotExist:
-                messages.error(request, 'User profile not found')
-        else:
-            messages.error(request, 'Invalid username or password')
-    
-    return render(request, 'registration/login.html')
 
 # Add these decorator functions
 def is_admin(user):
@@ -136,34 +71,40 @@ def user_dashboard(request):
 
 @login_required
 def volunteer_dashboard(request):
-    print("Accessing volunteer dashboard view")  # Debug print
+    print(f"Logged in user: {request.user.username}")  # Debug print
     try:
+        # Fetch the user's profile
         user_profile = UserProfile.objects.get(user=request.user)
         print(f"User profile type: {user_profile.user_type}")  # Debug print
         
+        # Check if the user is a volunteer
         if user_profile.user_type != 'VOLUNTEER':
             messages.error(request, 'Access denied. Volunteer privileges required.')
             return redirect('user_dashboard')
         
-        # Attempt to fetch the volunteer's profile
-        try:
-            user_profile = UserProfile.objects.get(user=request.user)
-        except UserProfile.DoesNotExist:
-            messages.error(request, 'Volunteer profile not found. Please create a profile.')
-            return redirect('create_volunteer_profile')  # Redirect to a profile creation page
-
         # Fetch all volunteers' locations
         volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').exclude(location__isnull=True)
 
+        # Fetch tasks assigned to the volunteer
+        available_tasks = RescueTask.objects.filter(assigned_to=request.user, is_completed=False)
+        completed_tasks = RescueTask.objects.filter(assigned_to=request.user, is_completed=True)
+
+        print(f"Available tasks for {request.user.username}: {available_tasks}")
+        print(f"Completed tasks for {request.user.username}: {completed_tasks}")
+
+        # Prepare context data
         context = {
             'user_profile': user_profile,
             'total_animals': Animal.objects.count(),
             'under_treatment': Animal.objects.filter(status='TREATMENT').count(),
             'recovered': Animal.objects.filter(status='RECOVERED').count(),
             'recent_animals': Animal.objects.order_by('-rescue_date')[:5],
-            'volunteers': volunteers,  # Pass volunteer data to the template
+            'volunteers': volunteers,
+            'available_tasks': available_tasks,  # Add available tasks to context
+            'completed_tasks': completed_tasks,  # Add completed tasks to context
         }
-        return render(request, 'rescue/volunteer_dashboard.html', context)
+        
+        return render(request, 'rescue/volunteer_dashboard.html', context)  # Pass the full context
     except UserProfile.DoesNotExist:
         messages.error(request, 'User profile not found')
         return redirect('login')
@@ -174,7 +115,7 @@ def admin_dashboard(request):
     if user_profile.user_type != 'ADMIN':
         return redirect(f'{user_profile.user_type.lower()}_dashboard')
     
-    volunteers = VolunteerProfile.objects.all()
+    volunteers = UserProfile.objects.all()
     
     context = {
         'user_profile': user_profile,
@@ -334,7 +275,7 @@ def nearby_volunteers(request):
         user_location = Point(longitude, latitude)
 
         # Get volunteers within 10km radius
-        nearby = VolunteerProfile.objects.filter(
+        nearby = UserProfile.objects.filter(
             user_type='VOLUNTEER'
         ).annotate(
             distance=Distance('location', user_location)
@@ -348,12 +289,9 @@ def nearby_volunteers(request):
         } for v in nearby]
 
         return JsonResponse(volunteers, safe=False)
-    except ValueError:
-        return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
-@login_required    
 def volunteer_locations(request):
     volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').exclude(location__isnull=True)
     data = [
@@ -379,13 +317,14 @@ def calculate_distance(lat1, lon1, lat2, lon2):
       return r * c
 
 def get_nearest_volunteers(animal_lat, animal_lon, radius_km=10):
-    volunteers = UserProfile.objects.all()
-    nearby_volunteers = []
+    # Create a point for the animal's location
+    animal_location = Point(animal_lon, animal_lat)  # Note: (longitude, latitude)
 
-    for volunteer in volunteers:
-        distance = calculate_distance(animal_lat, animal_lon, volunteer.latitude, volunteer.longitude)
-        if distance <= radius_km:
-            nearby_volunteers.append(volunteer)
+    # Fetch volunteers within the specified radius
+    nearby_volunteers = UserProfile.objects.filter(
+        user_type='VOLUNTEER',
+        location__distance_lte=(animal_location, D(km=radius_km))
+    )
 
     return nearby_volunteers
 
@@ -410,3 +349,53 @@ def rescued_animals_today(request):
         'rescued_animals': rescued_animals,
         'total_rescued_today': rescued_animals.count(),
     })
+
+@login_required
+def update_volunteer_location(request):
+    if request.method == 'POST':
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        # Update or create volunteer location
+        volunteer_location, created = VolunteerLocation.objects.update_or_create(
+            volunteer=request.user,
+            defaults={'latitude': latitude, 'longitude': longitude}
+        )
+
+        return JsonResponse({'status': 'success', 'latitude': latitude, 'longitude': longitude})
+    return JsonResponse({'status': 'error'}, status=400)
+
+def get_volunteer_locations(request):
+    locations = []
+    for location in VolunteerLocation.objects.all():
+        locations.append({
+            'id': location.volunteer.id,
+            'name': location.volunteer.username,
+            'latitude': location.latitude,
+            'longitude': location.longitude,
+        })
+    return JsonResponse(locations, safe=False)
+
+@login_required
+def complete_task(request, task_id):
+    task = get_object_or_404(RescueTask, id=task_id, assigned_to=request.user)
+    task.is_completed = True
+    task.save()
+    return redirect('volunteer_dashboard')  # Redirect back to the dashboard
+
+@user_passes_test(lambda u: u.is_staff)  # Ensure only admins can access this view
+def add_task(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        assigned_to = request.POST.get('assigned_to')  # Get the user ID from the form
+        task = RescueTask.objects.create(
+            title=title,
+            description=description,
+            assigned_to_id=assigned_to
+        )
+        return redirect('volunteer_dashboard')  # Redirect to the dashboard or task list
+
+    # Fetch all volunteers for the assignment form
+    volunteers = User.objects.filter(is_staff=False)  # Assuming non-staff are volunteers
+    return render(request, 'rescue/add_task.html', {'volunteers': volunteers})

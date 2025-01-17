@@ -164,3 +164,46 @@ body {
     background-color: #f8d7da;
     color: #c0392b;
 }
+
+/* Task Dashboard Styles */
+.task-dashboard {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0; /* Add some margin for spacing */
+}
+
+.task-column {
+    flex: 1; /* Allow columns to take equal space */
+    margin: 0 10px; /* Add some margin between columns */
+    background-color: white; /* Background color for task columns */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Padding inside the columns */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.task-column h3 {
+    color: #2c3e50; /* Header color */
+    margin-bottom: 15px; /* Space below the header */
+}
+
+.task-column ul {
+    list-style-type: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
+}
+
+.task-column li {
+    margin-bottom: 10px; /* Space between tasks */
+    padding: 10px; /* Padding for each task */
+    border: 1px solid #dce4ec; /* Border around each task */
+    border-radius: 4px; /* Rounded corners for tasks */
+    background-color: #f9f9f9; /* Light background for tasks */
+}
+
+.task-column li strong {
+    display: block; /* Make title a block element */
+    color: #3498db; /* Title color */
+}
+
+.task-column form {
+    margin-top: 10px; /* Space above the form */
+}

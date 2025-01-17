@@ -1,4 +1,4 @@
-<!-- templates/rescue/volunteer_dashboard.html -->
+<!-- templates/volunteer_dashboard.html -->
 {% extends 'rescue/base.html' %}
 
 {% block extra_head %}
@@ -7,56 +7,162 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Volunteer Dashboard</h2>
-    <p><strong>Your Location:</strong> Latitude: {{ volunteer_profile.latitude }}, Longitude: {{ volunteer_profile.longitude }}</p>  <!-- Display the volunteer's location -->
-    
-    <div id="map" style="height: 500px;"></div>
+<h2 style="text-align: center; margin-bottom: 30px;">Volunteer Dashboard</h2> <!-- Centered heading with margin -->
+<div class="task-dashboard" style="display: flex; justify-content: space-between; margin-bottom: 40px;"> <!-- Added margin for spacing -->
+    <div class="task-column">
+        <h3>Available Tasks</h3>
+        <ul>
+            {% for task in available_tasks %}
+                <li>
+                    <strong>{{ task.title }}</strong>
+                    <p>{{ task.description }}</p>
+                    <form method="POST" action="{% url 'complete_task' task.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Mark as Completed</button>
+                    </form>
+                </li>
+            {% empty %}
+                <li>No available tasks.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="task-column">
+        <h3>Completed Tasks</h3>
+        <ul>
+            {% for task in completed_tasks %}
+                <li>
+                    <strong>{{ task.title }}</strong>
+                    <p>{{ task.description }}</p>
+                </li>
+            {% empty %}
+                <li>No completed tasks.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 
+<p><strong>Your Location:</strong> Latitude: {{ user_profile.latitude }}, Longitude: {{ user_profile.longitude }}</p>
+<div id="map" style="height: 500px;"></div>  <!-- Ensure the map div has a height -->
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    let map;
+    let userMarker;
+    let volunteerMarkers = {};
+
+    function initMap() {
         // Initialize the map
-        var map = L.map('map').setView([26.8466937, 80.946166], 10);  // Set initial view to a default location (adjust as needed)
-    
+        map = L.map('map').setView([20.5937, 78.9629], 5); // Default center (India)
+
         // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', {
             maxZoom: 18,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-    
-        // Add a marker for the volunteer's own location
-        L.marker([{{ volunteer_profile.latitude }}, {{ volunteer_profile.longitude }}])
-            .addTo(map)
-            .bindPopup('Your Location')
-            .openPopup();
 
-        // Fetch volunteer locations
-        fetch("{% url 'volunteer_locations' %}")
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+        // Start tracking location
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(updateUserLocation, handleError);
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+
+        // Fetch and display volunteer locations periodically
+        setInterval(fetchVolunteerLocations, 5000); // Fetch every 5 seconds
+    }
+
+    function updateUserLocation(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        // Update user marker position
+        const newPos = new L.LatLng(latitude, longitude);
+
+        // If userMarker doesn't exist, create it
+        if (!userMarker) {
+            userMarker = L.marker(newPos).addTo(map).bindPopup('Your Location').openPopup();
+        } else {
+            userMarker.setLatLng(newPos);
+        }
+
+        // Send location to the server
+        fetch('/api/update-volunteer-location/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken') // Include CSRF token if using Django
+            },
+            body: `latitude=${latitude}&longitude=${longitude}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Location updated:', data);
+        })
+        .catch(error => {
+            console.error('Error updating location:', error);
+        });
+    }
+
+    function fetchVolunteerLocations() {
+        fetch('/api/volunteers/locations/') // Adjust this endpoint as necessary
+            .then(response => response.json())
             .then(data => {
-                // Check if data is not empty
-                if (data.length > 0) {
-                    data.forEach(volunteer => {
-                        // Add a marker for each volunteer
-                        L.marker([volunteer.latitude, volunteer.longitude])
-                            .addTo(map)
-                            .bindPopup(`Volunteer: ${volunteer.username}`);
-                    });
-
-                    // Adjust map view to fit all markers
-                    var bounds = data.map(volunteer => [volunteer.latitude, volunteer.longitude]);
-                    bounds.push([{{ volunteer_profile.latitude }}, {{ volunteer_profile.longitude }}]); // Include own location in bounds
-                    map.fitBounds(bounds);
-                } else {
-                    console.log('No volunteer locations found.');
+                // Clear existing markers
+                for (const marker in volunteerMarkers) {
+                    map.removeLayer(volunteerMarkers[marker]);
                 }
+                volunteerMarkers = {};
+    
+                // Add new markers for each volunteer
+                data.forEach(volunteer => {
+                    const latitude = volunteer.latitude;
+                    const longitude = volunteer.longitude;
+    
+                    // Create a marker for the volunteer
+                    const marker = L.marker([latitude, longitude]).addTo(map);
+    
+                    // Use reverse geocoding to get the place name
+                    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+                        .then(response => response.json())
+                        .then(placeData => {
+                            const placeName = placeData.display_name || 'Unknown Location';
+                            marker.bindPopup(`Volunteer: ${volunteer.name}<br>Location: ${placeName}`); // Bind a popup with the volunteer's name and place
+                        })
+                        .catch(error => {
+                            console.error('Error fetching place name:', error);
+                            marker.bindPopup(`Volunteer: ${volunteer.name}<br>Location: Unknown`);
+                        });
+    
+                    volunteerMarkers[volunteer.id] = marker; // Store marker by volunteer ID
+                });
             })
-            .catch(error => console.error('Error fetching volunteer locations:', error));
-    });
+            .catch(error => {
+                console.error('Error fetching volunteer locations:', error);
+            });
+    }
+
+    function handleError(error) {
+        console.error('Error getting location:', error);
+        alert('Unable to retrieve your location.');
+    }
+
+    // Function to get CSRF token for AJAX requests
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Initialize the map when the document is ready
+    document.addEventListener('DOMContentLoaded', initMap);
 </script>
 {% endblock %}
