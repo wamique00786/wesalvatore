@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "879621879982",
+    "project_id": "wesalvatore-61c97",
+    "storage_bucket": "wesalvatore-61c97.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879621879982:android:1c8cdbd0830c98cdfc553f",
+        "android_client_info": {
+          "package_name": "com.example.wesalvatore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY5xeghUCpJLT7WVkAKZbBWYYD5we_ffg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

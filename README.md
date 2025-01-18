@@ -1,7 +1,16 @@
-Wesalvatore: Animal Rescue Management Platform
+# wesalvatore
 
-Wesalvatore is a specialized management tool designed to assist NGOs dedicated to animal rescue, providing them with a streamlined, user-friendly platform to coordinate and enhance their rescue operations. This platform empowers organizations to efficiently manage their resources, track rescued animals, and monitor the activities of their team members.
+A new Flutter project.
 
-With Wesalvatore, NGOs can maintain detailed records of each animal they rescue, including species, medical needs, rescue history, and current status. It provides an organized system to log each case, track treatment progress, and monitor recovery. Additionally, the platform enables administrators to assign specific animals or cases to individual workers or teams, ensuring each animal receives the care and attention it needs. By tracking which worker is involved with which animal, Wesalvatare creates accountability, transparency, and efficiency in the workflow.
+## Getting Started
 
-This centralized platform simplifies the logistics involved in rescue operations, enabling NGO staff to focus more on their mission of saving and rehabilitating animals and less on administrative challenges. With real-time updates and robust data management capabilities, Wesalvatare enhances communication and coordination within NGOs, allowing them to make a greater impact on animal welfare.
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
