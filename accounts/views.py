@@ -1,24 +1,26 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import UserProfile
-from .forms import SignUpForm, PasswordResetForm
 from django.contrib.auth import authenticate, login
-import logging
+from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from .models import UserProfile
+from .forms import SignUpForm, PasswordResetForm
+import logging
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import SignUpSerializer, LoginSerializer, PasswordResetRequestSerializer, UserReportSerializer, UserProfileSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny  # Import AllowAny
+from .serializers import SignUpSerializer, LoginSerializer, PasswordResetRequestSerializer, UserReportSerializer, UserProfileSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -55,22 +57,31 @@ class UserReportView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            description = serializer.validated_data['description']
             image = serializer.validated_data['image']
-            latitude = serializer.validated_data['latitude']
-            longitude = serializer.validated_data['longitude']
+            description = serializer.validated_data['description']
 
-            # Here you can process the data, e.g., save it to the database or send notifications
-            # For example, you could save the report to a model (not shown here)
+            # Find the nearest volunteer
+            nearest_volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').annotate(
+                distance=Distance('location', request.user.location)  # Assuming request.user has a location
+            ).order_by('distance')[:1]  # Get the nearest volunteer
 
-            # Optional: Send an email notification to volunteers/admins
-            subject = "New Animal Report"
-            message = f"Phone Number: {phone_number}\nDescription: {description}\nLocation: {latitude}, {longitude}"
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, ['admin@example.com'], fail_silently=False)
+            # Send report to the nearest volunteer
+            if nearest_volunteers.exists():
+                volunteer_email = nearest_volunteers[0].user.email  # Assuming UserProfile has a related User model
+                subject = "New Animal Report"
+                message = f"Phone Number: {phone_number}\nDescription: {description}"
+                # Send email with the image as an attachment
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [volunteer_email], fail_silently=False)
+            else:
+                # If no volunteer is available, send the report to the admin
+                admin_email = "admin@example.com"  # Replace with your admin email
+                subject = "New Animal Report - No Volunteers Available"
+                message = f"Phone Number: {phone_number}\nDescription: {description}\nNo volunteers available."
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [admin_email], fail_silently=False)
 
             return Response({"message": "Report submitted successfully."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
 class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]  # Allow any user to access this view
@@ -85,13 +96,13 @@ class PasswordResetRequestView(generics.GenericAPIView):
             context = {
                 "email": user.email,
                 "domain": request.get_host(),
-                "site_name": "home",
+                "site_name": "Wesalvatore",
                 "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                 "token": default_token_generator.make_token(user),
                 "protocol": "http",
             }
             email = render_to_string(email_template_name, context)
-            send_mail(subject, email, "adesolaayodeji53@gmail.com", [user.email], fail_silently=False)
+            send_mail(subject, email, "mohdasad.9506@gmail.com", [user.email], fail_silently=False)
             return Response({"message": "A password reset link has been sent to your email."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -226,6 +237,7 @@ def custom_login(request):
     
     return render(request, 'registration/login.html')
 
+@csrf_exempt
 def password_reset_request(request):
     if request.method == "POST":
         form = PasswordResetForm(request.POST)
@@ -239,13 +251,13 @@ def password_reset_request(request):
                     context = {
                         "email": user.email,
                         "domain": request.get_host(),
-                        "site_name": "home",
+                        "site_name": "Wesalvatore",
                         "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                         "token": default_token_generator.make_token(user),
                         "protocol": "http",
                     }
                     email = render_to_string(email_template_name, context)
-                    send_mail(subject, email, "adesolaayodeji53@gmail.com", [user.email], fail_silently=False)
+                    send_mail(subject, email, "mohdasad.9506@gmail.com", [user.email], fail_silently=False)
                 messages.success(request, "A password reset link has been sent to your email.")
                 return redirect("login")
             else:

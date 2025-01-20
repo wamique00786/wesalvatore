@@ -67,7 +67,5 @@ class PasswordResetRequestSerializer(serializers.Serializer):
     
 class UserReportSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15, required=True)
+    image = serializers.ImageField(required=True)  # Image captured from the camera
     description = serializers.CharField(required=True)
-    image = serializers.ImageField(required=True)  # Assuming you will send the image as a file
-    latitude = serializers.FloatField(required=True)
-    longitude = serializers.FloatField(required=True)
