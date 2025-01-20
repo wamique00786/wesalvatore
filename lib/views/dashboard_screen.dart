@@ -1,133 +1,106 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
+import 'package:wesalvatore/views/navbar.dart';
 
-class DashBoardScreen extends StatelessWidget {
+class DashBoardScreen extends StatefulWidget {
   const DashBoardScreen({super.key});
 
   @override
+  State<DashBoardScreen> createState() => _DashBoardScreenState();
+}
+
+class _DashBoardScreenState extends State<DashBoardScreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 51, 219, 205),
+      drawer: NavBar(),
       appBar: AppBar(
-        title: Text("Animal rescue"),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: const Text('Dashboard'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(1.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.teal.shade100,
-            image: DecorationImage(
-              image: AssetImage(
-                'assets/paws_background.jpg',
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () {
+                // Add photo upload logic
+              },
+              child: Container(
+                height: 150,
+                width: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.camera_alt,
+                      size: 50,
+                      color: Colors.black,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Capture Image",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
               ),
-              fit: BoxFit.cover,
-              opacity: 0.1,
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  // Add photo upload logic
-                },
-                child: Container(
-                  height: 150,
-                  width: 150,
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.brown.shade200,
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.cloud_upload,
-                        size: 50,
-                        color: Colors.black,
+                      SizedBox(
+                        width: 300,
+                        child: TextField(
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            hintText: 'Enter description',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                          ),
+                        ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
-                        "Upload Photo",
-                        style: TextStyle(color: Colors.black),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 16,
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () {
+                // Add submit report logic
+              },
+              style: ElevatedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 100, vertical: 16),
+                backgroundColor: Colors.grey,
               ),
-              SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.location_on,
-                    color: Colors.black,
-                  ),
-                  SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Your current location",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              child: const Text(
+                "SUBMIT REPORT",
+                style: TextStyle(color: Colors.white, fontSize: 18),
               ),
-              SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {
-                  // Add send logic
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 100, vertical: 16),
-                  backgroundColor: Colors.blue,
-                ),
-                child: Text(
-                  "SEND",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.pets),
-            label: 'Adoption',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.volunteer_activism),
-            label: 'Donation',
-          ),
-        ],
-        onTap: (index) {
-          if (index == 0) {
-            // Navigate to Adoption page
-            print('Navigate to Adoption');
-          } else if (index == 1) {
-            // Navigate to Donation page
-            print('Navigate to Donation');
-          }
-        },
       ),
     );
   }
