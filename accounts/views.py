@@ -74,7 +74,7 @@ class UserReportView(generics.GenericAPIView):
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [volunteer_email], fail_silently=False)
             else:
                 # If no volunteer is available, send the report to the admin
-                admin_email = "admin@example.com"  # Replace with your admin email
+                admin_email = settings.ADMIN_EMAIL  # Replace with your admin email
                 subject = "New Animal Report - No Volunteers Available"
                 message = f"Phone Number: {phone_number}\nDescription: {description}\nNo volunteers available."
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [admin_email], fail_silently=False)
@@ -102,7 +102,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
                 "protocol": "http",
             }
             email = render_to_string(email_template_name, context)
-            send_mail(subject, email, "mohdasad.9506@gmail.com", [user.email], fail_silently=False)
+            send_mail(subject, email, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
             return Response({"message": "A password reset link has been sent to your email."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -257,7 +257,7 @@ def password_reset_request(request):
                         "protocol": "http",
                     }
                     email = render_to_string(email_template_name, context)
-                    send_mail(subject, email, "mohdasad.9506@gmail.com", [user.email], fail_silently=False)
+                    send_mail(subject, email, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
                 messages.success(request, "A password reset link has been sent to your email.")
                 return redirect("login")
             else:
