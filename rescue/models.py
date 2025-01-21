@@ -77,3 +77,11 @@ class RescueTask(models.Model):
     def __str__(self):
         return self.title
     
+class VolunteerLocation(models.Model):
+    volunteer = models.OneToOneField(User, on_delete=models.CASCADE)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.volunteer.username}'s Location"

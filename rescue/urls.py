@@ -12,11 +12,15 @@ urlpatterns = [
     path('animal/<int:pk>/', views.animal_detail, name='animal_detail'),
     path('animal/<int:pk>/edit/', views.animal_edit, name='animal_edit'),
     path('report-animal/', views.report_animal, name='report_animal'),
-    path('api/nearby-volunteers/', views.nearby_volunteers, name='nearby_volunteers'),
+    path('api/volunteers/nearby/', views.nearby_volunteers, name='nearby_volunteers'),
     path('api/volunteer-locations/', views.volunteer_locations, name='volunteer_locations'),
     path('rescued-animals-today/', views.rescued_animals_today, name='rescued_animals_today'),  # Add this line
     path('api/accounts/volunteers/nearby/', views.nearby_volunteers, name='nearby_volunteers'),
-    path('api/update-volunteer-location/', views.update_volunteer_location, name='update_volunteer_location'),
+    path('api/volunteer/location/update/', views.update_volunteer_location, name='update_volunteer_location'),
     path('api/volunteers/locations/', views.get_volunteer_locations, name='get_volunteer_locations'),
     path('complete-task/<int:task_id>/', views.complete_task, name='complete_task'),
+    path('user/report/', views.UserReportView.as_view(), name='user_report'),
+    path('register/', views.UserRegistrationView.as_view(), name='user_registration'),
+    path('volunteers/nearby/', views.NearbyVolunteersView.as_view(), name='nearby_volunteers'),
+    path('admin/report/', views.AdminReportView.as_view(), name='admin_report'),
 ]

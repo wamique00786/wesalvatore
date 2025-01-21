@@ -3,11 +3,33 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import UserProfile  # Import your UserProfile model if you have one
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name']
+
 class UserProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)  # Include user details
+    location = serializers.SerializerMethodField()  # Custom field for location
+
     class Meta:
         model = UserProfile
-        fields = ['user', 'user_type', 'mobile_number', 'location']
+        fields = ['id', 'user', 'user_type', 'location']
 
+    def get_location(self, obj):
+        """
+        Custom method to serialize the GeoDjango Point field
+        """
+        if obj.location:
+            return {
+                'type': 'Point',
+                'coordinates': [
+                    obj.location.x,  # longitude
+                    obj.location.y   # latitude
+                ]
+            }
+        return None
+    
     def create(self, validated_data):
         user = validated_data.pop('user')
         user_profile = UserProfile.objects.create(user=user, **validated_data)
@@ -65,7 +87,3 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError("No user is associated with this email address.")
         return value
     
-class UserReportSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=15, required=True)
-    image = serializers.ImageField(required=True)  # Image captured from the camera
-    description = serializers.CharField(required=True)

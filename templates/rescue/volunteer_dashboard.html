@@ -1,12 +1,13 @@
 <!-- templates/volunteer_dashboard.html -->
 {% extends 'rescue/base.html' %}
-
+{% load static %}
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 {% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <h2 style="text-align: center; margin-bottom: 30px;">Volunteer Dashboard</h2> <!-- Centered heading with margin -->
 <div class="task-dashboard" style="display: flex; justify-content: space-between; margin-bottom: 40px;"> <!-- Added margin for spacing -->
     <div class="task-column">
@@ -43,126 +44,150 @@
 </div>
 
 <p><strong>Your Location:</strong> Latitude: {{ user_profile.latitude }}, Longitude: {{ user_profile.longitude }}</p>
-<div id="map" style="height: 500px;"></div>  <!-- Ensure the map div has a height -->
+<div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>  <!-- Ensure the map div has a height -->
 
 <script>
-    let map;
-    let userMarker;
-    let volunteerMarkers = {};
+// Initialize map variable globally
+let map = null;
+let userMarker = null;
 
-    function initMap() {
-        // Initialize the map
-        map = L.map('map').setView([20.5937, 78.9629], 5); // Default center (India)
+// Function to initialize the map
+function initMap() {
+    // Create the map centered on a default location
+    map = L.map('map').setView([0, 0], 2);
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', {
-            maxZoom: 18,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+    // Add the OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-        // Start tracking location
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(updateUserLocation, handleError);
-        } else {
-            alert("Geolocation is not supported by this browser.");
-        }
+    // Get user's current location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
 
-        // Fetch and display volunteer locations periodically
-        setInterval(fetchVolunteerLocations, 5000); // Fetch every 5 seconds
+                // Center map on user's location
+                map.setView([latitude, longitude], 15);
+
+                // Add marker for user's location
+                if (userMarker) {
+                    userMarker.setLatLng([latitude, longitude]);
+                } else {
+                    userMarker = L.marker([latitude, longitude])
+                        .addTo(map)
+                        .bindPopup('Your current location')
+                        .openPopup();
+                }
+
+                // Store location in cookies
+                document.cookie = `user_latitude=${latitude}; path=/; max-age=3600`;
+                document.cookie = `user_longitude=${longitude}; path=/; max-age=3600`;
+
+                // Update location in database (if needed)
+                updateVolunteerLocation(latitude, longitude);
+            },
+            function(error) {
+                console.error("Error getting location:", error);
+                alert("Unable to get your location. Please enable location services.");
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by this browser.");
     }
+}
 
-    function updateUserLocation(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
-        // Update user marker position
-        const newPos = new L.LatLng(latitude, longitude);
-
-        // If userMarker doesn't exist, create it
-        if (!userMarker) {
-            userMarker = L.marker(newPos).addTo(map).bindPopup('Your Location').openPopup();
-        } else {
-            userMarker.setLatLng(newPos);
-        }
-
-        // Send location to the server
-        fetch('/api/update-volunteer-location/', {
+// Function to update volunteer's location in the database
+async function updateVolunteerLocation(latitude, longitude) {
+    const url = '/api/volunteer/location/update/';
+    console.log('Sending request to:', url);  // Debug log
+    try {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Update the fetch URL to match the new URL pattern
+        const response = await fetch('/api/volunteer/location/update/', {  // Updated URL
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken') // Include CSRF token if using Django
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
             },
-            body: `latitude=${latitude}&longitude=${longitude}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Location updated:', data);
-        })
-        .catch(error => {
-            console.error('Error updating location:', error);
-        });
-    }
-
-    function fetchVolunteerLocations() {
-        fetch('/api/volunteers/locations/') // Adjust this endpoint as necessary
-            .then(response => response.json())
-            .then(data => {
-                // Clear existing markers
-                for (const marker in volunteerMarkers) {
-                    map.removeLayer(volunteerMarkers[marker]);
-                }
-                volunteerMarkers = {};
-    
-                // Add new markers for each volunteer
-                data.forEach(volunteer => {
-                    const latitude = volunteer.latitude;
-                    const longitude = volunteer.longitude;
-    
-                    // Create a marker for the volunteer
-                    const marker = L.marker([latitude, longitude]).addTo(map);
-    
-                    // Use reverse geocoding to get the place name
-                    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
-                        .then(response => response.json())
-                        .then(placeData => {
-                            const placeName = placeData.display_name || 'Unknown Location';
-                            marker.bindPopup(`Volunteer: ${volunteer.name}<br>Location: ${placeName}`); // Bind a popup with the volunteer's name and place
-                        })
-                        .catch(error => {
-                            console.error('Error fetching place name:', error);
-                            marker.bindPopup(`Volunteer: ${volunteer.name}<br>Location: Unknown`);
-                        });
-    
-                    volunteerMarkers[volunteer.id] = marker; // Store marker by volunteer ID
-                });
+            credentials: 'include',
+            body: JSON.stringify({
+                latitude: latitude,
+                longitude: longitude
             })
-            .catch(error => {
-                console.error('Error fetching volunteer locations:', error);
-            });
-    }
+        });
 
-    function handleError(error) {
-        console.error('Error getting location:', error);
-        alert('Unable to retrieve your location.');
-    }
+        if (!response.ok) {
+            throw new Error('Failed to update location');
+        }
 
-    // Function to get CSRF token for AJAX requests
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+        const data = await response.json();
+        console.log('Location updated successfully:', data);
+    } catch (error) {
+        console.error('Error updating location:', error);
+    }
+}
+
+// Function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
+    return cookieValue;
+}
 
-    // Initialize the map when the document is ready
-    document.addEventListener('DOMContentLoaded', initMap);
+// Watch for location changes
+function watchLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            function(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                // Update marker position
+                if (userMarker) {
+                    userMarker.setLatLng([latitude, longitude]);
+                }
+
+                // Update stored location
+                document.cookie = `user_latitude=${latitude}; path=/; max-age=3600`;
+                document.cookie = `user_longitude=${longitude}; path=/; max-age=3600`;
+
+                // Update location in database
+                updateVolunteerLocation(latitude, longitude);
+            },
+            function(error) {
+                console.error("Error watching location:", error);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        );
+    }
+}
+
+// Initialize map when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+    watchLocation();
+});
 </script>
 {% endblock %}

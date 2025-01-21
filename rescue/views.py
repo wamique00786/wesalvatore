@@ -1,25 +1,109 @@
-from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import Animal, MedicalRecord, AnimalReport, RescueTask
-from accounts.models import UserProfile, VolunteerLocation
+from .models import Animal, MedicalRecord, AnimalReport, RescueTask, VolunteerLocation
+from accounts.models import UserProfile
 from donation.models import Donation
 from adoption.models import AdoptableAnimal
 from .forms import AnimalForm, MedicalRecordForm
 from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-from django.contrib.gis.db.models.functions import Distance
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import ensure_csrf_cookie
 import base64
 from django.core.files.base import ContentFile
 from .utils import send_notification_to_volunteer
 from math import radians, sin, cos, sqrt, atan2
 from django.utils import timezone
 import logging
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny  # Import AllowAny
+from .serializers import UserReportSerializer
+from accounts.serializers import UserProfileSerializer
 
 logger = logging.getLogger(__name__)
+
+class UserRegistrationView(generics.CreateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [AllowAny]
+
+class NearbyVolunteersView(generics.ListAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        lat = self.request.query_params.get('lat')
+        lng = self.request.query_params.get('lng')
+        
+        # Validate latitude and longitude
+        if lat and lng:
+            try:
+                latitude = float(lat)
+                longitude = float(lng)
+                return UserProfile.objects.filter(
+                    user_type='VOLUNTEER',
+                    location__distance_lte=(Point(longitude, latitude, srid=4326), D(km=10))  # Adjust distance as needed
+                )
+            except ValueError:
+                return UserProfile.objects.none()  # Return empty queryset if conversion fails
+        return UserProfile.objects.none()
+
+class AdminReportView(generics.CreateAPIView):
+    
+    # Assuming you have a model for reports
+    def post(self, request, *args, **kwargs):
+        # Handle the report submission logic here
+        return Response({"message": "Report sent to admin."}, status=201)
+    
+
+class UserReportView(generics.GenericAPIView):
+    serializer_class = UserReportSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+            image = serializer.validated_data['image']
+            description = serializer.validated_data['description']
+
+            # Retrieve location from cookies
+            latitude = request.COOKIES.get('user_latitude')
+            longitude = request.COOKIES.get('user_longitude')
+
+            # Create a Point object for the user's location
+            user_location = Point(float(longitude), float(latitude))
+
+            # Find the nearest volunteer
+            nearest_volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').annotate(
+                distance=Distance('location', request.user.location)  # Assuming request.user has a location
+            ).order_by('distance')[:1]  # Get the nearest volunteer
+
+            # Send report to the nearest volunteer
+            if nearest_volunteers.exists():
+                volunteer_email = nearest_volunteers[0].user.email  # Assuming UserProfile has a related User model
+                subject = "New Animal Report"
+                message = f"Phone Number: {phone_number}\nDescription: {description}"
+                # Send email with the image as an attachment
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [volunteer_email], fail_silently=False)
+            else:
+                # If no volunteer is available, send the report to the admin
+                admin_email = settings.ADMIN_EMAIL  # Replace with your admin email
+                subject = "New Animal Report - No Volunteers Available"
+                message = f"Phone Number: {phone_number}\nDescription: {description}\nNo volunteers available."
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [admin_email], fail_silently=False)
+
+            return Response({"message": "Report submitted successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def home(request):
     if request.user.is_authenticated:
@@ -59,6 +143,15 @@ def user_dashboard(request):
         'donations': donations,
         'adoptable_animals': adoptable_animals,
     }
+
+    # Set cookies for the user's location if available
+    if user_profile.location:
+        latitude = user_profile.location.y  # Assuming location is a PointField (longitude, latitude)
+        longitude = user_profile.location.x
+        response = render(request, 'rescue/user_dashboard.html', context)
+        response.set_cookie('user_latitude', latitude, max_age=60*60*24*7)  # Store for 7 days
+        response.set_cookie('user_longitude', longitude, max_age=60*60*24*7)  # Store for 7 days
+        return response
 
     response = render(request, 'rescue/user_dashboard.html', context)
     response['Content-Security-Policy'] = (
@@ -104,6 +197,15 @@ def volunteer_dashboard(request):
             'completed_tasks': completed_tasks,  # Add completed tasks to context
         }
         
+        # Set cookies for the volunteer's location
+        if user_profile.location:
+            latitude = user_profile.location.y  # Assuming location is a PointField (longitude, latitude)
+            longitude = user_profile.location.x
+            response = render(request, 'rescue/volunteer_dashboard.html', context)
+            response.set_cookie('user_latitude', latitude, max_age=60*60*24*7)  # Store for 7 days
+            response.set_cookie('user_longitude', longitude, max_age=60*60*24*7)  # Store for 7 days
+            return response
+
         return render(request, 'rescue/volunteer_dashboard.html', context)  # Pass the full context
     except UserProfile.DoesNotExist:
         messages.error(request, 'User profile not found')
@@ -256,41 +358,35 @@ def report_animal(request):
         logger.error(f"Error reporting animal: {str(e)}")  # Log the error
         return JsonResponse({'status': 'error', 'message': str(e)})
     
-@login_required
+@api_view(['GET'])
 def nearby_volunteers(request):
     try:
-        lat = request.GET.get('lat')
-        lng = request.GET.get('lng')
-
-        if lat is None or lng is None:
-            return JsonResponse({'error': 'Missing latitude or longitude'}, status=400)
-
-        # Validate latitude and longitude
-        latitude = float(lat)
-        longitude = float(lng)
-
-        if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
-            return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
-
-        user_location = Point(longitude, latitude)
-
-        # Get volunteers within 10km radius
-        nearby = UserProfile.objects.filter(
-            user_type='VOLUNTEER'
+        lat = float(request.GET.get('lat'))
+        lng = float(request.GET.get('lng'))
+        
+        # Create a point from the provided coordinates
+        user_location = Point(lng, lat, srid=4326)
+        
+        # Query for nearby volunteers
+        nearby_volunteers = UserProfile.objects.filter(
+            user_type='VOLUNTEER',
+            location__isnull=False
         ).annotate(
             distance=Distance('location', user_location)
-        ).filter(distance__lte=10000).order_by('distance')
+        ).filter(
+            distance__lte=D(km=10)  # Adjust radius as needed (e.g., 10 kilometers)
+        ).order_by('distance')
 
-        volunteers = [{
-            'name': v.user.get_full_name() or v.user.username,
-            'latitude': v.location.y,
-            'longitude': v.location.x,
-            'distance': round(v.distance.m / 1000, 2)  # Convert to km
-        } for v in nearby]
-
-        return JsonResponse(volunteers, safe=False)
+        # Serialize the data
+        serializer = UserProfileSerializer(nearby_volunteers, many=True)
+        return Response(serializer.data)
+        
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        print(f"Error in nearby_volunteers: {str(e)}")  # Debug print
+        return Response(
+            {'error': str(e)}, 
+            status=400
+        )
 
 def volunteer_locations(request):
     volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').exclude(location__isnull=True)
@@ -350,20 +446,30 @@ def rescued_animals_today(request):
         'total_rescued_today': rescued_animals.count(),
     })
 
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@ensure_csrf_cookie
 def update_volunteer_location(request):
-    if request.method == 'POST':
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
+    print("Received location update request")  # Debug print
+    try:
+        latitude = float(request.data.get('latitude'))
+        longitude = float(request.data.get('longitude'))
 
-        # Update or create volunteer location
-        volunteer_location, created = VolunteerLocation.objects.update_or_create(
-            volunteer=request.user,
-            defaults={'latitude': latitude, 'longitude': longitude}
-        )
+        print(f"Received coordinates: lat={latitude}, lng={longitude}")  # Debug print
+        
+        # Create a Point object with SRID 4326 (WGS 84)
+        location = Point(longitude, latitude, srid=4326)
+        
+        # Update the volunteer's location
+        user_profile = request.user.userprofile
+        user_profile.location = location
+        user_profile.save()
+        
+        print("Location updated successfully")  # Debug print
 
-        return JsonResponse({'status': 'success', 'latitude': latitude, 'longitude': longitude})
-    return JsonResponse({'status': 'error'}, status=400)
+        return Response({'status': 'success'})
+    except Exception as e:
+        return Response({'status': 'error', 'message': str(e)}, status=400)
 
 def get_volunteer_locations(request):
     locations = []

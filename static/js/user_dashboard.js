@@ -133,19 +133,49 @@ function updateLocation() {
 // Function to fetch nearby volunteers
 async function fetchNearbyVolunteers(latitude, longitude) {
     try {
-        const response = await fetch(`/api/accounts/volunteers/nearby/?lat=${latitude}&lng=${longitude}`);
-        if (!response.ok) throw new Error('Network response was not ok');
+        console.log('Fetching nearby volunteers...'); // Debug log
+        const response = await fetch(`/api/volunteers/nearby/?lat=${latitude}&lng=${longitude}`);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Server error:', errorData); // Debug log
+            throw new Error('Network response was not ok');
+        }
+        
         const volunteers = await response.json();
+        console.log('Received volunteers:', volunteers); // Debug log
 
         if (volunteers.length === 0) {
+            console.log('No nearby volunteers found'); // Debug log
             alert('No nearby volunteers available.');
-        } else {
-            volunteers.forEach(volunteer => {
-                L.marker([volunteer.location.coordinates[1], volunteer.location.coordinates[0]]) // Adjust based on your PointField
-                    .addTo(map)
-                    .bindPopup(`Volunteer: ${volunteer.user.username}`);
-            });
+            return;
         }
+
+        // Clear existing markers if any
+        if (window.volunteerMarkers) {
+            window.volunteerMarkers.forEach(marker => marker.remove());
+        }
+        window.volunteerMarkers = [];
+
+        // Add markers for each volunteer
+        volunteers.forEach(volunteer => {
+            if (volunteer.location && volunteer.location.coordinates) {
+                const marker = L.marker([
+                    volunteer.location.coordinates[1],  // latitude
+                    volunteer.location.coordinates[0]   // longitude
+                ]).addTo(map);
+                
+                marker.bindPopup(`Volunteer: ${volunteer.user.username}`);
+                window.volunteerMarkers.push(marker);
+            }
+        });
+
+        // Fit map bounds to include all markers
+        if (window.volunteerMarkers.length > 0) {
+            const group = L.featureGroup(window.volunteerMarkers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+
     } catch (err) {
         console.error('Error fetching volunteers:', err);
     }
@@ -176,12 +206,37 @@ async function sendReportToAdmin() {
 
 // Function to submit the report
 async function submitReport() {
+    const phoneInput = document.getElementById('phone_number');
+    const descriptionInput = document.getElementById('description');
+    const photoData = document.getElementById('image');
+
+    // Ensure all elements are found
+    if (!phoneInput || !descriptionInput || !photoData) {
+        alert('Required input elements are missing.');
+        return;
+    }
+
+    // Check if all required fields are filled
+    if (!phoneInput.value || !descriptionInput.value || !photoData.files[0]) {
+        alert('Please fill in all fields and ensure an image is selected.');
+        return;
+    }
+
+    const latitudeInput = getCookie('user_latitude'); // Assuming you have a function to get cookies
+    const longitudeInput = getCookie('user_longitude'); // Assuming you have a function to get cookies
+
+    // Check if latitude and longitude are available
+    if (!latitudeInput || !longitudeInput) {
+        alert('Location is not available. Please enable location services.');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('phone_number', phoneInput.value);
     formData.append('description', descriptionInput.value);
-    formData.append('image', photoData.files[0]); // Assuming you have the image file
-    formData.append('latitude', latitudeInput.value);
-    formData.append('longitude', longitudeInput.value);
+    formData.append('image', photoData.files[0]);
+    formData.append('latitude', latitudeInput);
+    formData.append('longitude', longitudeInput);
 
     try {
         const response = await fetch('/api/user/report/', {

@@ -1,9 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import authenticate, login
-from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import D
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
@@ -20,67 +17,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny  # Import AllowAny
-from .serializers import SignUpSerializer, LoginSerializer, PasswordResetRequestSerializer, UserReportSerializer, UserProfileSerializer
+from .serializers import SignUpSerializer, LoginSerializer, PasswordResetRequestSerializer
 
 logger = logging.getLogger(__name__)
 
-class UserRegistrationView(generics.CreateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [AllowAny]
 
-class NearbyVolunteersView(generics.ListAPIView):
-    serializer_class = UserProfileSerializer  # Use the same serializer or create a new one for volunteers
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        user = self.request.user
-        lat = self.request.query_params.get('lat')
-        lng = self.request.query_params.get('lng')
-        if lat and lng:
-            return UserProfile.objects.filter(user_type='VOLUNTEER', location__distance_lte=(Point(float(lng), float(lat)), D(km=10)))  # Adjust distance as needed
-        return UserProfile.objects.none()
-
-class AdminReportView(generics.CreateAPIView):
-    
-    # Assuming you have a model for reports
-    def post(self, request, *args, **kwargs):
-        # Handle the report submission logic here
-        return Response({"message": "Report sent to admin."}, status=201)
-    
-
-class UserReportView(generics.GenericAPIView):
-    serializer_class = UserReportSerializer
-    permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            phone_number = serializer.validated_data['phone_number']
-            image = serializer.validated_data['image']
-            description = serializer.validated_data['description']
-
-            # Find the nearest volunteer
-            nearest_volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').annotate(
-                distance=Distance('location', request.user.location)  # Assuming request.user has a location
-            ).order_by('distance')[:1]  # Get the nearest volunteer
-
-            # Send report to the nearest volunteer
-            if nearest_volunteers.exists():
-                volunteer_email = nearest_volunteers[0].user.email  # Assuming UserProfile has a related User model
-                subject = "New Animal Report"
-                message = f"Phone Number: {phone_number}\nDescription: {description}"
-                # Send email with the image as an attachment
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [volunteer_email], fail_silently=False)
-            else:
-                # If no volunteer is available, send the report to the admin
-                admin_email = settings.ADMIN_EMAIL  # Replace with your admin email
-                subject = "New Animal Report - No Volunteers Available"
-                message = f"Phone Number: {phone_number}\nDescription: {description}\nNo volunteers available."
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [admin_email], fail_silently=False)
-
-            return Response({"message": "Report submitted successfully."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import SignUpView, LoginView, PasswordResetRequestView, UserReportView, UserRegistrationView, NearbyVolunteersView, AdminReportView, password_reset_request
+from .views import SignUpView, LoginView, PasswordResetRequestView, password_reset_request
 from django.contrib.auth import views as auth_views  # Import Django's auth views
 
 urlpatterns = [
@@ -13,8 +13,5 @@ urlpatterns = [
     path('signup/api/', SignUpView.as_view(), name='signup_api'),
     path('login/api/', LoginView.as_view(), name='login_api'),  # Login API
     path('password_reset/api/', PasswordResetRequestView.as_view(), name='password_reset_api'),
-    path('user/api/', UserReportView.as_view(), name='user_report'),
-    path('register/', UserRegistrationView.as_view(), name='user_registration'),
-    path('volunteers/nearby/', NearbyVolunteersView.as_view(), name='nearby_volunteers'),
-    path('admin/report/', AdminReportView.as_view(), name='admin_report'),
+    
 ]
