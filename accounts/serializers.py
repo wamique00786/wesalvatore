@@ -9,12 +9,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'first_name', 'last_name']
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)  # Include user details
-    location = serializers.SerializerMethodField()  # Custom field for location
+    user = UserSerializer(read_only=True)
+    location = serializers.SerializerMethodField()
+    distance = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
-        fields = ['id', 'user', 'user_type', 'location']
+        fields = ['id', 'user', 'user_type', 'location', 'distance']
 
     def get_location(self, obj):
         """
@@ -27,6 +28,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
                     obj.location.x,  # longitude
                     obj.location.y   # latitude
                 ]
+            }
+        return None
+
+    def get_distance(self, obj):
+        """
+        Include distance if it was annotated in the queryset
+        """
+        if hasattr(obj, 'distance'):
+            return {
+                'km': round(obj.distance.km, 2),
+                'text': f"{round(obj.distance.km, 2)} km away"
             }
         return None
     

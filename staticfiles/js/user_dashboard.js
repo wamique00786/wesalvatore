@@ -63,45 +63,118 @@ retakeButton.addEventListener('click', async () => {
 // Location handling
 let map;
 let userMarker;
-const latitudeInput = document.getElementById('latitude');
-const longitudeInput = document.getElementById('longitude');
-const phoneInput = document.getElementById('phone');
-const descriptionInput = document.getElementById('description');
-const photoData = document.getElementById('photoData');
+let userPopup = null;
+let allUserMarkers = {};
+const markerIcons = {
+    'USER': L.icon({
+        iconUrl: '/static/images/user-marker.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    }),
+    'VOLUNTEER': L.icon({
+        iconUrl: '/static/images/volunteer-marker.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    }),
+    'ADMIN': L.icon({
+        iconUrl: '/static/images/admin-marker.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    })
+};
 
 // Initialize the map
 function initMap() {
     map = L.map('map').setView([0, 0], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // Get user's location
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                const { latitude, longitude } = position.coords;
-                latitudeInput.value = latitude;
-                longitudeInput.value = longitude;
+    // Start watching location
+    watchLocation();
+    setInterval(updateAllUsers, 10000); // Update every 10 seconds
+}
 
-                // Update map center and add user marker
-                map.setView([latitude, longitude], 13);
-                userMarker = L.marker([latitude, longitude])
-                    .addTo(map)
-                    .bindPopup('Your Location')
-                    .openPopup();
-
-                // Fetch nearby volunteers
-                fetchNearbyVolunteers(latitude, longitude);
-
-                // Start updating location
-                setInterval(updateLocation, 5000); // Update every 5 seconds
+async function updateUserInfo(latitude, longitude) {
+    try {
+        // Save location to database
+        const response = await fetch('/api/save-location/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             },
-            error => {
-                console.error('Error getting location:', error);
-                alert('Could not get your location');
+            body: JSON.stringify({
+                latitude: latitude,
+                longitude: longitude
+            })
+        });
+
+        // Get user info
+        const userInfoResponse = await fetch('/api/user-info/');
+        const userInfo = await userInfoResponse.json();
+
+        // Create or update marker with popup
+        if (!userMarker) {
+            userMarker = L.marker([latitude, longitude]).addTo(map);
+            map.setView([latitude, longitude], 13);
+        } else {
+            userMarker.setLatLng([latitude, longitude]);
+        }
+
+        // Create popup content
+        const popupContent = `
+            <div class="user-popup">
+                <strong>User:</strong> ${userInfo.username}<br>
+                <strong>Phone:</strong> ${userInfo.phone}<br>
+                <strong>Location:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}
+            </div>
+        `;
+
+        // Update popup
+        if (userPopup) {
+            userPopup.setContent(popupContent);
+        } else {
+            userPopup = userMarker.bindPopup(popupContent);
+        }
+
+        // Add click event to marker
+        userMarker.on('click', function() {
+            this.openPopup();
+        });
+
+    } catch (error) {
+        console.error('Error updating user info:', error);
+    }
+}
+
+function watchLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            function(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                
+                // Update hidden form fields
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
+                
+                // Update map marker and user info
+                updateUserInfo(latitude, longitude);
+            },
+            function(error) {
+                console.error("Error getting location:", error);
+                alert("Please enable location services to use the map.");
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
             }
         );
     } else {
-        alert('Geolocation is not supported by this browser.');
+        alert("Geolocation is not supported by this browser.");
     }
 }
 
@@ -133,32 +206,68 @@ function updateLocation() {
 // Function to fetch nearby volunteers
 async function fetchNearbyVolunteers(latitude, longitude) {
     try {
-        const response = await fetch(`/api/accounts/volunteers/nearby/?lat=${latitude}&lng=${longitude}`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const volunteers = await response.json();
-
-        if (volunteers.length === 0) {
-            alert('No nearby volunteers available.');
-        } else {
-            volunteers.forEach(volunteer => {
-                L.marker([volunteer.location.coordinates[1], volunteer.location.coordinates[0]]) // Adjust based on your PointField
-                    .addTo(map)
-                    .bindPopup(`Volunteer: ${volunteer.user.username}`);
-            });
+        if (!latitude || !longitude) {
+            console.error('Invalid coordinates');
+            return;
         }
-    } catch (err) {
-        console.error('Error fetching volunteers:', err);
+
+        const response = await fetch(
+            `/api/volunteers/nearby/?lat=${latitude}&lng=${longitude}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Clear existing volunteer markers
+        if (window.volunteerMarkers) {
+            window.volunteerMarkers.forEach(marker => marker.remove());
+        }
+        window.volunteerMarkers = [];
+
+        // Add markers for each volunteer
+        data.forEach(volunteer => {
+            if (volunteer.location && volunteer.location.coordinates) {
+                const marker = L.marker([
+                    volunteer.location.coordinates[1],  // latitude
+                    volunteer.location.coordinates[0]   // longitude
+                ]).addTo(map);
+
+                const distance = volunteer.distance ? 
+                    volunteer.distance.text : 
+                    'Distance unknown';
+
+                const name = volunteer.user ? 
+                    (volunteer.user.first_name || volunteer.user.username) : 
+                    'Volunteer';
+
+                marker.bindPopup(
+                    `<strong>${name}</strong><br>${distance}`
+                );
+                window.volunteerMarkers.push(marker);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching volunteers:', error);
     }
 }
 
 // Function to send report to admin
 async function sendReportToAdmin() {
     const formData = new FormData();
-    formData.append('phone_number', phoneInput.value);
-    formData.append('description', descriptionInput.value);
-    formData.append('image', photoData.files[0]); // Assuming you have the image file
-    formData.append('latitude', latitudeInput.value);
-    formData.append('longitude', longitudeInput.value);
+    formData.append('photo', document.getElementById('imageData').value);  // Change to match the field name
+    formData.append('description', document.getElementById('description').value);
+    formData.append('latitude', document.getElementById('latitude').value);
+    formData.append('longitude', document.getElementById('longitude').value);
 
     try {
         const response = await fetch('/api/admin/report/', {
@@ -176,12 +285,36 @@ async function sendReportToAdmin() {
 
 // Function to submit the report
 async function submitReport() {
+    //const phoneInput = document.getElementById('phone_number');
+    const descriptionInput = document.getElementById('description');
+    const photoData = document.getElementById('image');
+
+    // Ensure all elements are found
+    if (!phoneInput || !descriptionInput || !photoData) {
+        alert('Required input elements are missing.');
+        return;
+    }
+
+    // Check if all required fields are filled
+    if (!phoneInput.value || !descriptionInput.value || !photoData.files[0]) {
+        alert('Please fill in all fields and ensure an image is selected.');
+        return;
+    }
+
+    const latitudeInput = getCookie('user_latitude'); // Assuming you have a function to get cookies
+    const longitudeInput = getCookie('user_longitude'); // Assuming you have a function to get cookies
+
+    // Check if latitude and longitude are available
+    if (!latitudeInput || !longitudeInput) {
+        alert('Location is not available. Please enable location services.');
+        return;
+    }
+
     const formData = new FormData();
-    formData.append('phone_number', phoneInput.value);
-    formData.append('description', descriptionInput.value);
-    formData.append('image', photoData.files[0]); // Assuming you have the image file
-    formData.append('latitude', latitudeInput.value);
-    formData.append('longitude', longitudeInput.value);
+    formData.append('photo', document.getElementById('imageData').value);  // Change to match the field name
+    formData.append('description', document.getElementById('description').value);
+    formData.append('latitude', document.getElementById('latitude').value);
+    formData.append('longitude', document.getElementById('longitude').value);
 
     try {
         const response = await fetch('/api/user/report/', {

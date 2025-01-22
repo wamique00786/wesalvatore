@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
+from django.conf import settings
 
 class Animal(models.Model):
     SPECIES_CHOICES = [
@@ -39,32 +40,30 @@ class MedicalRecord(models.Model):
     def __str__(self):
         return f"Medical Record for {self.animal.name} on {self.date}"
 
-# rescue/models.py
 class AnimalReport(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('ASSIGNED', 'Assigned'),
+        ('ADMIN_REVIEW', 'Admin Review'),
+        ('COMPLETED', 'Completed'),
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     photo = models.ImageField(upload_to='animal_reports/')
     description = models.TextField()
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    location = models.PointField(geography=True, null=True, blank=True)  # Allow null temporarily
     timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     assigned_to = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 
         null=True, 
+        blank=True,
         related_name='assigned_reports'
-    )
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ('PENDING', 'Pending'),
-            ('ASSIGNED', 'Assigned'),
-            ('RESOLVED', 'Resolved')
-        ],
-        default='PENDING'
     )
 
     def __str__(self):
-        return f"Report by {self.user.username} at {self.timestamp}"
+        return f"Report by {self.user.username} on {self.timestamp}"
     
 class RescueTask(models.Model):
     title = models.CharField(max_length=200)

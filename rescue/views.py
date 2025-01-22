@@ -4,8 +4,6 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .models import Animal, MedicalRecord, AnimalReport, RescueTask, VolunteerLocation
 from accounts.models import UserProfile
-from donation.models import Donation
-from adoption.models import AdoptableAnimal
 from .forms import AnimalForm, MedicalRecordForm
 from django.http import JsonResponse
 from django.core.mail import send_mail
@@ -13,7 +11,7 @@ from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-from django.views.decorators.http import require_http_methods
+# from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 import base64
 from django.core.files.base import ContentFile
@@ -21,89 +19,246 @@ from .utils import send_notification_to_volunteer
 from math import radians, sin, cos, sqrt, atan2
 from django.utils import timezone
 import logging
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny  # Import AllowAny
-from .serializers import UserReportSerializer
+from .serializers import AnimalReportSerializer
 from accounts.serializers import UserProfileSerializer
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
-class UserRegistrationView(generics.CreateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [AllowAny]
+User = get_user_model()
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_users_locations(request):
+    try:
+        users = UserProfile.objects.filter(location__isnull=False)
+        users_data = []
+        
+        for user_profile in users:
+            users_data.append({
+                'id': user_profile.user.id,
+                'username': user_profile.user.username,
+                'phone': user_profile.mobile_number,
+                'user_type': user_profile.user_type,
+                'location': {
+                    'latitude': user_profile.location.y,
+                    'longitude': user_profile.location.x
+                }
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'users': users_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_user_location(request):
+    try:
+        latitude = float(request.data.get('latitude'))
+        longitude = float(request.data.get('longitude'))
+        
+        user_profile = request.user.userprofile
+        user_profile.location = Point(longitude, latitude, srid=4326)
+        user_profile.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Location updated successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_info(request):
+    try:
+        user_profile = request.user.userprofile
+        return JsonResponse({
+            'username': request.user.username,
+            'phone': user_profile.mobile_number,
+            'location': {
+                'latitude': user_profile.location.y if user_profile.location else None,
+                'longitude': user_profile.location.x if user_profile.location else None
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
 
 class NearbyVolunteersView(generics.ListAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        lat = self.request.query_params.get('lat')
-        lng = self.request.query_params.get('lng')
-        
-        # Validate latitude and longitude
-        if lat and lng:
-            try:
-                latitude = float(lat)
-                longitude = float(lng)
-                return UserProfile.objects.filter(
-                    user_type='VOLUNTEER',
-                    location__distance_lte=(Point(longitude, latitude, srid=4326), D(km=10))  # Adjust distance as needed
+        try:
+            lat = self.request.query_params.get('lat')
+            lng = self.request.query_params.get('lng')
+            
+            if not lat or not lng:
+                return UserProfile.objects.none()
+
+            # Convert to float and create Point
+            user_location = Point(
+                float(lng),  # longitude first
+                float(lat),  # latitude second
+                srid=4326
+            )
+
+            # Query for nearby volunteers with distance annotation
+            volunteers = UserProfile.objects.filter(
+                user_type='VOLUNTEER',
+                location__isnull=False
+            ).annotate(
+                distance=Distance('location', user_location)
+            ).filter(
+                distance__lte=D(km=10)  # 10km radius
+            ).order_by('distance')
+
+            return volunteers
+
+        except (ValueError, TypeError) as e:
+            print(f"Error in NearbyVolunteersView: {str(e)}")
+            return UserProfile.objects.none()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['distance'] = True  # Add flag to include distance in serializer
+        return context
+
+class UserReportView(generics.CreateAPIView):
+    serializer_class = AnimalReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            # Log the incoming request data for debugging
+            logger.info(f"Received data: {request.data}")
+            logger.info(f"Files: {request.FILES}")
+
+            # Validate incoming data
+            if 'photo' not in request.FILES:
+                return Response({
+                    'status': 'error',
+                    'message': 'Photo is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if not request.data.get('description'):
+                return Response({
+                    'status': 'error',
+                    'message': 'Description is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if not request.data.get('latitude') or not request.data.get('longitude'):
+                return Response({
+                    'status': 'error',
+                    'message': 'Location coordinates are required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create report object directly
+            report = AnimalReport.objects.create(
+                user=request.user,
+                photo=request.FILES['photo'],
+                description=request.data['description'],
+                location=Point(
+                    float(request.data['longitude']),
+                    float(request.data['latitude']),
+                    srid=4326
+                ),
+                status='PENDING'
+            )
+
+            # Find nearest volunteer within 10km
+            nearest_volunteer = UserProfile.objects.filter(
+                user_type='VOLUNTEER',
+                location__isnull=False,
+                location__distance_lte=(report.location, D(km=10))
+            ).annotate(
+                distance=Distance('location', report.location)
+            ).order_by('distance').first()
+
+            if nearest_volunteer:
+                # Assign to nearest volunteer
+                report.assigned_to = nearest_volunteer.user
+                report.status = 'ASSIGNED'
+                report.save()
+                
+                # Send notification to volunteer
+                send_notification_to_volunteer(nearest_volunteer, report)
+                
+                return Response({
+                    'status': 'success',
+                    'message': 'Report submitted and assigned to volunteer',
+                    'volunteer': {
+                        'name': nearest_volunteer.user.get_full_name() or nearest_volunteer.user.username,
+                        'distance': f"{nearest_volunteer.distance.km:.2f} km"
+                    }
+                }, status=status.HTTP_201_CREATED)
+            
+            # If no volunteer found, assign to admin
+            admin_profile = UserProfile.objects.filter(user_type='ADMIN').first()
+            if admin_profile:
+                report.assigned_to = admin_profile.user
+                report.status = 'ADMIN_REVIEW'
+                report.save()
+
+                # Send notification to admin
+                send_mail(
+                    subject="New Animal Report - No Volunteers Available",
+                    message=f"""
+                    A new animal report requires admin attention.
+                    Description: {report.description}
+                    Location: {report.location.y}, {report.location.x}
+                    Reported by: {request.user.get_full_name() or request.user.username}
+                    Contact: {request.user.userprofile.mobile_number}
+                    """,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[admin_profile.user.email],
+                    fail_silently=False
                 )
-            except ValueError:
-                return UserProfile.objects.none()  # Return empty queryset if conversion fails
-        return UserProfile.objects.none()
-
-class AdminReportView(generics.CreateAPIView):
-    
-    # Assuming you have a model for reports
-    def post(self, request, *args, **kwargs):
-        # Handle the report submission logic here
-        return Response({"message": "Report sent to admin."}, status=201)
-    
-
-class UserReportView(generics.GenericAPIView):
-    serializer_class = UserReportSerializer
-    permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            phone_number = serializer.validated_data['phone_number']
-            image = serializer.validated_data['image']
-            description = serializer.validated_data['description']
-
-            # Retrieve location from cookies
-            latitude = request.COOKIES.get('user_latitude')
-            longitude = request.COOKIES.get('user_longitude')
-
-            # Create a Point object for the user's location
-            user_location = Point(float(longitude), float(latitude))
-
-            # Find the nearest volunteer
-            nearest_volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').annotate(
-                distance=Distance('location', request.user.location)  # Assuming request.user has a location
-            ).order_by('distance')[:1]  # Get the nearest volunteer
-
-            # Send report to the nearest volunteer
-            if nearest_volunteers.exists():
-                volunteer_email = nearest_volunteers[0].user.email  # Assuming UserProfile has a related User model
-                subject = "New Animal Report"
-                message = f"Phone Number: {phone_number}\nDescription: {description}"
-                # Send email with the image as an attachment
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [volunteer_email], fail_silently=False)
-            else:
-                # If no volunteer is available, send the report to the admin
-                admin_email = settings.ADMIN_EMAIL  # Replace with your admin email
-                subject = "New Animal Report - No Volunteers Available"
-                message = f"Phone Number: {phone_number}\nDescription: {description}\nNo volunteers available."
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [admin_email], fail_silently=False)
-
-            return Response({"message": "Report submitted successfully."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+                return Response({
+                    'status': 'success',
+                    'message': 'No nearby volunteers available. Report assigned to admin.',
+                    'assigned_to': 'admin'
+                }, status=status.HTTP_201_CREATED)
+            
+            return Response({
+                'status': 'success',
+                'message': 'Report submitted. Waiting for assignment.',
+            }, status=status.HTTP_201_CREATED)
+                
+        except Exception as e:
+            logger.error(f"Error in UserReportView: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': f"Error processing report: {str(e)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+    def get(self, request, *args, **kwargs):
+        return Response({
+            'message': 'Please use POST method to submit an animal report.',
+            'required_fields': {
+                'photo': 'Image file from camera',
+                'description': 'Text description of the situation',
+                'latitude': 'Current location latitude',
+                'longitude': 'Current location longitude'
+            }
+        }, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 def home(request):
     if request.user.is_authenticated:
@@ -133,31 +288,18 @@ def user_dashboard(request):
     # Fetch recent animal reports by the user
     recent_reports = AnimalReport.objects.filter(user=request.user).order_by('-timestamp')[:5]
 
-    # Fetch donations and adoptable animals
-    donations = Donation.objects.filter(user=request.user).order_by('-date')[:5]
-    adoptable_animals = AdoptableAnimal.objects.all()[:5]
-
     context = {
         'user_profile': user_profile,
         'recent_reports': recent_reports,
-        'donations': donations,
-        'adoptable_animals': adoptable_animals,
     }
-
-    # Set cookies for the user's location if available
-    if user_profile.location:
-        latitude = user_profile.location.y  # Assuming location is a PointField (longitude, latitude)
-        longitude = user_profile.location.x
-        response = render(request, 'rescue/user_dashboard.html', context)
-        response.set_cookie('user_latitude', latitude, max_age=60*60*24*7)  # Store for 7 days
-        response.set_cookie('user_longitude', longitude, max_age=60*60*24*7)  # Store for 7 days
-        return response
 
     response = render(request, 'rescue/user_dashboard.html', context)
     response['Content-Security-Policy'] = (
         "default-src 'self'; "
-        "script-src 'self' https://unpkg.com https://cdn.jsdelivr.net; "
-        "style-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; "
+        "img-src 'self' blob: data: https://unpkg.com; "
+        "media-src 'self' blob:; "
         "object-src 'none';"
     )
     return response
@@ -313,81 +455,143 @@ def animal_edit(request, pk):
         'title': f'Edit {animal.name}'
     })
 
-@login_required
-@require_http_methods(["POST"])
+@api_view(['POST'])
 def report_animal(request):
     try:
         # Get data from request
-        photo_data = request.POST.get('photo')
-        description = request.POST.get('description')
-        latitude = float(request.POST.get('latitude'))
-        longitude = float(request.POST.get('longitude'))
+        photo_data = request.data.get('photo')
+        description = request.data.get('description')
+        latitude = float(request.data.get('latitude'))
+        longitude = float(request.data.get('longitude'))
 
-        # Convert base64 to image file
-        format, imgstr = photo_data.split(';base64,')
-        ext = format.split('/')[-1]
-        photo = ContentFile(base64.b64decode(imgstr), name=f'report_{request.user.id}.{ext}')
+        # Create a point for the report location
+        report_location = Point(longitude, latitude, srid=4326)
+
+        # Process photo data
+        if isinstance(photo_data, str) and photo_data.startswith('data:image'):
+            format, imgstr = photo_data.split(';base64,')
+            ext = format.split('/')[-1]
+            photo = ContentFile(base64.b64decode(imgstr), name=f'report_{request.user.id}.{ext}')
+        else:
+            photo = request.FILES.get('photo')
 
         # Create report
         report = AnimalReport.objects.create(
             user=request.user,
             photo=photo,
             description=description,
-            latitude=latitude,
-            longitude=longitude
+            location=report_location,
+            status='PENDING'
         )
 
-        # Find nearest volunteer
-        user_location = Point(longitude, latitude)
+        # Find nearest volunteer within 10km radius
         nearest_volunteer = UserProfile.objects.filter(
-            user_type='VOLUNTEER'
+            user_type='VOLUNTEER',
+            location__isnull=False,
+            location__distance_lte=(report_location, D(km=10))
         ).annotate(
-            distance=Distance('location', user_location)
+            distance=Distance('location', report_location)
         ).order_by('distance').first()
 
         if nearest_volunteer:
+            # Assign to nearest volunteer
             report.assigned_to = nearest_volunteer.user
             report.status = 'ASSIGNED'
             report.save()
 
-             # Send notification to volunteer (implement your notification system)
+            # Send notification to volunteer
             send_notification_to_volunteer(nearest_volunteer, report)
 
-        return JsonResponse({'status': 'success', 'volunteer': nearest_volunteer.user.username if nearest_volunteer else 'None'})
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Report submitted and assigned to volunteer',
+                'volunteer': {
+                    'name': nearest_volunteer.user.get_full_name() or nearest_volunteer.user.username,
+                    'distance': f"{nearest_volunteer.distance.km:.2f} km"
+                }
+            })
+        else:
+            # If no volunteer found, assign to admin
+            admin_profile = UserProfile.objects.filter(user_type='ADMIN').first()
+            if admin_profile:
+                report.assigned_to = admin_profile.user
+                report.status = 'ADMIN_REVIEW'
+                report.save()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'No nearby volunteers available. Report assigned to admin.',
+                    'assigned_to': 'admin'
+                })
+            else:
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Report submitted. Waiting for assignment.',
+                })
+
     except Exception as e:
-        logger.error(f"Error reporting animal: {str(e)}")  # Log the error
-        return JsonResponse({'status': 'error', 'message': str(e)})
+        logger.error(f"Error reporting animal: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Failed to submit report. Please try again.'
+        }, status=400)
     
 @api_view(['GET'])
 def nearby_volunteers(request):
     try:
         lat = float(request.GET.get('lat'))
         lng = float(request.GET.get('lng'))
+        radius = float(request.GET.get('radius', 10))  # Default 10km
         
-        # Create a point from the provided coordinates
         user_location = Point(lng, lat, srid=4326)
         
-        # Query for nearby volunteers
         nearby_volunteers = UserProfile.objects.filter(
             user_type='VOLUNTEER',
-            location__isnull=False
+            location__isnull=False,
+            location__distance_lte=(user_location, D(km=radius))
         ).annotate(
             distance=Distance('location', user_location)
-        ).filter(
-            distance__lte=D(km=10)  # Adjust radius as needed (e.g., 10 kilometers)
         ).order_by('distance')
 
-        # Serialize the data
-        serializer = UserProfileSerializer(nearby_volunteers, many=True)
-        return Response(serializer.data)
-        
-    except Exception as e:
-        print(f"Error in nearby_volunteers: {str(e)}")  # Debug print
-        return Response(
-            {'error': str(e)}, 
-            status=400
-        )
+        volunteer_data = [{
+            'id': v.user.id,
+            'name': v.user.get_full_name() or v.user.username,
+            'distance': f"{v.distance.km:.2f}",
+            'location': {
+                'latitude': v.location.y,
+                'longitude': v.location.x
+            }
+        } for v in nearby_volunteers]
 
+        return Response({
+            'status': 'success',
+            'volunteers': volunteer_data
+        })
+    except Exception as e:
+        logger.error(f"Error fetching nearby volunteers: {str(e)}")
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+    
+@api_view(['POST'])
+def save_user_location(request):
+    try:
+        latitude = float(request.data.get('latitude'))
+        longitude = float(request.data.get('longitude'))
+        
+        user_profile = request.user.userprofile
+        user_profile.location = Point(longitude, latitude, srid=4326)
+        user_profile.save()
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        logger.error(f"Error saving user location: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+        
 def volunteer_locations(request):
     volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').exclude(location__isnull=True)
     data = [

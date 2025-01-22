@@ -43,8 +43,7 @@
     </div>
 </div>
 
-<p><strong>Your Location:</strong> Latitude: {{ user_profile.latitude }}, Longitude: {{ user_profile.longitude }}</p>
-<div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>  <!-- Ensure the map div has a height -->
+<div id="map" style="height: 400px;"></div>  <!-- Ensure the map div has a height -->
 
 <script>
 // Initialize map variable globally
@@ -54,7 +53,7 @@ let userMarker = null;
 // Function to initialize the map
 function initMap() {
     // Create the map centered on a default location
-    map = L.map('map').setView([0, 0], 2);
+    map = L.map('map').setView([0, 0], 13);
 
     // Add the OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
