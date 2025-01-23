@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import Animal, MedicalRecord, AnimalReport, RescueTask, VolunteerLocation
+from .models import Animal, MedicalRecord, AnimalReport, RescueTask, VolunteerLocation, UserLocationHistory
 from accounts.models import UserProfile
 from .forms import AnimalForm, MedicalRecordForm
 from django.http import JsonResponse
@@ -18,6 +18,7 @@ from django.core.files.base import ContentFile
 from .utils import send_notification_to_volunteer
 from math import radians, sin, cos, sqrt, atan2
 from django.utils import timezone
+from datetime import timedelta
 import logging
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -30,35 +31,6 @@ from django.contrib.auth import get_user_model
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_all_users_locations(request):
-    try:
-        users = UserProfile.objects.filter(location__isnull=False)
-        users_data = []
-        
-        for user_profile in users:
-            users_data.append({
-                'id': user_profile.user.id,
-                'username': user_profile.user.username,
-                'phone': user_profile.mobile_number,
-                'user_type': user_profile.user_type,
-                'location': {
-                    'latitude': user_profile.location.y,
-                    'longitude': user_profile.location.x
-                }
-            })
-        
-        return JsonResponse({
-            'status': 'success',
-            'users': users_data
-        })
-    except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': str(e)
-        }, status=400)
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -66,16 +38,99 @@ def save_user_location(request):
     try:
         latitude = float(request.data.get('latitude'))
         longitude = float(request.data.get('longitude'))
+        current_time = timezone.now()
+
+        # Create Point object
+        location_point = Point(longitude, latitude, srid=4326)
         
+        # Update user's current location
         user_profile = request.user.userprofile
-        user_profile.location = Point(longitude, latitude, srid=4326)
-        user_profile.save()
+        
+        # Only save if location has changed significantly (more than 10 meters)
+        should_save = False
+        if not user_profile.location:
+            should_save = True
+        elif user_profile.location.distance(location_point) > 0.01:  # 10 meters
+            should_save = True
+            
+        if should_save:
+            # Update current location
+            user_profile.location = location_point
+            user_profile.last_location_update = current_time
+            user_profile.save()
+
+            # Save to location history
+            UserLocationHistory.objects.create(
+                user=request.user,
+                location=location_point,
+                timestamp=current_time,
+                user_type=user_profile.user_type
+            )
+            
+            # Clean up old location history (keep last 24 hours)
+            cleanup_time = current_time - timedelta(hours=24)
+            UserLocationHistory.objects.filter(
+                user=request.user,
+                timestamp__lt=cleanup_time
+            ).delete()
         
         return JsonResponse({
             'status': 'success',
-            'message': 'Location updated successfully'
+            'message': 'Location updated successfully',
+            'location_saved': should_save
         })
     except Exception as e:
+        logger.error(f"Error saving location: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_users_locations(request):
+    try:
+        # Get active users (updated in last 5 minutes)
+        active_time = timezone.now() - timedelta(minutes=5)
+        users = UserProfile.objects.filter(
+            location__isnull=False,
+            last_location_update__gte=active_time
+        )
+        
+        users_data = []
+        
+        for user_profile in users:
+            # Get location history for the last hour
+            history = UserLocationHistory.objects.filter(
+                user=user_profile.user,
+                timestamp__gte=timezone.now() - timedelta(hours=1)
+            ).order_by('-timestamp')
+            
+            location_history = [{
+                'latitude': h.location.y,
+                'longitude': h.location.x,
+                'timestamp': h.timestamp.isoformat()
+            } for h in history]
+            
+            users_data.append({
+                'id': user_profile.user.id,
+                'username': user_profile.user.username,
+                'phone': user_profile.mobile_number,
+                'user_type': user_profile.user_type,
+                'location': {
+                    'latitude': user_profile.location.y,
+                    'longitude': user_profile.location.x,
+                    'last_update': user_profile.last_location_update.isoformat()
+                },
+                'location_history': location_history
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'users': users_data
+        })
+    except Exception as e:
+        logger.error(f"Error getting locations: {str(e)}")
         return JsonResponse({
             'status': 'error',
             'message': str(e)

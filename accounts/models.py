@@ -9,6 +9,7 @@ class UserProfile(models.Model):
     user_type = models.CharField(max_length=20, choices=[('USER', 'User'), ('VOLUNTEER', 'Volunteer'), ('ADMIN', 'Admin')])
     mobile_number = models.CharField(max_length=15, default='0000000000')  # Set a default value
     location = geomodels.PointField(null=True, blank=True, srid=4326)  # Use PointField for geographic data
+    last_location_update = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.get_user_type_display()}"

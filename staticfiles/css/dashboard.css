@@ -1,0 +1,30 @@
+/* static/css/dashboard.css */
+#map {
+    height: 400px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-popup {
+    padding: 10px;
+    min-width: 200px;
+}
+
+.user-popup strong {
+    color: #333;
+}
+
+.map-section {
+    margin: 20px 0;
+}
+
+.map-section h3 {
+    margin-bottom: 15px;
+}
+
+/* Marker colors */
+.marker-user { background-color: #3388ff; }
+.marker-volunteer { background-color: #33ff33; }
+.marker-admin { background-color: #ff3333; }

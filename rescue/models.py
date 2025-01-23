@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
 from django.conf import settings
+from django.utils import timezone
 
 class Animal(models.Model):
     SPECIES_CHOICES = [
@@ -84,3 +85,18 @@ class VolunteerLocation(models.Model):
 
     def __str__(self):
         return f"{self.volunteer.username}'s Location"
+    
+class UserLocationHistory(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    location = models.PointField(geography=True)
+    timestamp = models.DateTimeField(default=timezone.now)
+    user_type = models.CharField(max_length=20)  # To store user type at the time
+    
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['user', 'timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} location at {self.timestamp}"
