@@ -1,5 +1,11 @@
 <!-- templates/rescue/admin_dashboard.html -->
 {% extends 'rescue/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -86,7 +92,10 @@
                             <td>{{ volunteer.user.email }}</td>
                             <td>{{ volunteer.location|default:"Not specified" }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-info">View</a>
+                                <a href="#" class="btn btn-sm btn-info" onclick="event.preventDefault(); 
+                                    viewVolunteerMap('{{ volunteer.user.username|escapejs }}', '{{ volunteer.user.phone|default:"Not provided"|escapejs }}', 
+                                    {{ volunteer.location.y|default:0 }}, {{ volunteer.location.x|default:0 }}, 
+                                    '{{ volunteer.user_type|escapejs }}')">View</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -96,4 +105,11 @@
         </div>
     </div>
 </div>
+<div id="map" style="height: 500px; display: none;"></div> <!-- Initially hidden -->
+{% endblock %}
+
+{% block additional_js %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{% static 'js/admin_dashboard.js' %}"></script>
 {% endblock %}

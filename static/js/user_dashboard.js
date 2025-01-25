@@ -128,7 +128,8 @@ async function updateUserInfo(latitude, longitude) {
             <div class="user-popup">
                 <strong>User:</strong> ${userInfo.username}<br>
                 <strong>Phone:</strong> ${userInfo.phone}<br>
-                <strong>Location:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}
+                <strong>Location:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}<br>
+                <strong>User Type:</strong> ${userInfo.user_type}
             </div>
         `;
 
@@ -285,24 +286,26 @@ async function sendReportToAdmin() {
 
 // Function to submit the report
 async function submitReport() {
-    //const phoneInput = document.getElementById('phone_number');
     const descriptionInput = document.getElementById('description');
     const photoData = document.getElementById('image');
 
     // Ensure all elements are found
-    if (!phoneInput || !descriptionInput || !photoData) {
+    if (!descriptionInput || !photoData) {
         alert('Required input elements are missing.');
         return;
     }
 
     // Check if all required fields are filled
-    if (!phoneInput.value || !descriptionInput.value || !photoData.files[0]) {
+    if (!descriptionInput.value || !photoData.files[0]) {
         alert('Please fill in all fields and ensure an image is selected.');
         return;
     }
 
     const latitudeInput = getCookie('user_latitude'); // Assuming you have a function to get cookies
     const longitudeInput = getCookie('user_longitude'); // Assuming you have a function to get cookies
+
+    console.log('Latitude:', latitudeInput); // Debugging line
+    console.log('Longitude:', longitudeInput); // Debugging line
 
     // Check if latitude and longitude are available
     if (!latitudeInput || !longitudeInput) {
@@ -311,10 +314,10 @@ async function submitReport() {
     }
 
     const formData = new FormData();
-    formData.append('photo', document.getElementById('imageData').value);  // Change to match the field name
-    formData.append('description', document.getElementById('description').value);
-    formData.append('latitude', document.getElementById('latitude').value);
-    formData.append('longitude', document.getElementById('longitude').value);
+    formData.append('photo', photoData.files[0]); // Ensure this is the file input
+    formData.append('description', descriptionInput.value);
+    formData.append('latitude', latitudeInput); // Use the latitude from cookies or input
+    formData.append('longitude', longitudeInput); // Use the longitude from cookies or input
 
     try {
         const response = await fetch('/api/user/report/', {

@@ -115,7 +115,7 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             # Create user but don't save to database yet
-            user = form.save(commit=False)
+            user = form.save()
             user.save()  # Now save the user
 
             # Update the UserProfile that was automatically created by the signal

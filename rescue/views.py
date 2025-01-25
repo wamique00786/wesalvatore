@@ -147,7 +147,8 @@ def get_user_info(request):
             'location': {
                 'latitude': user_profile.location.y if user_profile.location else None,
                 'longitude': user_profile.location.x if user_profile.location else None
-            }
+            },
+            'user_type': user_profile.user_type
         })
     except Exception as e:
         return JsonResponse({

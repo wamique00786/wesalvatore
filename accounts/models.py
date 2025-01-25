@@ -7,7 +7,7 @@ from django.contrib.gis.db import models as geomodels
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     user_type = models.CharField(max_length=20, choices=[('USER', 'User'), ('VOLUNTEER', 'Volunteer'), ('ADMIN', 'Admin')])
-    mobile_number = models.CharField(max_length=15, default='0000000000')  # Set a default value
+    mobile_number = models.CharField(max_length=15, blank=True, null=True)  # Set a default value
     location = geomodels.PointField(null=True, blank=True, srid=4326)  # Use PointField for geographic data
     last_location_update = models.DateTimeField(null=True, blank=True)
 

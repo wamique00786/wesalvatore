@@ -46,93 +46,113 @@
 <div id="map" style="height: 400px;"></div>  <!-- Ensure the map div has a height -->
 
 <script>
-// Initialize map variable globally
-let map = null;
-let userMarker = null;
-
-// Function to initialize the map
+let map, userMarkers = {};
+    
+// Initialize the map
 function initMap() {
-    // Create the map centered on a default location
-    map = L.map('map').setView([0, 0], 13);
-
-    // Add the OpenStreetMap tiles
+    // Create the map and set default center
+    map = L.map('map').setView([0, 0], 2);
+    
+    // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-
-    // Get user's current location
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-
-                // Center map on user's location
-                map.setView([latitude, longitude], 15);
-
-                // Add marker for user's location
-                if (userMarker) {
-                    userMarker.setLatLng([latitude, longitude]);
+    
+    // Fetch and display all user locations
+    updateAllUsersLocations();
+}
+    
+// Fetch and update all users' locations
+async function updateAllUsersLocations() {
+    try {
+        const response = await fetch('/api/all-users-locations/');
+        const data = await response.json();
+        console.log("API Response Data:", data); // Debugging line
+    
+        if (data.status === 'success') {
+            data.users.forEach(user => {
+                const markerId = `user-${user.id}`;
+                const markerLatLng = [user.location.latitude, user.location.longitude];
+    
+                // Create or update marker
+                if (userMarkers[markerId]) {
+                    userMarkers[markerId].setLatLng(markerLatLng);
                 } else {
-                    userMarker = L.marker([latitude, longitude])
-                        .addTo(map)
-                        .bindPopup('Your current location')
-                        .openPopup();
+                    const marker = L.marker(markerLatLng).addTo(map);
+                    marker.bindPopup(createPopupContent(user)); // Bind popup with user info
+                    userMarkers[markerId] = marker;
                 }
-
-                // Store location in cookies
-                document.cookie = `user_latitude=${latitude}; path=/; max-age=3600`;
-                document.cookie = `user_longitude=${longitude}; path=/; max-age=3600`;
-
-                // Update location in database (if needed)
-                updateVolunteerLocation(latitude, longitude);
-            },
-            function(error) {
-                console.error("Error getting location:", error);
-                alert("Unable to get your location. Please enable location services.");
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
+            });
+    
+            // Auto-adjust map bounds to fit all markers
+            const allMarkers = Object.values(userMarkers).map(marker => marker.getLatLng());
+            if (allMarkers.length) {
+                const bounds = L.latLngBounds(allMarkers);
+                map.fitBounds(bounds, { padding: [50, 50] });
             }
-        );
-    } else {
-        alert("Geolocation is not supported by this browser.");
+        }
+    } catch (error) {
+        console.error('Error updating user locations:', error);
+    }
+}
+    
+async function watchLocation() {
+    try {
+        // Fetch the current user's info from the backend
+        const userInfoResponse = await fetch('/api/user-info/');
+        if (!userInfoResponse.ok) {
+            throw new Error('Failed to fetch user information');
+        }
+        const currentUser = await userInfoResponse.json();
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+
+                    // Update the user's location
+                    currentUser.location = { latitude, longitude };
+
+                    // Check if a marker for the current user exists
+                    if (userMarkers['current-user']) {
+                        // Update the marker's position
+                        userMarkers['current-user'].setLatLng([latitude, longitude]);
+                        userMarkers['current-user'].bindPopup(createPopupContent(currentUser));
+                    } else {
+                        // Create a new marker for the user
+                        const userMarker = L.marker([latitude, longitude]).addTo(map);
+                        userMarker.bindPopup(createPopupContent(currentUser)); // Add popup
+                        userMarkers['current-user'] = userMarker;
+                    }
+
+                    // Optionally adjust the map view to the user's location
+                    map.setView([latitude, longitude], 13);
+                },
+                (error) => {
+                    console.error('Error watching location:', error);
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            console.error('Geolocation is not supported by this browser.');
+        }
+    } catch (error) {
+        console.error('Error initializing watchLocation:', error);
     }
 }
 
-// Function to update volunteer's location in the database
-async function updateVolunteerLocation(latitude, longitude) {
-    const url = '/api/volunteer/location/update/';
-    console.log('Sending request to:', url);  // Debug log
-    try {
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
-        // Update the fetch URL to match the new URL pattern
-        const response = await fetch('/api/volunteer/location/update/', {  // Updated URL
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                latitude: latitude,
-                longitude: longitude
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update location');
-        }
-
-        const data = await response.json();
-        console.log('Location updated successfully:', data);
-    } catch (error) {
-        console.error('Error updating location:', error);
-    }
+// Helper function to create popup content
+function createPopupContent(user) {
+    console.log("User data:", user);
+    return `
+        <div>
+            <strong>Username:</strong> ${user.username}<br>
+            <strong>Phone:</strong> ${user.phone}<br>
+            <strong>Location:</strong> (${user.location.latitude}, ${user.location.longitude})<br>
+            <strong>User Type:</strong> ${user.user_type}
+        </div>
+    `;
 }
 
 // Function to get CSRF token from cookies
@@ -149,38 +169,6 @@ function getCookie(name) {
         }
     }
     return cookieValue;
-}
-
-// Watch for location changes
-function watchLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(
-            function(position) {
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-
-                // Update marker position
-                if (userMarker) {
-                    userMarker.setLatLng([latitude, longitude]);
-                }
-
-                // Update stored location
-                document.cookie = `user_latitude=${latitude}; path=/; max-age=3600`;
-                document.cookie = `user_longitude=${longitude}; path=/; max-age=3600`;
-
-                // Update location in database
-                updateVolunteerLocation(latitude, longitude);
-            },
-            function(error) {
-                console.error("Error watching location:", error);
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
-            }
-        );
-    }
 }
 
 // Initialize map when the page loads

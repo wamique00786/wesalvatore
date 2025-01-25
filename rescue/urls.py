@@ -22,7 +22,7 @@ urlpatterns = [
     path('complete-task/<int:task_id>/', views.complete_task, name='complete_task'),
     path('user/report/', views.UserReportView.as_view(), name='user_report'),
     path('volunteers/nearby/', views.NearbyVolunteersView.as_view(), name='nearby_volunteers'),
-    path('api/users-locations/', views.get_all_users_locations, name='get_all_users_locations'),
+    path('api/all-users-locations/', views.get_all_users_locations, name='get_all_users_locations'),
     path('api/save-location/', views.save_user_location, name='save_user_location'),
     path('api/user-info/', views.get_user_info, name='get_user_info'),
 ]
