@@ -1,0 +1,97 @@
+{% extends 'rescue/base.html' %}
+
+{% block content %}
+<h2>Subscription Plans</h2>
+
+<!-- Toggle buttons for monthly and annual views, centered using Bootstrap -->
+<div class="d-flex justify-content-center mb-4">
+    <div class="btn-group" role="group" aria-label="Subscription View">
+        <button type="button" class="btn btn-secondary" id="monthlyBtn">Monthly</button>
+        <button type="button" class="btn btn-secondary" id="annualBtn">Annually</button>
+    </div>
+</div>
+
+<!-- Subscription Plans -->
+<div class="row" id="subscription-plans">
+    {% for plan in plans %}
+        <div class="col-md-4 plan-card" data-plan-id="{{ plan.id }}">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ plan.plan_type|title }} Plan</h5>
+                    
+                    <!-- Description of the Plan -->
+                    {% if plan.plan_type == 'bronze' %}
+                        <p class="card-text">Ideal for basic care and emergency assistance.</p>
+                    {% elif plan.plan_type == 'silver' %}
+                        <p class="card-text">For more comprehensive care with follow-up support.</p>
+                    {% elif plan.plan_type == 'gold' %}
+                        <p class="card-text">Complete and premium care with 24/7 access to doctors.</p>
+                    {% endif %}
+                    
+                    <p class="monthly-price" data-price="{{ plan.monthly_price }}"><strong>Monthly:</strong> ₹{{ plan.monthly_price }}</p>
+                    <p class="annual-price" data-price="{{ plan.annual_price }}" style="display:none;"><strong>Annually:</strong> ₹{{ plan.annual_price }}</p>
+                    
+                    <!-- Buy button -->
+                    <a href="{% url 'buy_subscription' plan.id %}" class="btn btn-primary">Buy {{ plan.plan_type|title }}</a>
+
+                    <!-- Facilities Included for each plan (after the Buy button) -->
+                    <h6 class="mt-4">Facilities Included:</h6>
+                    {% if plan.plan_type == 'bronze' %}
+                        <ul>
+                            <li>Basic consultation with on-call doctors</li>
+                            <li>Emergency assistance</li>
+                        </ul>
+                    {% elif plan.plan_type == 'silver' %}
+                        <ul>
+                            <li>Consultation with licensed vets</li>
+                            <li>Emergency assistance and in-person visits</li>
+                            <li>Follow-up care for rescued animals</li>
+                        </ul>
+                    {% elif plan.plan_type == 'gold' %}
+                        <ul>
+                            <li>24/7 access to a dedicated team of doctors</li>
+                            <li>Emergency services and in-person visits</li>
+                            <li>Comprehensive care including surgeries and rehabilitation</li>
+                            <li>Regular health check-ups for rescued animals</li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block additional_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const monthlyBtn = document.getElementById('monthlyBtn');
+        const annualBtn = document.getElementById('annualBtn');
+        const plans = document.querySelectorAll('.plan-card');
+
+        // Show Monthly prices by default
+        monthlyBtn.classList.add('active');
+
+        monthlyBtn.addEventListener('click', function() {
+            monthlyBtn.classList.add('active');
+            annualBtn.classList.remove('active');
+
+            plans.forEach(plan => {
+                plan.querySelector('.monthly-price').style.display = 'block';
+                plan.querySelector('.annual-price').style.display = 'none';
+            });
+        });
+
+        annualBtn.addEventListener('click', function() {
+            annualBtn.classList.add('active');
+            monthlyBtn.classList.remove('active');
+
+            plans.forEach(plan => {
+                plan.querySelector('.monthly-price').style.display = 'none';
+                plan.querySelector('.annual-price').style.display = 'block';
+            });
+        });
+    });
+</script>
+{% endblock %}

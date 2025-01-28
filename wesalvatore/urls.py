@@ -10,6 +10,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),  # Ensure this line is present
     path('donation/', include('donation.urls')),
     path('adoption/', include('adoption.urls')),
+    path('subscription/', include('subscription.urls')),
     path('', include('rescue.urls')),
     # Authentication URLs
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
