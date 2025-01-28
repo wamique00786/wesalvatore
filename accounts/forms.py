@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
+from phonenumber_field.formfields import PhoneNumberField
 
 class SignUpForm(UserCreationForm):
     USER_TYPES = [
@@ -21,12 +22,14 @@ class SignUpForm(UserCreationForm):
         widget=forms.EmailInput(attrs={'class': 'form-control'}),
         label='Email Address'  # Explicit label
     )
-    mobile_number = forms.CharField(
-        max_length=15,
+    mobile_number = PhoneNumberField(
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        help_text='Enter your mobile number.',
-        label='Mobile Number'  # Explicit label
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your phone number (e.g., +91 9876543210)'
+        }),
+        help_text='Include your country code (e.g., +91 for India)',
+        label='Mobile Number'
     )
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control'}),

@@ -1,6 +1,11 @@
 {% extends 'rescue/base.html' %}
 {% load static %}
 
+{% block extra_head %}
+<!-- Include intl-tel-input CSS -->
+<link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
@@ -42,7 +47,7 @@
                     <!-- Mobile Number field -->
                     <div class="mb-3">
                         <label for="mobile_number" class="form-label">Mobile Number</label>
-                        <input type="text" name="mobile_number" class="form-control" required id="mobile_number">
+                        <input id="mobile_number" type="tel" name="mobile_number" class="form-control" required>
                         {% if form.mobile_number.errors %}
                             <div class="text-danger">
                                 {{ form.mobile_number.errors }}
@@ -80,7 +85,7 @@
                             <option value="VOLUNTEER" title="Volunteer: Can assist in animal rescue operations.">Volunteer</option>
                             <option value="ADMIN" title="Administrator: Has full access to manage the system.">Administrator</option>
                         </select>
-                        <i class="fas fa-chevron-down position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);"></i>
+                        <i class="fas fa-chevron-down position-absolute" style="right: 10px; top: 55%; transform: translateY(-50%);"></i>
                         {% if form.user_type.errors %}
                             <div class="text-danger">
                                 {{ form.user_type.errors }}
@@ -99,4 +104,27 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block additional_js %}
+<!-- Include intl-tel-input JS -->
+<script src="{% static 'js/intlTelInput.min.js' %}"></script>
+<script src="{% static 'js/utils.js' %}"></script>
+
+<script>
+    // Initialize intl-tel-input
+    var input = document.querySelector("#mobile_number");
+    var iti = intlTelInput(input, {
+        initialCountry: "IN",  // Default country: India
+        separateDialCode: true,  // Show the dial code separately
+        preferredCountries: ["IN", "US", "GB"],  // Preferred countries list
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"  // For formatting and validation
+    });
+
+    // Update input value with full number (including country code) before submitting
+    var form = document.querySelector("form");
+    form.addEventListener("submit", function () {
+        input.value = iti.getNumber();  // Get the full number in international format
+    });
+</script>
 {% endblock %}

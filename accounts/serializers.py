@@ -1,7 +1,8 @@
 # rescue/serializers.py
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import UserProfile  # Import your UserProfile model if you have one
+from .models import UserProfile 
+from phonenumber_field.serializerfields import PhoneNumberField
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,7 +64,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         ('VOLUNTEER', 'Volunteer'),
         ('ADMIN', 'Administrator')
     ])
-    mobile_number = serializers.CharField(max_length=15)
+    mobile_number = PhoneNumberField()
 
     class Meta:
         model = User

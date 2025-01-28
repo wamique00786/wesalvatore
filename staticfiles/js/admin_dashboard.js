@@ -1,10 +1,21 @@
+let map;
+
 function viewVolunteerMap(username, phone, latitude, longitude, userType) {
+    console.log("Username:", username); // Debugging line
+    console.log("Phone:", phone); // Debugging line
+    console.log("Latitude:", latitude); // Debugging line
+    console.log("Longitude:", longitude); // Debugging line
+    console.log("User Type:", userType); // Debugging line
     // Show the map container
     const mapContainer = document.getElementById('map');
     mapContainer.style.display = 'block';
 
+    if (map) {
+        map.remove(); // Remove the existing map instance
+    }
+
     // Initialize the map
-    const map = L.map('map').setView([latitude, longitude], 13); // Center the map on the volunteer's location
+    map = L.map('map').setView([latitude, longitude], 13); // Center the map on the volunteer's location
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
