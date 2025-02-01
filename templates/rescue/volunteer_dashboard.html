@@ -100,11 +100,19 @@ async function updateAllUsersLocations() {
 async function watchLocation() {
     try {
         // Fetch the current user's info from the backend
-        const userInfoResponse = await fetch('/api/user-info/');
+        const userInfoResponse = await fetch('/api/user-info/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'), // Assuming you have the CSRF token
+            },
+        });
+        
         if (!userInfoResponse.ok) {
+            console.log('Failed to fetch user information:', userInfoResponse.status);
             throw new Error('Failed to fetch user information');
         }
         const currentUser = await userInfoResponse.json();
+        console.log('User info:', currentUser);
 
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(

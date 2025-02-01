@@ -319,7 +319,7 @@ class UserReportView(generics.CreateAPIView):
 def home(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return redirect('login')
+    return render(request, 'landing_page.html')
 
 # Add these decorator functions
 def is_admin(user):

@@ -19,104 +19,116 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
-                <i class="fas fa-paw me-2"></i>
-                Wesalvatore
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-                               href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'animal_list' %}active{% endif %}" 
-                               href="{% url 'animal_list' %}">
-                                <i class="fas fa-list me-1"></i> Animals
-                            </a>
-                        </li>
-                        
-                        <!-- New Links -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'adopt_animal' %}active{% endif %}" 
-                               href="{% url 'adopt_animal' %}">
-                                <i class="fas fa-heart me-1"></i> Adopt Animal
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" 
-                               href="{% url 'donations' %}">
-                                <i class="fas fa-donate me-1"></i> Donations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'ngo_list' %}active{% endif %}" 
-                               href="{% url 'ngo_list' %}">
-                                <i class="fas fa-hands-helping me-1"></i> NGO's
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'rescued_animals_today' %}active{% endif %}" 
-                               href="{% url 'rescued_animals_today' %}">
-                                <i class="fas fa-paw me-1"></i>  <!-- Add your desired icon here -->
-                                Total Animals Rescued Today: {{ total_rescued_today }}
-                            </a>  <!-- Updated link -->
-                        </li>
-                        <!-- New 'Get Premium' link -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'subscription_plans' %}active{% endif %}" 
-                                href="{% url 'subscription_plans' %}">
-                                <i class="fas fa-crown me-1"></i> Get Premium
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>
-                                Welcome, {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                {% if user.is_staff %}
-                                    <li>
-                                        <a class="dropdown-item" href="{% url 'admin:index' %}">
-                                            <i class="fas fa-cog me-1"></i> Admin Panel
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                {% endif %}
+    <!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container">
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
+            <i class="fas fa-paw me-2"></i> Wesalvatore
+        </a>
+
+        <!-- Language Selector -->
+        <div id="google_translate_element" class="d-inline-block"></div>
+        <select id="languageSelector" class="form-select form-select-sm d-inline-block" style="width: auto;">
+            <option value="">🌐 Select Language</option>
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <!-- Add other languages -->
+        </select>
+
+        <!-- Navbar Toggler (Mobile) -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'animal_list' %}active{% endif %}" href="{% url 'animal_list' %}">
+                            <i class="fas fa-list me-1"></i> Animals
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'adopt_animal' %}active{% endif %}" href="{% url 'adopt_animal' %}">
+                            <i class="fas fa-heart me-1"></i> Adopt
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" href="{% url 'donations' %}">
+                            <i class="fas fa-donate me-1"></i> Donations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'ngo_list' %}active{% endif %}" href="{% url 'ngo_list' %}">
+                            <i class="fas fa-hands-helping me-1"></i> NGOs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'rescued_animals_today' %}active{% endif %}" href="{% url 'rescued_animals_today' %}">
+                            <i class="fas fa-paw me-1"></i> Rescued Today: {{ total_rescued_today }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'subscription_plans' %}active{% endif %}" href="{% url 'subscription_plans' %}">
+                            <i class="fas fa-crown me-1"></i> Get Premium
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <!-- Search Bar -->
+            <form class="d-flex me-3">
+                <input class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-light btn-sm" type="submit"><i class="fas fa-search"></i></button>
+            </form>
+
+            <!-- User Dropdown -->
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> Welcome, {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            {% if user.is_staff %}
                                 <li>
-                                    <form method="post" action="{% url 'logout' %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-sign-out-alt me-1"></i> Logout
-                                        </button>
-                                    </form>
+                                    <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                        <i class="fas fa-cog me-1"></i> Admin Panel
+                                    </a>
                                 </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt me-1"></i> Login
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+                                <li><hr class="dropdown-divider"></li>
+                            {% endif %}
+                            <li>
+                                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
+    </div>
+</nav>
+
 
     <!-- Messages -->
     {% if messages %}
@@ -148,6 +160,50 @@
     
     <!-- Custom JavaScript -->
     <script src="{% static 'js/alert.js' %}" defer></script> <!-- Include the new alert.js -->
+    
+    <!-- Translate JavaScript -->
+    <script>
+        function googleTranslateElementInit() {
+            console.log('Google Translate initialized'); // Add this line
+            try {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'af,ar,bn,zh-CN,zh-TW,nl,en,fr,de,hi,id,it,ja,ko,ml,mr,pa,pt,ru,es,ta,te,th,tr,ur,vi',
+                    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                    autoDisplay: false
+                }, 'google_translate_element');
+            } catch (error) {
+                console.warn('Google Translate initialization error:', error);
+            }
+        }
+    
+        function changeLanguage() {
+            var language = document.getElementById("languageSelector").value;
+            if (language) {
+                var selectElement = document.querySelector(".goog-te-combo");
+                if (selectElement) {
+                    selectElement.value = language;
+                    selectElement.dispatchEvent(new Event('change'));
+                } else {
+                    console.warn('Google Translate dropdown not found. Retrying...');
+                    // Retry after a short delay
+                    setTimeout(changeLanguage, 500); // Retry after 500ms
+                }
+            }
+        }
+    
+        document.getElementById("languageSelector").addEventListener("change", changeLanguage);
+    
+        // Hide Google branding
+        setInterval(function() {
+            var gadget = document.querySelector(".goog-te-gadget");
+            if (gadget) {
+                gadget.style.display = "none";
+            }
+        }, 1000);
+    </script>
+    
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>    
 
     {% block additional_js %}
     {% endblock %}

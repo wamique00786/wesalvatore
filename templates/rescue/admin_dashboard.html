@@ -92,13 +92,33 @@
                             <td>{{ volunteer.user.email }}</td>
                             <td>{{ volunteer.location|default:"Not specified" }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-info" onclick="event.preventDefault(); 
-                                    viewVolunteerMap('{{ volunteer.user.username|escapejs }}', '{{ volunteer.user.phone|default:"Not provided"|escapejs }}', 
-                                    {{ volunteer.location.y|default:0 }}, {{ volunteer.location.x|default:0 }}, 
-                                    '{{ volunteer.user_type|escapejs }}')">View</a>
+                                {% if volunteer.location.y and volunteer.location.x %}
+                                    <a href="#" class="btn btn-sm btn-info" onclick="event.preventDefault(); 
+                                        viewVolunteerMap('{{ volunteer.user.username|escapejs }}', '{{ volunteer.user.phone|default:"Not provided"|escapejs }}', 
+                                        {{ volunteer.location.y }}, {{ volunteer.location.x }}, 
+                                        '{{ volunteer.user_type|escapejs }}')">View</a>
+                                {% else %}
+                                    <span class="text-muted">No location</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
+
+                        <script>
+                            function viewVolunteerMap(username, phone, latitude, longitude, userType) {
+                                console.log("Button clicked for:", username, latitude, longitude);
+                                if (latitude && longitude && !isNaN(latitude) && !isNaN(longitude)) {
+                                    // Construct the Google Maps URL for the coordinates
+                                    var mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                        
+                                    // Open Google Maps in a new window
+                                    window.open(mapUrl, '_blank');
+                                } else {
+                                    alert("Location not available for " + username);
+                                }
+                            }
+                        </script>
+
                     </tbody>
                 </table>
             </div>

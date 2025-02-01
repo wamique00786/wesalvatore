@@ -28,8 +28,12 @@
                         <p class="card-text">Complete and premium care with 24/7 access to doctors.</p>
                     {% endif %}
                     
-                    <p class="monthly-price" data-price="{{ plan.monthly_price }}"><strong>Monthly:</strong> ₹{{ plan.monthly_price }}</p>
-                    <p class="annual-price" data-price="{{ plan.annual_price }}" style="display:none;"><strong>Annually:</strong> ₹{{ plan.annual_price }}</p>
+                    <p class="monthly-price" data-price="{{ plan.monthly_price }}">
+                        <strong>Monthly:</strong> <span class="currency-symbol"></span>{{ plan.monthly_price }}
+                    </p>
+                    <p class="annual-price" data-price="{{ plan.annual_price }}" style="display:none;">
+                        <strong>Annually:</strong> <span class="currency-symbol"></span>{{ plan.annual_price }}
+                    </p>
                     
                     <!-- Buy button -->
                     <a href="{% url 'buy_subscription' plan.id %}" class="btn btn-primary">Buy {{ plan.plan_type|title }}</a>
@@ -65,29 +69,77 @@
 
 {% block additional_js %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const monthlyBtn = document.getElementById('monthlyBtn');
-        const annualBtn = document.getElementById('annualBtn');
-        const plans = document.querySelectorAll('.plan-card');
-
-        // Show Monthly prices by default
+    document.addEventListener("DOMContentLoaded", async function () {
+        const currencyMap = {
+            "IN": "₹", "US": "$", "GB": "£", "EU": "€", "JP": "¥", "AU": "A$", "CA": "C$", "KR": "₩"
+        };
+    
+        async function getCountryFromIP() {
+            try {
+                const response = await fetch('https://ipwhois.app/json/');
+                const data = await response.json();
+                return data.country_code || 'US';
+            } catch (error) {
+                console.error("Error fetching country:", error);
+                return 'US';
+            }
+        }
+    
+        async function getExchangeRates() {
+            try {
+                const response = await fetch('/subscription/get-exchange-rate/');
+                const data = await response.json();
+                return data.rates || {};
+            } catch (error) {
+                console.error("Error fetching exchange rates:", error);
+                return {};
+            }
+        }
+    
+        async function updatePrices() {
+            const country = await getCountryFromIP();
+            const exchangeRates = await getExchangeRates();
+        
+            if (!exchangeRates || Object.keys(exchangeRates).length === 0) {
+                console.error("Exchange rates unavailable.");
+                return;
+            }
+        
+            const currencySymbol = currencyMap[country] || "$";
+            const exchangeRate = exchangeRates[country] || 1;
+            const inrRate = exchangeRates["INR"];
+        
+            document.querySelectorAll(".plan-card").forEach((plan) => {
+                const monthlyINR = parseFloat(plan.querySelector(".monthly-price").getAttribute("data-price"));
+                const annualINR = parseFloat(plan.querySelector(".annual-price").getAttribute("data-price"));
+        
+                const convertedMonthly = ((monthlyINR / inrRate) * exchangeRate).toFixed(2);
+                const convertedAnnual = ((annualINR / inrRate) * exchangeRate).toFixed(2);
+        
+                plan.querySelector(".monthly-price").innerHTML = `<strong>Monthly:</strong> ${currencySymbol}${convertedMonthly}`;
+                plan.querySelector(".annual-price").innerHTML = `<strong>Annually:</strong> ${currencySymbol}${convertedAnnual}`;
+            });
+        }
+    
+        await updatePrices();
+    
         monthlyBtn.classList.add('active');
-
+    
         monthlyBtn.addEventListener('click', function() {
             monthlyBtn.classList.add('active');
             annualBtn.classList.remove('active');
-
-            plans.forEach(plan => {
+    
+            document.querySelectorAll('.plan-card').forEach(plan => {
                 plan.querySelector('.monthly-price').style.display = 'block';
                 plan.querySelector('.annual-price').style.display = 'none';
             });
         });
-
+    
         annualBtn.addEventListener('click', function() {
             annualBtn.classList.add('active');
             monthlyBtn.classList.remove('active');
-
-            plans.forEach(plan => {
+    
+            document.querySelectorAll('.plan-card').forEach(plan => {
                 plan.querySelector('.monthly-price').style.display = 'none';
                 plan.querySelector('.annual-price').style.display = 'block';
             });

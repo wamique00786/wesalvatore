@@ -1,0 +1,145 @@
+{% extends 'rescue/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<!-- Additional CSS for animations and landing page -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="{% static 'css/landing.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="slideshow">
+        <img src="{% static 'images/hero1.gif' %}" alt="Hero Image 1" class="slide">
+        <img src="{% static 'images/hero2.gif' %}" alt="Hero Image 2" class="slide">
+        <img src="{% static 'images/hero3.gif' %}" alt="Hero Image 3" class="slide">
+        <img src="{% static 'images/hero4.gif' %}" alt="Hero Image 4" class="slide">
+    </div>
+    <div class="container">
+        <h1 class="animate__animated animate__fadeInDown">Welcome to Wesalvatore</h1>
+        <p class="animate__animated animate__fadeInUp">Your trusted partner in animal rescue and management.</p>
+        <a href="#who-we-are" class="btn btn-primary btn-lg cta-button animate__animated animate__fadeIn">Learn More</a>
+    </div>
+</section>
+
+<!-- Who We Are Section -->
+<section id="who-we-are" class="who-we-are-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="slideshow" style="border: 2px solid red;">
+                    <img src="{% static 'images/who1.gif' %}" alt="Who We Are Image 1" class="slide">
+                    <img src="{% static 'images/who2.gif' %}" alt="Who We Are Image 2" class="slide">
+                    <img src="{% static 'images/who3.gif' %}" alt="Who We Are Image 3" class="slide">
+                    <img src="{% static 'images/who4.gif' %}" alt="Who We Are Image 4" class="slide">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 class="animate__animated animate__fadeInRight">Who We Are</h2>
+                <p class="animate__animated animate__fadeInRight">Wesalvatore is a dedicated team of animal lovers, rescuers, and advocates committed to saving and improving the lives of animals in need. Our mission is to provide a safe haven for animals, connect them with loving homes, and collaborate with NGOs to create a better world for all creatures.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What We Do Section -->
+<section id="what-we-do" class="what-we-do-section">
+    <div class="container">
+        <h2 class="text-center animate__animated animate__fadeInDown">What We Do</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="feature-card animate__animated animate__fadeInLeft">
+                    <div class="card-icon">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <h3>Animal Rescue</h3>
+                    <p>We rescue animals from dangerous situations, provide medical care, and ensure they are safe and healthy.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card animate__animated animate__fadeInUp">
+                    <div class="card-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Adoption</h3>
+                    <p>We match rescued animals with loving families, ensuring they find forever homes.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card animate__animated animate__fadeInRight">
+                    <div class="card-icon">
+                        <i class="fas fa-hands-helping"></i>
+                    </div>
+                    <h3>NGO Collaboration</h3>
+                    <p>We partner with NGOs to amplify our impact and create a network of support for animals in need.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Scanner Section -->
+<section class="scanner-section">
+    <div class="container">
+        <h2>Download Our Mobile App</h2>
+        <p>Scan the QR code below to download the Wesalvatore mobile app.</p>
+        <img src="{% static 'images/qr-code.png' %}" alt="QR Code" class="animate__animated animate__zoomIn">
+        <div class="progress-container">
+            <h3>Animals Rescued This Month</h3>
+            <div class="progress-bar">
+                <div class="progress" data-progress="75"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block additional_js %}
+<!-- Additional JavaScript for animations -->
+<script src="{% static 'js/gsap.min.js' %}"></script>
+<script src="{% static 'js/ScrollTrigger.min.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        gsap.from("h1", { duration: 1, x: -100, opacity: 0 });
+        const progress = document.querySelector(".progress");
+        const progressValue = progress.getAttribute("data-progress");
+        progress.style.width = `${progressValue}%`;
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate Who We Are Section
+        gsap.from('.who-we-are-section img', {
+            scrollTrigger: {
+                trigger: '.who-we-are-section',
+                start: 'top 80%',
+            },
+            x: -100,
+            opacity: 0,
+            duration: 1,
+        });
+
+        gsap.from('.who-we-are-section h2, .who-we-are-section p', {
+            scrollTrigger: {
+                trigger: '.who-we-are-section',
+                start: 'top 80%',
+            },
+            x: 100,
+            opacity: 0,
+            duration: 1,
+        });
+
+        // Animate What We Do Section
+        gsap.from('.feature-card', {
+            scrollTrigger: {
+                trigger: '.what-we-do-section',
+                start: 'top 80%',
+            },
+            y: 50,
+            opacity: 0,
+            stagger: 0.3,
+            duration: 1,
+        });
+    });
+</script>
+{% endblock %}

@@ -93,7 +93,7 @@ function initMap() {
 
     // Start watching location
     watchLocation();
-    setInterval(updateAllUsers, 10000); // Update every 10 seconds
+    setInterval(updateUserInfo, 10000); // Update every 10 seconds
 }
 
 async function updateUserInfo(latitude, longitude) {

@@ -1,0 +1,268 @@
+/* Hero Section */
+.hero-section {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #333; /* Dark color for text */
+    overflow: hidden;
+}
+
+.slideshow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Place the slideshow behind the content */
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: slideshow 20s infinite; /* 4 images * 5 seconds each */
+}
+
+.slide:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.slide:nth-child(2) {
+    animation-delay: 5s;
+}
+
+.slide:nth-child(3) {
+    animation-delay: 10s;
+}
+
+.slide:nth-child(4) {
+    animation-delay: 15s;
+}
+
+@keyframes slideshow {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    25% {
+        opacity: 1;
+    }
+    35% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.hero-section h1 {
+    font-size: 4rem;
+    font-weight: bold;
+    animation: fadeInDown 2s;
+}
+
+.hero-section p {
+    font-size: 1.5rem;
+    animation: fadeInUp 2s;
+}
+
+.cta-button {
+    margin-top: 20px;
+    animation: fadeIn 3s;
+}
+
+/* Who We Are Section */
+.who-we-are-section {
+    padding: 60px 0;
+    background: #fff;
+}
+
+.who-we-are-section .slideshow {
+    position: relative;
+    width: 100%;
+    height: 400px; /* Adjust height as needed */
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.who-we-are-section .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: slideshow 20s infinite; /* 4 images * 5 seconds each */
+}
+
+.who-we-are-section .slide:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.who-we-are-section .slide:nth-child(2) {
+    animation-delay: 5s;
+}
+
+.who-we-are-section .slide:nth-child(3) {
+    animation-delay: 10s;
+}
+
+.who-we-are-section .slide:nth-child(4) {
+    animation-delay: 15s;
+}
+
+@keyframes slideshow {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    25% {
+        opacity: 1;
+    }
+    35% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.who-we-are-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #007bff; /* Blue color for heading */
+}
+
+.who-we-are-section p {
+    font-size: 1.2rem;
+    color: #333; /* Dark gray for paragraph text */
+}
+
+/* What We Do Section */
+.what-we-do-section {
+    padding: 60px 0;
+    background: #f8f9fa; /* Light gray background */
+}
+
+.what-we-do-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: #007bff; /* Blue color for heading */
+}
+
+/* Interactive Animal Cards */
+.feature-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card-icon {
+    font-size: 3rem;
+    color: #007bff; /* Blue color for icons */
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .card-icon {
+    transform: scale(1.2); /* Enlarge icon on hover */
+}
+
+/* Scanner Section */
+.scanner-section {
+    background: #007bff;
+    color: #fff;
+    padding: 60px 0;
+    text-align: center;
+}
+
+.scanner-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.scanner-section p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.scanner-section img {
+    max-width: 200px;
+    margin: 20px auto;
+    display: block;
+}
+
+.progress-container {
+    width: 80%;
+    margin: 40px auto;
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e0e0e0; /* Light gray background */
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    width: 0;
+    background: #007bff; /* Blue color for progress bar */
+    border-radius: 10px;
+    transition: width 2s ease;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
