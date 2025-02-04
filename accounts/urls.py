@@ -10,8 +10,9 @@ urlpatterns = [
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),  # Password reset done
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),  # Password reset confirm
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),  # Password reset complete
-    path('signup/api', SignUpView.as_view(), name='signup_api'),
-    path('login/api/', LoginView.as_view(), name='login_api'),  # Login API
-    path('password_reset/api/', PasswordResetRequestView.as_view(), name='password_reset_api'),
-    
+    path('api/accounts/signup/', SignUpView.as_view(), name='signup_api'),
+    path('api/accounts/login/', LoginView.as_view(), name='login_api'),
+    path('api/accounts/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_api'),
+    path('api/accounts/user/', views.UserReportView.as_view(), name='user_report'),
+    path('volunteers/nearby/', views.NearbyVolunteersView.as_view(), name='nearby_volunteers'),
 ]

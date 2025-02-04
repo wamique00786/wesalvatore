@@ -19,7 +19,7 @@ class ContentSecurityPolicyMiddleware:
             "object-src 'none'; "
             "connect-src 'self' https://nominatim.openstreetmap.org "
             "https://translate.googleapis.com https://translate-pa.googleapis.com "
-            "https://api.exchangerate-api.com https://ipwhois.app; "  # ✅ Added APIs here
+            "https://ipwhois.app http://ip-api.com; "  # ✅ Added APIs here
         )
 
         return response

@@ -19,116 +19,112 @@
 </head>
 <body>
     <!-- Navigation -->
-    <!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-    <div class="container">
-        <!-- Brand -->
-        <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
-            <i class="fas fa-paw me-2"></i> Wesalvatore
-        </a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <!-- Brand -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
+                <i class="fas fa-paw me-2"></i> Wesalvatore
+            </a>
 
-        <!-- Language Selector -->
-        <div id="google_translate_element" class="d-inline-block"></div>
-        <select id="languageSelector" class="form-select form-select-sm d-inline-block" style="width: auto;">
-            <option value="">🌐 Select Language</option>
-            <option value="en">English</option>
-            <option value="hi">Hindi</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <!-- Add other languages -->
-        </select>
+            <!-- Language Selector -->
+            <div id="google_translate_element" class="d-inline-block"></div>
 
-        <!-- Navbar Toggler (Mobile) -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <!-- Navbar Toggler (Mobile) -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <!-- Navbar Items -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
-                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'animal_list' %}active{% endif %}" href="{% url 'animal_list' %}">
-                            <i class="fas fa-list me-1"></i> Animals
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'adopt_animal' %}active{% endif %}" href="{% url 'adopt_animal' %}">
-                            <i class="fas fa-heart me-1"></i> Adopt
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" href="{% url 'donations' %}">
-                            <i class="fas fa-donate me-1"></i> Donations
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'ngo_list' %}active{% endif %}" href="{% url 'ngo_list' %}">
-                            <i class="fas fa-hands-helping me-1"></i> NGOs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'rescued_animals_today' %}active{% endif %}" href="{% url 'rescued_animals_today' %}">
-                            <i class="fas fa-paw me-1"></i> Rescued Today: {{ total_rescued_today }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'subscription_plans' %}active{% endif %}" href="{% url 'subscription_plans' %}">
-                            <i class="fas fa-crown me-1"></i> Get Premium
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
+            <!-- Navbar Items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'animal_list' %}active{% endif %}" href="{% url 'animal_list' %}">
+                                <i class="fas fa-list me-1"></i> Animals
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'adopt_animal' %}active{% endif %}" href="{% url 'adopt_animal' %}">
+                                <i class="fas fa-heart me-1"></i> Adopt
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" href="{% url 'donations' %}">
+                                <i class="fas fa-donate me-1"></i> Donations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'ngo_list' %}active{% endif %}" href="{% url 'ngo_list' %}">
+                                <i class="fas fa-hands-helping me-1"></i> NGOs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'rescued_animals_today' %}active{% endif %}" href="{% url 'rescued_animals_today' %}">
+                                <i class="fas fa-paw me-1"></i> Rescued Today: {{ total_rescued_today }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'subscription_plans' %}active{% endif %}" href="{% url 'subscription_plans' %}">
+                                <i class="fas fa-crown me-1"></i> Get Premium
+                            </a>
+                        </li>
+                        <!-- Session Timeout Countdown -->
+                        <li class="nav-item">
+                            <span class="nav-link">
+                                <i class="fas fa-clock me-1"></i> Session expires in: <span id="countdown">05:00</span>
+                            </span>
+                        </li>
+                    {% endif %}
+                </ul>
 
-            <!-- Search Bar -->
-            <form class="d-flex me-3">
-                <input class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-light btn-sm" type="submit"><i class="fas fa-search"></i></button>
-            </form>
+                <!-- Search Bar -->
+                <form class="d-flex me-3">
+                    <input class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-light btn-sm" type="submit"><i class="fas fa-search"></i></button>
+                </form>
 
-            <!-- User Dropdown -->
-            <ul class="navbar-nav">
-                {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle me-1"></i> Welcome, {{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            {% if user.is_staff %}
+                <!-- User Dropdown -->
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i> Welcome, {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                {% if user.is_staff %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                            <i class="fas fa-cog me-1"></i> Admin Panel
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                {% endif %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'admin:index' %}">
-                                        <i class="fas fa-cog me-1"></i> Admin Panel
-                                    </a>
+                                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                        </button>
+                                    </form>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
-                            {% endif %}
-                            <li>
-                                <form method="post" action="{% url 'logout' %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt me-1"></i> Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">
-                            <i class="fas fa-sign-in-alt me-1"></i> Login
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
-
+    </nav>
 
     <!-- Messages -->
     {% if messages %}
@@ -160,6 +156,28 @@
     
     <!-- Custom JavaScript -->
     <script src="{% static 'js/alert.js' %}" defer></script> <!-- Include the new alert.js -->
+
+    <!-- Session Timeout Countdown Script -->
+    <script>
+        let timeLeft = 300; // 5 minutes in seconds
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateCountdown() {
+            document.getElementById('countdown').textContent = formatTime(timeLeft);
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                window.location.href = "{% url 'login' %}"; // Redirect to logout
+            }
+            timeLeft--;
+        }
+
+        const timer = setInterval(updateCountdown, 1000);
+    </script>
     
     <!-- Translate JavaScript -->
     <script>
@@ -202,7 +220,7 @@
             }
         }, 1000);
     </script>
-    
+
     <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>    
 
     {% block additional_js %}

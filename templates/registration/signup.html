@@ -112,19 +112,41 @@
 <script src="{% static 'js/utils.js' %}"></script>
 
 <script>
-    // Initialize intl-tel-input
-    var input = document.querySelector("#mobile_number");
-    var iti = intlTelInput(input, {
-        initialCountry: "IN",  // Default country: India
-        separateDialCode: true,  // Show the dial code separately
-        preferredCountries: ["IN", "US", "GB"],  // Preferred countries list
-        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"  // For formatting and validation
-    });
+    document.addEventListener("DOMContentLoaded", function () {
+        var input = document.querySelector("#mobile_number");
 
-    // Update input value with full number (including country code) before submitting
-    var form = document.querySelector("form");
-    form.addEventListener("submit", function () {
-        input.value = iti.getNumber();  // Get the full number in international format
+        if (input) {
+            var iti = window.intlTelInput(input, {
+                initialCountry: "IN",  // Default country: India
+                separateDialCode: true,  // Show the dial code separately
+                preferredCountries: ["IN", "US", "GB"],  // Preferred countries list
+                nationalMode: true, // Ensure input box only contains the local number (not +91)
+                autoPlaceholder: "off",  // Prevents showing unwanted placeholders
+                formatOnDisplay: false, // Ensures clean user input
+                utilsScript: "{% static 'js/utils.js' %}"  // Ensure utils.js is loaded properly
+            });
+
+            // **Debug: Log the instance after initialization**
+            console.log("IntlTelInput instance:", iti);
+
+            // **Force apply nationalMode after 1 second**
+            ssetTimeout(function () {
+                console.log("nationalMode:", iti.options.nationalMode);  // Should print `true`
+            }, 1000);
+
+            // Ensure the full number (with country code) is submitted
+            document.querySelector("form").addEventListener("submit", function (event) {
+                var fullNumber = iti.getNumber();  // Get the full international format
+                if (!iti.isValidNumber()) {
+                    event.preventDefault();  // Prevent form submission if invalid
+                    alert("Please enter a valid phone number.");
+                    return false;
+                }
+                input.value = fullNumber;  // Set formatted number before submitting
+            });
+        } else {
+            console.error("Error: #mobile_number input field not found!");
+        }
     });
 </script>
 {% endblock %}

@@ -24,15 +24,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'rescue',
     'django.contrib.gis',
     'csp',
+    'accounts',
+    'rescue',
     'donation',
     'adoption',
-    'accounts',
+    'subscription',
+    'session_timeout',
     'rest_framework',
     'rest_framework.authtoken',
-    'subscription',
 ]
 
 MIDDLEWARE = [
@@ -45,6 +46,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'csp.middleware.CSPMiddleware',
     'rescue.csp_middleware.ContentSecurityPolicyMiddleware',
+    'session_timeout.middleware.SessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = "wesalvatore.urls"
@@ -157,3 +159,6 @@ CSRF_TRUSTED_ORIGINS = [
        'https://65ca-2409-40e3-3048-adbb-59d0-cec7-fcf2-7065.ngrok-free.app',
        # Add any other trusted origins here
    ]
+
+SESSION_COOKIE_AGE = 300  # 5 minutes in seconds
+SESSION_SAVE_EVERY_REQUEST = True  # Reset the session expiry time on every request
