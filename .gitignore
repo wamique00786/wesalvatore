@@ -7,5 +7,10 @@ venv/
 __pycache__/
 
 # Ignore documentation
-
 docs/
+
+# Ignore migrations
+*/migrations/*
+
+# Ignore Python bytecode files
+*.pyc

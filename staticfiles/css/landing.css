@@ -93,7 +93,6 @@
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border: 2px solid red;
 }
 
 .who-we-are-section .slide {
@@ -105,7 +104,6 @@
     object-fit: cover;
     opacity: 0;
     animation: slideshow 20s infinite; /* 4 images * 5 seconds each */
-    border: 2px solid blue;
 }
 
 .who-we-are-section .slide:nth-child(1) {
