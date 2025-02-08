@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'adoption',
     'subscription',
     'session_timeout',
+    'geolocation',
+    'leaflet',
     'rest_framework',
     'rest_framework.authtoken',
 ]
@@ -75,7 +77,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "wesalvatore.wsgi.application"
 
 # Database
-DATABASES = {
+
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'NAME': os.getenv("DATABASE_NAME"),
@@ -87,6 +90,17 @@ DATABASES = {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         }
+    }
+}'''
+
+DATABASES = {
+    'default': {  # PostgreSQL with PostGIS (for GIS data)
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv("DATABASE_NAME"),
+        'USER': os.getenv("DATABASE_USER"),
+        'PASSWORD': os.getenv("DATABASE_PASSWORD"),
+        'HOST': os.getenv("DATABASE_HOST"),
+        'PORT': os.getenv("DATABASE_PORT")
     }
 }
 
@@ -156,7 +170,7 @@ REST_FRAMEWORK = {
 #CSP_CONNECT_SRC = ["'self'", 'https://nominatim.openstreetmap.org']
 
 CSRF_TRUSTED_ORIGINS = [
-       'https://65ca-2409-40e3-3048-adbb-59d0-cec7-fcf2-7065.ngrok-free.app',
+       'https://af33-2409-40e3-3c8-837b-9dec-c2ad-edad-4414.ngrok-free.app',
        # Add any other trusted origins here
    ]
 

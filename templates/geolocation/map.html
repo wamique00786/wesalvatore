@@ -1,0 +1,50 @@
+{% extends 'rescue/base.html' %}
+{% load static %}
+
+{% block content %}
+<div id="map" style="height: 600px; width: 100%;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+    // Initialize map
+    var map = L.map('map').setView([{{ user_location.latitude|default:0 }}, {{ user_location.longitude|default:0 }}], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Get user location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                
+                // Send to server
+                fetch("{% url 'save_location' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: `latitude=${lat}&longitude=${lng}`
+                });
+
+                // Add marker
+                L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup('Your Location')
+                    .openPopup();
+                
+                map.setView([lat, lng], 13);
+            },
+            function(error) {
+                console.error("Error getting location:", error);
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+</script>
+{% endblock %}
