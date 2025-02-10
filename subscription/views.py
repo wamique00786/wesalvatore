@@ -2,7 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from .models import SubscriptionPlan
 import json
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def subscription_plans(request):
     """ Fetch all subscription plans and send them to the frontend """
     plans = SubscriptionPlan.objects.all()

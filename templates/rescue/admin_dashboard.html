@@ -1,10 +1,10 @@
-<!-- templates/rescue/admin_dashboard.html -->
 {% extends 'rescue/base.html' %}
 {% load static %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,8 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Total Animals</h5>
-                    <h3 class="card-text">{{ total_animals }}</h3>
+                    <canvas id="totalAnimalsChart"></canvas> <!-- Canvas for the chart -->
+                    <div id="totalAnimalsValue" data-value="{{ total_animals }}"></div> <!-- Hidden div for data -->
                 </div>
             </div>
         </div>
@@ -23,7 +24,8 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Under Treatment</h5>
-                    <h3 class="card-text">{{ under_treatment }}</h3>
+                    <canvas id="underTreatmentChart"></canvas> <!-- Canvas for the chart -->
+                    <div id="underTreatmentValue" data-value="{{ under_treatment }}"></div> <!-- Hidden div for data -->
                 </div>
             </div>
         </div>
@@ -31,7 +33,8 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Recovered</h5>
-                    <h3 class="card-text">{{ recovered }}</h3>
+                    <canvas id="recoveredChart"></canvas> <!-- Canvas for the chart -->
+                    <div id="recoveredValue" data-value="{{ recovered }}"></div> <!-- Hidden div for data -->
                 </div>
             </div>
         </div>
@@ -39,7 +42,8 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Total Volunteers</h5>
-                    <h3 class="card-text">{{ volunteer_count }}</h3>
+                    <canvas id="volunteerChart"></canvas> <!-- Canvas for the chart -->
+                    <div id="volunteerCountValue" data-value="{{ volunteer_count }}"></div> <!-- Hidden div for data -->
                 </div>
             </div>
         </div>
@@ -113,7 +117,7 @@
 {% endblock %}
 
 {% block additional_js %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{% static 'js/admin_dashboard.js' %}"></script>
 {% endblock %}

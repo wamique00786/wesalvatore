@@ -32,8 +32,6 @@ INSTALLED_APPS = [
     'adoption',
     'subscription',
     'session_timeout',
-    'geolocation',
-    'leaflet',
     'rest_framework',
     'rest_framework.authtoken',
 ]
