@@ -59,11 +59,6 @@ class LoginSerializer(serializers.Serializer):
         ('ADMIN', 'Administrator')
     ], required=True)
 
-from rest_framework import serializers
-from django.contrib.auth.models import User
-from phonenumber_field.serializerfields import PhoneNumberField
-from .models import UserProfile
-
 class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
     user_type = serializers.ChoiceField(choices=[

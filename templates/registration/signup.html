@@ -47,7 +47,10 @@
                     <!-- Mobile Number field -->
                     <div class="mb-3 text-start">
                         <label for="mobile_number" class="form-label">Mobile Number</label>
-                        <input id="mobile_number" type="tel" name="mobile_number" class="form-control" required>
+                        <div class="position-relative">
+                            <input id="mobile_number" type="tel" name="mobile_number" class="form-control" required>
+                        </div>
+                        <input type="hidden" id="country_code" name="country_code">
                         {% if form.mobile_number.errors %}
                             <div class="text-danger">
                                 {{ form.mobile_number.errors }}
@@ -115,8 +118,9 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var input = document.querySelector("#mobile_number");
+        var countryCodeInput = document.querySelector("#country_code");
 
-        if (input) {
+        if (input && countryCodeInput) {
             var iti = window.intlTelInput(input, {
                 initialCountry: "IN",  // Default country: India
                 separateDialCode: true,  // Show the dial code separately
@@ -127,27 +131,29 @@
                 utilsScript: "{% static 'js/utils.js' %}"  // Ensure utils.js is loaded properly
             });
 
-            // **Debug: Log the instance after initialization**
-            console.log("IntlTelInput instance:", iti);
+            // Set initial country code
+        countryCodeInput.value = '+' + iti.getSelectedCountryData().dialCode;
 
-            // **Force apply nationalMode after 1 second**
-            ssetTimeout(function () {
-                console.log("nationalMode:", iti.options.nationalMode);  // Should print `true`
-            }, 1000);
+        // Update country code when user changes country
+        input.addEventListener('countrychange', function() {
+            countryCodeInput.value = '+' + iti.getSelectedCountryData().dialCode;
+        });
 
-            // Ensure the full number (with country code) is submitted
-            document.querySelector("form").addEventListener("submit", function (event) {
-                var fullNumber = iti.getNumber();  // Get the full international format
-                if (!iti.isValidNumber()) {
-                    event.preventDefault();  // Prevent form submission if invalid
-                    alert("Please enter a valid phone number.");
-                    return false;
-                }
-                input.value = fullNumber;  // Set formatted number before submitting
-            });
-        } else {
-            console.error("Error: #mobile_number input field not found!");
-        }
-    });
+        // Validate on form submission
+        document.querySelector("form").addEventListener("submit", function (event) {
+            var nationalNumber = iti.getNumber(intlTelInputUtils.numberFormat.NATIONAL).trim();
+            var isValid = iti.isValidNumber();
+
+            if (!isValid) {
+                event.preventDefault();
+                alert("Please enter a valid phone number.");
+                return false;
+            }
+
+            // Optional: Uncomment if server expects full number in mobile_number
+            input.value = nationalNumber;
+        });
+    }
+});
 </script>
 {% endblock %}

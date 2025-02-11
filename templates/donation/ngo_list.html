@@ -2,19 +2,19 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>List of NGOs</h2>
+    <h2 class="mb-3">List of NGOs</h2>
     <ul class="list-group">
         {% for ngo in ngos %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
+                <div class="w-75">
                     <strong>{{ ngo.name }}</strong><br>
-                    <small>{{ ngo.description }}</small><br>
-                    <a href="{{ ngo.website }}" target="_blank">Visit Website</a>
+                    <small class="text-muted">{{ ngo.description }}</small><br>
+                    <a href="{{ ngo.website }}" target="_blank" class="text-primary">Visit Website</a>
                 </div>
-                <a href="{% url 'donate_to_ngo' ngo.id %}" class="btn btn-primary">Donate</a>
+                <a href="{% url 'donate_to_ngo' ngo.id %}" class="btn btn-primary btn-sm px-3">Donate</a>
             </li>
         {% empty %}
-            <li class="list-group-item">No NGOs available.</li>
+            <li class="list-group-item text-center">No NGOs available.</li>
         {% endfor %}
     </ul>
 </div>

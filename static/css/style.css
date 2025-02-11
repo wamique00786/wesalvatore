@@ -46,6 +46,8 @@ body {
 
 /* Buttons */
 .btn-primary {
+    font-size: 14px; /* Adjust text size */
+    padding: 6px 12px; /* Adjust button padding */
     background-color: #3498db;
     border-color: #3498db;
 }
