@@ -295,8 +295,6 @@ def signup(request):
         form = SignUpForm()
     return render(request, 'registration/signup.html', {'form': form})
 
-
-
 def custom_login(request):
     if request.user.is_authenticated:
         profile = UserProfile.objects.get(user=request.user)
