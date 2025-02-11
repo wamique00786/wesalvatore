@@ -1,106 +1,138 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:wesalvatore/main.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'auth pages/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  SplashScreenState createState() => SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Fade-in animation for logo
-    _animationController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+    );
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.5, curve: Curves.easeIn),
+      ),
+    );
 
-    _animationController.forward();
+    _controller.forward();
 
-    // Delayed navigation to home page
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 1000),
-            pageBuilder: (_, __, ___) => const MyHomePage(),
-            transitionsBuilder: (_, animation, __, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-          ),
-        );
-      }
+    Timer(Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              LoginScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: Duration(milliseconds: 800),
+        ),
+      );
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Soft, nature-themed background animation
-          // Positioned.fill(
-          //   child: Lottie.asset(
-          //     'assets/calm_background.json', // Use a soft, slow-moving animation like clouds or leaves
-          //     fit: BoxFit.cover,
-          //     alignment: Alignment.center,
-          //   ),
-          // ),
-
-          // Gentle gradient overlay for a soothing effect
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.teal.withOpacity(0.3), // Soft green/blue tint
-                    Colors.transparent,
-                    Colors.teal.withOpacity(0.5),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFDEB622), // Dominant yellow shade
+              Color(0xFFF4D03F), // Lighter golden yellow
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: Container(
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 5,
+                          blurRadius: 15,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/ws_logo.png', // Change to a paw or heart logo
+                      width: 120,
+                      height: 120,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-
-          // Fading-in Logo & Smooth Loader
-          Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset('assets/ws_logo.png', width: 180, height: 180),
-                  const SizedBox(height: 20),
-                  const SpinKitThreeBounce(color: Colors.teal, size: 40.0),
-                ],
+              SizedBox(height: 20),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Text(
+                  'WeSalvatore',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
               ),
-            ),
+              SizedBox(height: 10),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Text(
+                  'Rescue. Love. Adopt.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 18,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 }
