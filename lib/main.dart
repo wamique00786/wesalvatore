@@ -1,16 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:wesalvatore/sign_in.dart';
-import 'package:wesalvatore/sign_up.dart';
-import 'package:wesalvatore/splash_screen.dart';
+import 'package:wesalvatore/Pages/sign_in_page.dart';
+import 'package:wesalvatore/Pages/sign_up_page.dart';
+import 'package:wesalvatore/Pages/splash_screen.dart';
+import 'package:camera/camera.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+    debugPrint("Firebase initialized successfully!");
+  } catch (e) {
+    debugPrint("Firebase initialization error: $e");
+  }
+
+  final cameras = await availableCameras();
+  final firstCamera = cameras.first;
+
+  LocationPermission permission = await Geolocator.requestPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
+
+  runApp(MyApp(camera: firstCamera));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final CameraDescription camera;
 
-  // This widget is the root of your application.
+  const MyApp({super.key, required this.camera});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,131 +41,130 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
 
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage('assets/bg1.jpg'), fit: BoxFit.cover)),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // Welcome Text with Shadow
-              Text(
-                'Welcome Back',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: MediaQuery.of(context).size.width * 0.08,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.3),
-                      offset: const Offset(2, 2),
-                      blurRadius: 4,
-                    ),
-                  ],
+    return Scaffold(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFFFE0B2),
+                    Color(0xFFB2DFDB)
+                  ], // Soft peach & mint
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.06),
-
-              // Sign In Button
-              Container(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignIn()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black87,
-                    elevation: 5,
-                    shadowColor: Colors.black.withOpacity(0.3),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Sign In',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.05,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Icon(Icons.login_rounded, size: 24),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
-              // Sign Up Button
-              Container(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignUpPage()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.05,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Icon(Icons.person_add_rounded, size: 24),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  'Welcome Back',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                buildButton(context, 'Sign In', Icons.login_rounded,
+                    Colors.white, Colors.deepPurple, SignInPage()),
+                const SizedBox(height: 20),
+                buildButton(context, 'Sign Up', Icons.person_add_rounded,
+                    Colors.white, Colors.blueAccent, SignUpPage()),
+                const SizedBox(height: 20),
+                buildGoogleButton(context),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildButton(BuildContext context, String text, IconData icon,
+      Color bgColor, Color textColor, Widget page) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      height: 55,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => page));
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bgColor,
+          foregroundColor: textColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 5,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 24),
+            const SizedBox(width: 10),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildGoogleButton(BuildContext context) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      height: 55,
+      child: ElevatedButton(
+        onPressed: () {
+          // TODO: Implement Google Sign-In
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 3,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const FaIcon(
+              FontAwesomeIcons.google,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Sign in with Google',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

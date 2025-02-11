@@ -4,10 +4,10 @@ class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
+  ForgotPasswordScreenState createState() => ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
 
   String _email = '';
@@ -46,8 +46,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    // TODO: Send password reset request to your backend
-                    print('Email: $_email');
+                    debugPrint('Email: $_email');
                   }
                 },
                 child: Text('Send Reset Link'),

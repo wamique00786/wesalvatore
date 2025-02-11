@@ -4,11 +4,10 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
-        classpath 'com.google.gms:google-services:4.4.2' // Ensure this is added
+        classpath("com.android.tools.build:gradle:8.2.2")
+        classpath("com.google.gms:google-services:4.4.2") // Updated to a more recent version
     }
 }
-
 
 allprojects {
     repositories {
@@ -17,24 +16,20 @@ allprojects {
     }
 }
 
-println("Root project build directory: ${rootProject.buildDir}")
-println("Subprojects: ${subprojects.collect { it.name }}")
-
-
+// Set a custom build directory for the entire project
 rootProject.buildDir = "../build"
 
-dependencies {
-
-}
-
 subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
-    // Only if you are sure ":app" exists
-    if (project.name == "app") {
-        project.evaluationDependsOn(":app")
+    // Set each subproject’s build directory relative to the root build directory
+    buildDir = "${rootProject.buildDir}/${name}"
+    
+    // If the subproject's name is "app", ensure that it is evaluated
+    if (name == "app") {
+        evaluationDependsOn(":app")
     }
 }
 
+// Register a 'clean' task to delete the build directory
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesalvatore/views/premium_page.dart';
 
 class NavBar extends StatelessWidget {
   final padding = const EdgeInsets.symmetric(horizontal: 20);
@@ -14,7 +16,7 @@ class NavBar extends StatelessWidget {
 
     return Drawer(
       child: Material(
-        color: Color.fromRGBO(13, 114, 114, 1),
+        color: Colors.black,
         child: ListView(
           children: <Widget>[
             buildHeader(
@@ -39,6 +41,18 @@ class NavBar extends StatelessWidget {
                     icon: Icons.pets,
                     onClicked: () => Navigator.pop(context),
                   ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Premium',
+                    icon: Icons.money,
+                    onClicked: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SubscriptionPlans()),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 24),
                   Divider(color: Colors.white70),
                   const SizedBox(height: 16),
@@ -46,6 +60,27 @@ class NavBar extends StatelessWidget {
                     text: 'Notifications',
                     icon: Icons.notifications_outlined,
                     onClicked: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(height: 16),
+                  // Add the Logout option here
+                  buildMenuItem(
+                    text: 'Logout',
+                    icon: Icons.exit_to_app,
+                    onClicked: () async {
+                      // Step 1: Clear the session data (e.g., user token, user data)
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await prefs
+                          .clear(); // Clears all data stored in SharedPreferences
+
+                      // Step 2: Close the drawer
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context);
+
+                      // Step 3: Navigate to the login screen
+                      // ignore: use_build_context_synchronously
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
                   ),
                 ],
               ),
