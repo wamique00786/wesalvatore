@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wesalvatore/forgot_screen.dart';
 import 'package:wesalvatore/Pages/sign_in_page.dart';
-import 'package:wesalvatore/API/auth_services.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -15,29 +14,6 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _usertypeController = TextEditingController();
-
-  void _signUp() async {
-    final String username = _usernameController.text.trim();
-    final String email = _emailController.text.trim();
-    final String password = _passwordController.text.trim();
-    final String usertype = _usertypeController.text.trim();
-
-    final String? message = await FirebaseAuthServices()
-        .signUp(username, email, password, usertype);
-
-    if (message == 'Sign up successful!') {
-      Navigator.pushReplacement(
-          // ignore: use_build_context_synchronously
-          context,
-          MaterialPageRoute(builder: (context) => SignInPage()));
-    } else {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(message!),
-        backgroundColor: Colors.red,
-      ));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +108,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildSignUpButton() {
     return Center(
       child: ElevatedButton(
-        onPressed: _signUp,
+        onPressed: () {},
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
           shape:

@@ -65,9 +65,15 @@ class SubscriptionPlansState extends State<SubscriptionPlans> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Subscription Plans'),
-        backgroundColor: Colors.blueAccent,
-      ),
+          title: Text('Subscription Plans'),
+          backgroundColor: Colors.blueAccent,
+          automaticallyImplyLeading: false,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+              top: Radius.circular(20),
+            ),
+          )),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

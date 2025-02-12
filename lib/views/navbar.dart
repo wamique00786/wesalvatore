@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesalvatore/views/contact_us_page.dart';
+import 'package:wesalvatore/views/organization_page.dart';
 import 'package:wesalvatore/views/premium_page.dart';
+import 'package:wesalvatore/views/donation_page.dart';
+import 'package:wesalvatore/views/adoption_page.dart';
+import 'package:wesalvatore/views/team_page.dart';
 
 class NavBar extends StatelessWidget {
   final padding = const EdgeInsets.symmetric(horizontal: 20);
@@ -33,13 +38,36 @@ class NavBar extends StatelessWidget {
                   buildMenuItem(
                     text: 'Donation',
                     icon: Icons.attach_money,
-                    onClicked: () => Navigator.pop(context),
+                    onClicked: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => DonationListPage()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(
                     text: 'Adoption',
                     icon: Icons.pets,
-                    onClicked: () => Navigator.pop(context),
+                    onClicked: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AdoptionPage()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Organizations',
+                    icon: Icons.business,
+                    onClicked: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => OrganizationPage()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(
@@ -53,6 +81,17 @@ class NavBar extends StatelessWidget {
                       );
                     },
                   ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Team',
+                    icon: Icons.people,
+                    onClicked: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TeamPage()),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 24),
                   Divider(color: Colors.white70),
                   const SizedBox(height: 16),
@@ -60,6 +99,18 @@ class NavBar extends StatelessWidget {
                     text: 'Notifications',
                     icon: Icons.notifications_outlined,
                     onClicked: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Contact Us',
+                    icon: Icons.contact_page,
+                    onClicked: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ContactUsPage()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   // Add the Logout option here

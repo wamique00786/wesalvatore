@@ -7,8 +7,8 @@ plugins {
 
 android {
     namespace = "com.example.wesalvatore"
-    compileSdk 35 // Fixed from 3 to 34
-    ndkVersion "27.2.12479018"
+    compileSdk 35
+    ndkVersion "26.3.11579264" // Use correct NDK version or remove if not needed
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -28,8 +28,24 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+        release {
+            def keystoreProperties = new Properties()
+            def keystorePropertiesFile = rootProject.file("key.properties")
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            }
+
+            storeFile keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null
+            storePassword keystoreProperties["storePassword"]
+            keyAlias keystoreProperties["keyAlias"]
+            keyPassword keystoreProperties["keyPassword"]
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -47,4 +63,3 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 }
-//changed

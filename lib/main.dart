@@ -4,13 +4,12 @@ import 'package:wesalvatore/Pages/sign_up_page.dart';
 import 'package:wesalvatore/Pages/splash_screen.dart';
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp();
     debugPrint("Firebase initialized successfully!");
   } catch (e) {
     debugPrint("Firebase initialization error: $e");
