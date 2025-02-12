@@ -3,12 +3,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Retrieve data from the template
     const chartData = {
-        totalAnimals: parseInt(document.getElementById('totalAnimalsValue')?.dataset.value || 0),
-        underTreatment: parseInt(document.getElementById('underTreatmentValue')?.dataset.value || 0),
-        recovered: parseInt(document.getElementById('recoveredValue')?.dataset.value || 0),
-        volunteerCount: parseInt(document.getElementById('volunteerCountValue')?.dataset.value || 0)
+        totalAnimals: parseInt(document.getElementById('totalAnimalsValue').dataset.value, 10) || 0,
+        underTreatment: parseInt(document.getElementById('underTreatmentValue').dataset.value, 10) || 0,
+        recovered: parseInt(document.getElementById('recoveredValue').dataset.value, 10) || 0,
+        volunteerCount: parseInt(document.getElementById('volunteerCountValue').dataset.value, 10) || 0
     };
 
+    // Initialize the charts with the data
     initializeCharts(chartData);
 });
 

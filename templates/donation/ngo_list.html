@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-3">List of NGOs</h2>
+    <h2 class="mb-3">List of Organizations</h2>
     <ul class="list-group">
         {% for ngo in ngos %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -14,7 +14,7 @@
                 <a href="{% url 'donate_to_ngo' ngo.id %}" class="btn btn-primary btn-sm px-3">Donate</a>
             </li>
         {% empty %}
-            <li class="list-group-item text-center">No NGOs available.</li>
+            <li class="list-group-item text-center">No Organizations available.</li>
         {% endfor %}
     </ul>
 </div>

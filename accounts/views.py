@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-from .models import UserProfile
+from .models import UserProfile, JobOpening
 from rescue.models import AnimalReport
 from .forms import SignUpForm, PasswordResetForm
 from rescue.utils import send_notification_to_volunteer
@@ -24,6 +24,21 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import SignUpSerializer, LoginSerializer, PasswordResetRequestSerializer, UserProfileSerializer, AnimalReportSerializer
 
 logger = logging.getLogger(__name__)
+
+from django.shortcuts import render
+
+def career_view(request):
+    jobs = JobOpening.objects.all()
+    return render(request, 'registration/career.html', {'jobs': jobs})
+
+def team(request):
+    return render(request, 'registration/team.html')
+
+def contact_us(request):
+    return render(request, 'registration/contact_us.html')
+
+def about(request):
+    return render(request, 'registration/about.html')
 
 class NearbyVolunteersView(generics.ListAPIView):
     serializer_class = UserProfileSerializer

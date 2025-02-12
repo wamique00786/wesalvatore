@@ -14,6 +14,18 @@ body {
     color: #ecf0f1 !important;
 }
 
+.navbar-nav .nav-link span {
+    white-space: nowrap;
+}
+
+.navbar-nav .nav-link span {
+    font-size: 14px;
+}
+
+.navbar-nav {
+    flex-wrap: nowrap;
+}
+
 /* Cards */
 .card {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -46,6 +58,8 @@ body {
 
 /* Buttons */
 .btn-primary {
+    font-size: 14px; /* Adjust text size */
+    padding: 6px 12px; /* Adjust button padding */
     background-color: #3498db;
     border-color: #3498db;
 }

@@ -19,20 +19,18 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-        <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
+        <div class="container-fluid">
             <!-- Brand -->
             <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
-                <i class="fas fa-paw me-2"></i> Wesalvatore
+                <i class="fas fa-paw me-2"></i>
+                <span>Wesalvatore</span>
             </a>
 
-            <!-- Language Selector -->
-            <div id="google_translate_element" class="d-inline-block"></div>
-
-            <!-- Navbar Toggler (Mobile) -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Mobile Toggle Button (MOVED HERE) -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
             <!-- Navbar Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -40,80 +38,94 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                                <i class="fas fa-tachometer-alt me-1"></i>
+                                Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'animal_list' %}active{% endif %}" href="{% url 'animal_list' %}">
-                                <i class="fas fa-list me-1"></i> Animals
+                                <i class="fas fa-list me-1"></i>
+                                Animals
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'adopt_animal' %}active{% endif %}" href="{% url 'adopt_animal' %}">
-                                <i class="fas fa-heart me-1"></i> Adopt
+                                <i class="fas fa-heart me-1"></i>
+                                Adopt
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" href="{% url 'donations' %}">
-                                <i class="fas fa-donate me-1"></i> Donations
+                                <i class="fas fa-donate me-1"></i>
+                                Donations
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'ngo_list' %}active{% endif %}" href="{% url 'ngo_list' %}">
-                                <i class="fas fa-hands-helping me-1"></i> NGOs
+                                <i class="fas fa-building me-1"></i>
+                                Organizations
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'rescued_animals_today' %}active{% endif %}" href="{% url 'rescued_animals_today' %}">
-                                <i class="fas fa-paw me-1"></i> Rescued Today: {{ total_rescued_today }}
+                                <i class="fas fa-paw me-1"></i>
+                                Rescued Today: {{ total_rescued_today }}
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'subscription_plans' %}active{% endif %}" href="{% url 'subscription_plans' %}">
-                                <i class="fas fa-crown me-1"></i> Get Premium
+                                <i class="fas fa-crown me-1"></i>
+                                Premium
                             </a>
-                        </li>
-                        <!-- Session Timeout Countdown -->
-                        <li class="nav-item">
-                            <span class="nav-link">
-                                <i class="fas fa-clock me-1"></i> Session expires in: <span id="countdown">05:00</span>
-                            </span>
                         </li>
                     {% endif %}
                 </ul>
 
-                <!-- Search Bar -->
-                <form class="d-flex me-3">
-                    <input class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-light btn-sm" type="submit"><i class="fas fa-search"></i></button>
-                </form>
+                <!-- Right Side Items -->
+                <div class="d-flex align-items-center">
+                    <!-- Language Selector -->
+                    <div id="google_translate_element" class="me-3"></div>
 
-                <!-- User Dropdown -->
-                <ul class="navbar-nav">
+                    <!-- Search Icon -->
+                    <div class="nav-item me-3">
+                        <a href="#" class="nav-link" id="searchToggle">
+                            <i class="fas fa-search"></i>
+                        </a>
+                    </div>
+
+                    <!-- Search Form (Hidden by default) -->
+                    <form class="search-form d-none" id="searchForm">
+                        <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                    </form>
+
+                    <!-- User Menu -->
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i> Welcome, {{ user.username }}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li>
-                                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                    <span class="dropdown-item-text text-light">{{ user.username }}</span>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}" class="d-inline w-100">
                                         {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                        <button type="submit" class="dropdown-item text-light">
+                                            <i class="fas fa-sign-out-alt me-2"></i>
+                                            Logout
                                         </button>
                                     </form>
                                 </li>
                             </ul>
-                        </li>
+                        </div>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt me-1"></i> Login
-                            </a>
-                        </li>
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-user"></i>
+                        </a>
                     {% endif %}
-                </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -131,7 +143,7 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main class="container py-4">
+    <main class="container py-2">
         {% block content %}
         {% endblock %}
     </main>
@@ -139,7 +151,25 @@
     <!-- Footer -->
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container text-center">
-            <span class="text-muted">© {% now "Y" %} Wesalvatore. All rights reserved.</span>
+            <span class="text-muted"> &copy; {% now "Y" %} Wesalvatore. All rights reserved.</span>
+
+            <!-- New Section: Footer Links -->
+            <div class="footer-links mt-3">
+                <ul class="list-inline">
+                    <li class="list-inline-item">
+                        <a href="{% url 'career' %}" class="text-muted">Career</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="{% url 'team' %}" class="text-muted">Team</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="{% url 'contact_us' %}" class="text-muted">Contact Us</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="{% url 'about' %}" class="text-muted">About</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </footer>
 
@@ -148,28 +178,6 @@
     
     <!-- Custom JavaScript -->
     <script src="{% static 'js/alert.js' %}" defer></script> <!-- Include the new alert.js -->
-
-    <!-- Session Timeout Countdown Script -->
-    <script>
-        let timeLeft = 300; // 5 minutes in seconds
-
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        }
-
-        function updateCountdown() {
-            document.getElementById('countdown').textContent = formatTime(timeLeft);
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                window.location.href = "{% url 'login' %}"; // Redirect to logout
-            }
-            timeLeft--;
-        }
-
-        const timer = setInterval(updateCountdown, 1000);
-    </script>
     
     <!-- Translate JavaScript -->
     <script>
@@ -206,6 +214,26 @@
     </script>
 
     <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>    
+
+    <script>
+    document.getElementById('searchToggle').addEventListener('click', function(e) {
+        e.preventDefault();
+        const searchForm = document.getElementById('searchForm');
+        searchForm.classList.toggle('d-none');
+        if (!searchForm.classList.contains('d-none')) {
+            searchForm.querySelector('input').focus();
+        }
+    });
+
+    // Close search on click outside
+    document.addEventListener('click', function(e) {
+        const searchForm = document.getElementById('searchForm');
+        const searchToggle = document.getElementById('searchToggle');
+        if (!searchForm.contains(e.target) && !searchToggle.contains(e.target)) {
+            searchForm.classList.add('d-none');
+        }
+    });
+    </script>
 
     {% block additional_js %}
     {% endblock %}
