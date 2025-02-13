@@ -12,193 +12,189 @@ class DashBoardScreen extends StatefulWidget {
 }
 
 class _DashBoardScreenState extends State<DashBoardScreen> {
-  XFile? _capturedImage;
+  final List<XFile> _capturedImages = [];
   Position? _currentPosition;
-
-  void _showErrorSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Failed to capture image')),
-    );
-  }
+  String _selectedPriority = 'Medium';
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
   Future<bool> _handleLocationPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location services are disabled')),
-      );
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      _showSnackbar('Location services are disabled');
       return false;
     }
 
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permissions are denied')),
-        );
+      if (permission == LocationPermission.denied) {
+        _showSnackbar('Location permissions are denied');
         return false;
       }
     }
-
-    if (permission == LocationPermission.deniedForever && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Location permissions are permanently denied')),
-      );
+    if (permission == LocationPermission.deniedForever) {
+      _showSnackbar('Location permissions are permanently denied');
       return false;
     }
-
     return true;
   }
 
   Future<void> _getCurrentLocation() async {
-    final hasPermission = await _handleLocationPermission();
-    if (!hasPermission) return;
-
+    if (!await _handleLocationPermission()) return;
     try {
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+          desiredAccuracy: LocationAccuracy.high);
       setState(() => _currentPosition = position);
-      debugPrint(
-          'Location captured: ${position.latitude}, ${position.longitude}');
     } catch (e) {
       debugPrint('Error getting location: $e');
     }
+  }
+
+  void _pickImage(ImageSource source) async {
+    try {
+      final XFile? photo =
+          await ImagePicker().pickImage(source: source, imageQuality: 80);
+      if (photo != null) {
+        setState(() => _capturedImages.add(photo));
+        await _getCurrentLocation();
+      }
+    } catch (e) {
+      debugPrint('Error capturing image: $e');
+      _showSnackbar('Failed to capture image');
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() => _capturedImages.removeAt(index));
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: Container(
-        color: Colors.white,
-        child: NavBar(),
-      ),
+      drawer: const NavBar(),
       appBar: AppBar(
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.black,
+        title: const Text('Rescue Dashboard',
+            style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.teal[900],
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              onTap: () async {
-                final ImagePicker picker = ImagePicker();
-                try {
-                  final XFile? photo = await picker.pickImage(
-                    source: ImageSource.camera,
-                    imageQuality: 80,
-                  );
-                  if (photo != null) {
-                    setState(() {
-                      _capturedImage = photo;
-                    });
-                    debugPrint('Image captured: ${photo.path}');
-                    // Get location after capturing image
-                    await _getCurrentLocation();
-                  }
-                } catch (e) {
-                  debugPrint('Error capturing image: $e');
-                  if (mounted) {
-                    _showErrorSnackBar();
-                  }
-                }
-              },
-              child: Container(
-                height: 150,
-                width: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.blueGrey,
-                  image: _capturedImage != null
-                      ? DecorationImage(
-                          image: FileImage(File(_capturedImage!.path)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: _capturedImage == null
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.camera_alt,
-                            size: 50,
-                            color: Colors.black,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            "Capture Image",
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ],
-                      )
-                    : null,
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.camera_alt,
+                        color: Colors.teal, size: 30),
+                    onPressed: () => _pickImage(ImageSource.camera),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.photo_library,
+                        color: Colors.teal, size: 30),
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 40),
-            if (_currentPosition != null)
-              const Text(
-                'Location captured successfully',
-                style: TextStyle(color: Colors.white),
-              ),
-            const SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blueGrey,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 300,
-                        child: TextField(
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: 'Enter description',
-                            hintStyle: TextStyle(color: Colors.grey),
-                            border: InputBorder.none,
+            const SizedBox(height: 20),
+            if (_capturedImages.isNotEmpty)
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _capturedImages.length,
+                  itemBuilder: (context, index) {
+                    return Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              File(_capturedImages[index].path),
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.edit,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ],
-                  ),
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black54,
+                            radius: 12,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.close,
+                                  size: 16, color: Colors.white),
+                              onPressed: () => _removeImage(index),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              ],
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                // Add submit report logic
-              },
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 100, vertical: 16),
-                backgroundColor: Colors.blueGrey,
               ),
-              child: const Text(
-                "SUBMIT REPORT",
-                style: TextStyle(color: Colors.white, fontSize: 18),
+            const SizedBox(height: 20),
+            if (_currentPosition != null)
+              Text(
+                  'Location: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _addressController,
+              decoration: const InputDecoration(
+                  labelText: 'Enter Address', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 20),
+            DropdownButtonFormField<String>(
+              value: _selectedPriority,
+              decoration: const InputDecoration(
+                  labelText: 'Select Priority', border: OutlineInputBorder()),
+              items: ['Low', 'Medium', 'High']
+                  .map((priority) =>
+                      DropdownMenuItem(value: priority, child: Text(priority)))
+                  .toList(),
+              onChanged: (value) => setState(() => _selectedPriority = value!),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _descriptionController,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                  labelText: 'Describe the animal and situation',
+                  border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _capturedImages.clear();
+                  });
+                  // Submit report logic
+                },
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 100, vertical: 16),
+                  backgroundColor: Colors.teal[900],
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('SUBMIT REPORT',
+                    style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
             ),
           ],

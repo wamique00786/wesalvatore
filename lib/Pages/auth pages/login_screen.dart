@@ -27,16 +27,15 @@ class _LoginScreenState extends State<LoginScreen> {
               image: DecorationImage(
                 image: AssetImage("assets/backgroundimg.jpg"),
                 fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.1), BlendMode.darken),
+                //colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05),
+                // BlendMode.darken), // Reduced opacity
               ),
             ),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              color:
-                  Colors.black.withOpacity(0.3), // Dark overlay for readability
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 50),
+              //color: Colors.black.withOpacity(0.15), // Reduced overlay opacity
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   // Title
                   Text(
@@ -128,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildDropdownField(IconData icon, String hint) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withOpacity(0.25), // Lighter background for clarity
         borderRadius: BorderRadius.circular(12),
       ),
       child: DropdownButtonFormField<String>(
@@ -136,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.teal[300]),
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
+          hintStyle: TextStyle(color: Colors.black.withOpacity(0.85)),
           filled: true,
           fillColor: Colors.transparent,
           border: OutlineInputBorder(
@@ -144,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
             borderSide: BorderSide.none,
           ),
         ),
-        dropdownColor: Colors.black.withOpacity(0.2), // Dark dropdown
+        dropdownColor: Colors.black.withOpacity(0.3), // Reduced darkness
         style: TextStyle(color: Colors.white), // White text inside dropdown
         items: const [
           DropdownMenuItem(value: 'User', child: Text('Regular User')),
@@ -172,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ? IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withOpacity(0.85),
                 ),
                 onPressed: () {
                   setState(() {
@@ -182,9 +181,10 @@ class _LoginScreenState extends State<LoginScreen> {
               )
             : null,
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
+        hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.85)), // Increased readability
         filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
+        fillColor: Colors.white.withOpacity(0.15), // Lighter fill color
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

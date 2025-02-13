@@ -57,7 +57,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 10),
                 _buildTextField(Icons.phone, "Phone", _phoneController),
                 const SizedBox(height: 10),
-                _buildDropdownWithIcon(),
+                _buildDropdownField(Icons.person, "Select User Type"),
                 const SizedBox(height: 20),
                 Center(child: _buildButton("Sign Up", Colors.teal[900]!)),
               ],
@@ -88,33 +88,37 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   // User Type Dropdown with Icon
-  Widget _buildDropdownWithIcon() {
-    return InputDecorator(
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.person, color: Colors.teal[900]),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+  Widget _buildDropdownField(IconData icon, String hint) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.25), // Lighter background for clarity
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedUserType,
-          hint: Text("Select User Type"),
-          isExpanded: true,
-          items: const [
-            DropdownMenuItem(value: 'User', child: Text('Regular User')),
-            DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-            DropdownMenuItem(value: 'Volunteer', child: Text('Volunteer')),
-          ],
-          onChanged: (value) {
-            setState(() {
-              _selectedUserType = value;
-            });
-          },
+      child: DropdownButtonFormField<String>(
+        value: _selectedUserType,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.teal[900]),
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.85)),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
         ),
+        dropdownColor: Colors.white, // Reduced darkness
+        style: TextStyle(color: Colors.black), // White text inside dropdown
+        items: const [
+          DropdownMenuItem(value: 'User', child: Text('Regular User')),
+          DropdownMenuItem(value: 'Admin', child: Text('Admin')),
+          DropdownMenuItem(value: 'Volunteer', child: Text('Volunteer')),
+        ],
+        onChanged: (value) {
+          setState(() {
+            _selectedUserType = value;
+          });
+        },
       ),
     );
   }

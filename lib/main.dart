@@ -34,7 +34,8 @@ class MyApp extends StatelessWidget {
       title: 'WeSalvatore',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple, primary: Colors.teal[900]),
         useMaterial3: true,
       ),
       home: SplashScreen(),
