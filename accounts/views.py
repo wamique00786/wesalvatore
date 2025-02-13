@@ -35,7 +35,29 @@ def team(request):
     return render(request, 'registration/team.html')
 
 def contact_us(request):
-    return render(request, 'registration/contact_us.html')
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        message = request.POST.get("message")
+
+        subject = f"New Contact Us Message from {name}"
+        body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+
+        try:
+            send_mail(
+                subject, 
+                body, 
+                email, 
+                [settings.DEFAULT_FROM_EMAIL],  # Replace with the receiver's email
+                fail_silently=False
+            )
+            messages.success(request, "Your message has been sent successfully!")
+        except Exception as e:
+            messages.error(request, f"Error sending email: {e}")
+
+        return redirect("contact_us")  # Ensure 'contact_us' is the correct URL name
+
+    return render(request, "registration/contact_us.html", {"contact_email": settings.ADMIN_EMAIL})
 
 def about(request):
     return render(request, 'registration/about.html')

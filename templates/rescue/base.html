@@ -36,12 +36,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt me-1"></i>
-                                Dashboard
-                            </a>
-                        </li>
+                        
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'animal_list' %}active{% endif %}" href="{% url 'animal_list' %}">
                                 <i class="fas fa-list me-1"></i>
@@ -62,7 +57,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'ngo_list' %}active{% endif %}" href="{% url 'ngo_list' %}">
-                                <i class="fas fa-building me-1"></i>
+                                <i class="fas fa-users me-1"></i>
                                 Organizations
                             </a>
                         </li>
@@ -110,9 +105,9 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form method="post" action="{% url 'logout' %}" class="d-inline w-100">
+                                    <form id="logoutForm" method="post" action="{% url 'logout' %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-light">
+                                        <button type="submit" class="dropdown-item text-light w-100 text-start">
                                             <i class="fas fa-sign-out-alt me-2"></i>
                                             Logout
                                         </button>
@@ -151,7 +146,7 @@
     <!-- Footer -->
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container text-center">
-            <span class="text-muted"> &copy; {% now "Y" %} Wesalvatore. All rights reserved.</span>
+            
 
             <!-- New Section: Footer Links -->
             <div class="footer-links mt-3">
@@ -170,6 +165,7 @@
                     </li>
                 </ul>
             </div>
+            <span class="text-muted"> &copy; {% now "Y" %} Wesalvatore. All rights reserved.</span>
         </div>
     </footer>
 

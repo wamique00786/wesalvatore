@@ -177,6 +177,8 @@ def animal_list(request):
 @login_required
 def user_dashboard(request):
     user_profile = UserProfile.objects.get(user=request.user)
+    if request.user.is_superuser:
+        return redirect('/admin/')
     if user_profile.user_type != 'USER':
         return redirect(f'{user_profile.user_type.lower()}_dashboard')
     

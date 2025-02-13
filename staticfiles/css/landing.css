@@ -47,21 +47,11 @@
 }
 
 @keyframes slideshow {
-    0% {
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    25% {
-        opacity: 1;
-    }
-    35% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 0;
-    }
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    25% { opacity: 1; }
+    35% { opacity: 0; }
+    100% { opacity: 0; }
 }
 
 .hero-section h1 {
@@ -82,62 +72,17 @@
 
 /* Who We Are Section */
 .who-we-are-section {
-    padding: 60px 0;
-    background: #fff;
+    padding: 40px 0;
 }
 
 .who-we-are-section .slideshow {
     position: relative;
+    z-index: 1;
     width: 100%;
     height: 400px; /* Adjust height as needed */
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.who-we-are-section .slide {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    animation: slideshow 20s infinite; /* 4 images * 5 seconds each */
-}
-
-.who-we-are-section .slide:nth-child(1) {
-    animation-delay: 0s;
-}
-
-.who-we-are-section .slide:nth-child(2) {
-    animation-delay: 5s;
-}
-
-.who-we-are-section .slide:nth-child(3) {
-    animation-delay: 10s;
-}
-
-.who-we-are-section .slide:nth-child(4) {
-    animation-delay: 15s;
-}
-
-@keyframes slideshow {
-    0% {
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    25% {
-        opacity: 1;
-    }
-    35% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 0;
-    }
 }
 
 .who-we-are-section h2 {
@@ -153,7 +98,7 @@
 
 /* What We Do Section */
 .what-we-do-section {
-    padding: 60px 0;
+    padding: 20px 0;
     background: #f8f9fa; /* Light gray background */
 }
 
@@ -163,14 +108,51 @@
     color: #007bff; /* Blue color for heading */
 }
 
-/* Interactive Animal Cards */
-.feature-card {
+.what-we-do-section .row {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.what-we-do-section .row .feature-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    padding: 20px;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 250px; /* Ensure equal height for all cards */
+}
+
+/* Interactive Feature Cards */
+.feature-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 20px 15px;
     border-radius: 10px;
     background: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card h3 {
+    margin-top: 15px;
+}
+
+.feature-card p {
+    flex-grow: 1; /* Allows text to expand evenly */
+    text-align: left;
+    padding: 0 15px;
+    display: block;
+    margin: 10px 0;
+    align-items: center;
+    justify-content: center;
 }
 
 .feature-card:hover {
@@ -180,13 +162,13 @@
 
 .card-icon {
     font-size: 3rem;
-    color: #007bff; /* Blue color for icons */
+    color: #007bff;
     margin-bottom: 20px;
     transition: transform 0.3s ease;
 }
 
 .feature-card:hover .card-icon {
-    transform: scale(1.2); /* Enlarge icon on hover */
+    transform: scale(1.2);
 }
 
 /* Scanner Section */
@@ -222,7 +204,7 @@
 .progress-bar {
     width: 100%;
     height: 20px;
-    background: #e0e0e0; /* Light gray background */
+    background: #e0e0e0;
     border-radius: 10px;
     overflow: hidden;
 }
@@ -230,39 +212,23 @@
 .progress {
     height: 100%;
     width: 0;
-    background: #007bff; /* Blue color for progress bar */
+    background: #007bff;
     border-radius: 10px;
     transition: width 2s ease;
 }
 
 /* Animations */
 @keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
