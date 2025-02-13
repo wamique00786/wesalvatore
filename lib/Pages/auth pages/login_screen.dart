@@ -13,49 +13,54 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
+  String? _selectedUserType;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          // Background Image (Ensure image is inside "assets" folder and listed in pubspec.yaml)
-          Positioned.fill(
-            child: Image.asset("assets/backgroundimg.jpg", // Correct path
+      resizeToAvoidBottomInset:
+          false, // Prevent layout shift when keyboard opens
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/backgroundimg.jpg"),
                 fit: BoxFit.cover,
-                colorBlendMode: BlendMode.modulate),
-          ),
-
-          Container(
-            color: Colors.black
-                .withOpacity(0.01), // Dark overlay for better readability
-          ),
-
-          Container(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 45),
+                colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.1), BlendMode.darken),
+              ),
+            ),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              color:
+                  Colors.black.withOpacity(0.3), // Dark overlay for readability
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Title
                   Text(
                     "Welcome to Rescue Animals",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
-                      fontSize: 48,
+                      fontSize: constraints.maxWidth * 0.08,
                       fontWeight: FontWeight.w900,
                       color: Colors.teal[900],
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: constraints.maxHeight * 0.03),
 
                   // Email Input
                   _buildTextField(Icons.email, "Email"),
-                  const SizedBox(height: 15),
+                  SizedBox(height: constraints.maxHeight * 0.015),
 
                   // Password Input
                   _buildTextField(Icons.lock, "Password", isPassword: true),
+                  SizedBox(height: constraints.maxHeight * 0.015),
+
+                  // User Type Selection (Now Styled Like Other Input Fields)
+                  _buildDropdownField(Icons.person, "Select User Type"),
+                  SizedBox(height: constraints.maxHeight * 0.02),
 
                   // Forgot Password
                   Align(
@@ -65,8 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ForgotPasswordScreen(),
-                          ),
+                              builder: (context) => ForgotPasswordScreen()),
                         );
                       },
                       child: Text(
@@ -75,26 +79,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: constraints.maxHeight * 0.02),
 
                   // Login Button
                   _buildButton("Login", Colors.teal[900]!, () {
-                    // Handle login logic here
                     Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DashBoardScreen(),
-                        ));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DashBoardScreen()),
+                    );
                   }),
-                  const SizedBox(height: 20),
+                  SizedBox(height: constraints.maxHeight * 0.03),
 
                   // Social Login
                   Text("Or login with",
                       style: GoogleFonts.poppins(
                           fontSize: 14, color: Colors.white)),
-                  const SizedBox(height: 15),
+                  SizedBox(height: constraints.maxHeight * 0.015),
                   _buildSocialButtons(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: constraints.maxHeight * 0.02),
 
                   // Sign Up
                   TextButton(
@@ -115,8 +118,44 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Styled Dropdown (Matches Input Fields)
+  Widget _buildDropdownField(IconData icon, String hint) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: _selectedUserType,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.teal[300]),
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
+          filled: true,
+          fillColor: Colors.transparent,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
           ),
+        ),
+        dropdownColor: Colors.black.withOpacity(0.2), // Dark dropdown
+        style: TextStyle(color: Colors.white), // White text inside dropdown
+        items: const [
+          DropdownMenuItem(value: 'User', child: Text('Regular User')),
+          DropdownMenuItem(value: 'Admin', child: Text('Admin')),
+          DropdownMenuItem(value: 'Volunteer', child: Text('Volunteer')),
         ],
+        onChanged: (value) {
+          setState(() {
+            _selectedUserType = value;
+          });
+        },
       ),
     );
   }
@@ -128,7 +167,6 @@ class _LoginScreenState extends State<LoginScreen> {
       obscureText: isPassword ? _obscurePassword : false,
       style: TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        enabledBorder: InputBorder.none,
         prefixIcon: Icon(icon, color: Colors.teal[300]),
         suffixIcon: isPassword
             ? IconButton(
@@ -146,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
         hintText: hint,
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.2), // Soft white background
+        fillColor: Colors.white.withOpacity(0.2),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -177,38 +215,27 @@ class _LoginScreenState extends State<LoginScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildIconButton(
-          "assets/icon/apple.png",
-        ),
-        const SizedBox(width: 15),
-        _buildIconButton(
-          "assets/icon/google.png",
-        ),
-        const SizedBox(width: 15),
-        _buildIconButton(
-          "assets/icon/facebook.png",
-        ),
+        _buildIconButton("assets/icon/apple.png"),
+        SizedBox(width: 15),
+        _buildIconButton("assets/icon/google.png"),
+        SizedBox(width: 15),
+        _buildIconButton("assets/icon/facebook.png"),
       ],
     );
   }
 
   // Social Login Icons
-  Widget _buildIconButton(
-    String asset,
-  ) {
+  Widget _buildIconButton(String asset) {
     return GestureDetector(
       onTap: () {
-        // Handle social login here
+        // Handle social login
       },
       child: CircleAvatar(
         radius: 28,
         backgroundColor: Colors.white,
         child: Padding(
           padding: EdgeInsets.all(8),
-          child: Image.asset(
-            asset,
-            fit: BoxFit.cover,
-          ),
+          child: Image.asset(asset, fit: BoxFit.cover),
         ),
       ),
     );
