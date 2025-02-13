@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesalvatore/views/career_page.dart';
 import 'package:wesalvatore/views/contact_us_page.dart';
 import 'package:wesalvatore/views/organization_page.dart';
 import 'package:wesalvatore/views/premium_page.dart';
@@ -99,6 +100,17 @@ class NavBar extends StatelessWidget {
                     text: 'Notifications',
                     icon: Icons.notifications_outlined,
                     onClicked: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Careers',
+                    icon: Icons.work,
+                    onClicked: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CareerPage()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(

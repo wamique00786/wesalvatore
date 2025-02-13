@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wesalvatore/views/navbar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:geolocator/geolocator.dart';
+import 'package:wesalvatore/widgets/app_localizations.dart'; // import translation file
 
 class DashBoardScreen extends StatefulWidget {
   const DashBoardScreen({super.key});
@@ -14,6 +16,7 @@ class DashBoardScreen extends StatefulWidget {
 class _DashBoardScreenState extends State<DashBoardScreen> {
   XFile? _capturedImage;
   Position? _currentPosition;
+  String selectedLanguage = 'en';
 
   void _showErrorSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -71,6 +74,13 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     }
   }
 
+  void _changeLanguage(String languageCode) {
+    setState(() {
+      selectedLanguage = languageCode;
+    });
+    // You could also notify the app to rebuild with the new language
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,9 +90,68 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         child: NavBar(),
       ),
       appBar: AppBar(
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(color: Colors.white),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                SizedBox(width: 8),
+                Text(
+                  AppLocalizations.translate(context, 'dashboard')!,
+                  style: GoogleFonts.lobster(fontSize: 22),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text(AppLocalizations.translate(
+                            context, 'selectLanguage')!),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              title: Text('English'),
+                              onTap: () {
+                                _changeLanguage('en');
+                                Navigator.pop(context);
+                              },
+                            ),
+                            ListTile(
+                              title: Text('Español'),
+                              onTap: () {
+                                _changeLanguage('es');
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.language, color: Colors.blueAccent),
+                      SizedBox(width: 5),
+                      Text(
+                        AppLocalizations.translate(context, 'selectLanguage')!,
+                        style: TextStyle(color: Colors.blueAccent),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         backgroundColor: Colors.black,
       ),
@@ -129,7 +198,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 child: _capturedImage == null
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(
                             Icons.camera_alt,
                             size: 50,
@@ -137,7 +206,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            "Capture Image",
+                            AppLocalizations.translate(
+                                context, 'captureImage')!,
                             style: TextStyle(color: Colors.black),
                           ),
                         ],
@@ -147,8 +217,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
             ),
             const SizedBox(height: 40),
             if (_currentPosition != null)
-              const Text(
-                'Location captured successfully',
+              Text(
+                AppLocalizations.translate(context, 'locationCaptured')!,
                 style: TextStyle(color: Colors.white),
               ),
             const SizedBox(height: 40),
@@ -168,8 +238,9 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         width: 300,
                         child: TextField(
                           style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: 'Enter description',
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.translate(
+                                context, 'enterDescription')!,
                             hintStyle: TextStyle(color: Colors.grey),
                             border: InputBorder.none,
                           ),
@@ -196,8 +267,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     const EdgeInsets.symmetric(horizontal: 100, vertical: 16),
                 backgroundColor: Colors.blueGrey,
               ),
-              child: const Text(
-                "SUBMIT REPORT",
+              child: Text(
+                AppLocalizations.translate(context, 'submitReport')!,
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),
