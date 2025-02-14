@@ -3,6 +3,7 @@ import 'package:wesalvatore/views/navbar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:geolocator/geolocator.dart';
+// import translation file
 
 class DashBoardScreen extends StatefulWidget {
   const DashBoardScreen({super.key});
@@ -95,14 +96,14 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.camera_alt,
-                        color: Colors.teal, size: 30),
+                        color: Colors.teal, size: 80),
                     onPressed: () => _pickImage(ImageSource.camera),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.photo_library,
-                        color: Colors.teal, size: 30),
-                    onPressed: () => _pickImage(ImageSource.gallery),
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.photo_library,
+                  //       color: Colors.teal, size: 30),
+                  //   onPressed: () => _pickImage(ImageSource.gallery),
+                  // ),
                 ],
               ),
             ),

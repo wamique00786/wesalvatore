@@ -27,13 +27,14 @@ class _LoginScreenState extends State<LoginScreen> {
               image: DecorationImage(
                 image: AssetImage("assets/backgroundimg.jpg"),
                 fit: BoxFit.cover,
-                //colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05),
-                // BlendMode.darken), // Reduced opacity
+                // colorFilter: ColorFilter.mode(
+                //     Colors.black.withOpacity(0.1), BlendMode.darken),
               ),
             ),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 50),
-              //color: Colors.black.withOpacity(0.15), // Reduced overlay opacity
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              //color:
+              // Colors.black.withOpacity(0.3), // Dark overlay for readability
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -42,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Welcome to Rescue Animals",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
-                      fontSize: constraints.maxWidth * 0.08,
+                      fontSize: constraints.maxWidth * 0.12,
                       fontWeight: FontWeight.w900,
                       color: Colors.teal[900],
                     ),
@@ -51,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Email Input
                   _buildTextField(Icons.email, "Email"),
-                  SizedBox(height: constraints.maxHeight * 0.015),
+                  SizedBox(height: constraints.maxHeight * 0.01),
 
                   // Password Input
                   _buildTextField(Icons.lock, "Password", isPassword: true),
@@ -59,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // User Type Selection (Now Styled Like Other Input Fields)
                   _buildDropdownField(Icons.person, "Select User Type"),
-                  SizedBox(height: constraints.maxHeight * 0.02),
+                  SizedBox(height: constraints.maxHeight * 0.002),
 
                   // Forgot Password
                   Align(
@@ -78,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: constraints.maxHeight * 0.02),
+                  SizedBox(height: constraints.maxHeight * 0.002),
 
                   // Login Button
                   _buildButton("Login", Colors.teal[900]!, () {
@@ -96,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontSize: 14, color: Colors.white)),
                   SizedBox(height: constraints.maxHeight * 0.015),
                   _buildSocialButtons(),
-                  SizedBox(height: constraints.maxHeight * 0.02),
+                  SizedBox(height: constraints.maxHeight * 0.0002),
 
                   // Sign Up
                   TextButton(
@@ -127,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildDropdownField(IconData icon, String hint) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.25), // Lighter background for clarity
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: DropdownButtonFormField<String>(
@@ -135,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.teal[300]),
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.black.withOpacity(0.85)),
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
           filled: true,
           fillColor: Colors.transparent,
           border: OutlineInputBorder(
@@ -143,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
             borderSide: BorderSide.none,
           ),
         ),
-        dropdownColor: Colors.black.withOpacity(0.3), // Reduced darkness
+        dropdownColor: Colors.white.withOpacity(0.9), // Dark dropdown
         style: TextStyle(color: Colors.white), // White text inside dropdown
         items: const [
           DropdownMenuItem(value: 'User', child: Text('Regular User')),
@@ -171,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ? IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withOpacity(0.8),
                 ),
                 onPressed: () {
                   setState(() {
@@ -181,10 +182,9 @@ class _LoginScreenState extends State<LoginScreen> {
               )
             : null,
         hintText: hint,
-        hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.85)), // Increased readability
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.15), // Lighter fill color
+        fillColor: Colors.white.withOpacity(0.2),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
