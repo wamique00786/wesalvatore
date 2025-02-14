@@ -22,7 +22,7 @@ class NavBar extends StatelessWidget {
 
     return Drawer(
       child: Material(
-        color: Colors.black,
+        color: Colors.teal[900],
         child: ListView(
           children: <Widget>[
             buildHeader(

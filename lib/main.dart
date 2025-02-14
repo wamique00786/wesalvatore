@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:wesalvatore/Pages/splash_screen.dart';
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
@@ -28,7 +29,8 @@ class MyApp extends StatelessWidget {
       title: 'WeSalvatore',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple, primary: Colors.teal[900]),
         useMaterial3: true,
       ),
       home: SplashScreen(),
