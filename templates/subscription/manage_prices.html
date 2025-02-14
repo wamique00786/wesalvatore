@@ -1,0 +1,75 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Subscription Prices</h2>
+    
+    <!-- Price Update Form -->
+    <div class="card mt-3">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Plan Type</label>
+                        <select name="plan_type" class="form-select" required>
+                            <option value="bronze">Bronze</option>
+                            <option value="silver">Silver</option>
+                            <option value="gold">Gold</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Country Code</label>
+                        <input type="text" name="country" class="form-control" 
+                               placeholder="US/IN/GB" maxlength="2" required>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Monthly Price</label>
+                        <input type="number" name="monthly_price" 
+                               class="form-control" step="0.01" required>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Annual Price</label>
+                        <input type="number" name="annual_price" 
+                               class="form-control" step="0.01" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-3">Update Prices</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Current Prices Table -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5>Current Prices</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Country</th>
+                        <th>Monthly</th>
+                        <th>Annual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                        {% for country, price in plan.monthly_prices.items %}
+                        <tr>
+                            <td>{{ plan.plan_type|title }}</td>
+                            <td>{{ country }}</td>
+                            <td>{{ price }}</td>
+                            <td>{{ plan.annual_prices|get_item:country }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -21,10 +21,3 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.get_or_create(user=instance)
 
-class JobOpening(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    posted_on = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title

@@ -158,7 +158,7 @@ def get_user_info(request):
 def home(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return render(request, 'landingpage/landing_page.html')
+    return render(request, 'landing_page/landing_page.html')
 
 # Add these decorator functions
 def is_admin(user):

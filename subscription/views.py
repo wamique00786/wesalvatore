@@ -42,21 +42,3 @@ def update_prices(request):
             return JsonResponse({"success": False, "error": str(e)})
         
     return JsonResponse({"success": False, "message": "Invalid request method"})
-
-def manage_prices(request):
-    """ Manage prices for subscription plans """
-    plans = SubscriptionPlan.objects.all()
-
-    if request.method == "POST":
-        # Add new price details for a plan
-        plan_type = request.POST.get('plan_type')
-        country = request.POST.get('country')
-        monthly_price = request.POST.get('monthly_price')
-        annual_price = request.POST.get('annual_price')
-
-        plan = get_object_or_404(SubscriptionPlan, plan_type=plan_type)
-        plan.update_prices(country, monthly_price, annual_price)
-
-        return redirect('manage_prices')  # Redirect after updating prices
-
-    return render(request, 'subscription/manage_prices.html', {'plans': plans})

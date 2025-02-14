@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'adoption',
     'subscription',
     'session_timeout',
+    'base',
     'rest_framework',
     'rest_framework.authtoken',
 ]

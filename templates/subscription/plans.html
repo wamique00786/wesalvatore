@@ -1,4 +1,4 @@
-{% extends 'rescue/base.html' %}
+{% extends 'base/base.html' %}
 
 {% block content %}
 <h2 class="text-center mb-4">Subscription Plans</h2>
@@ -32,11 +32,15 @@
 
                     <!-- Monthly and Annual Prices -->
                     <div class="text-center">
-                        <p class="monthly-price" data-prices='{{ plan.monthly_prices|json_script:"monthly_prices" }}'>
-                            <strong>Monthly:</strong> <span class="currency-symbol"></span><span class="price-value"></span>
+                        <p class="monthly-price" data-prices='{{ plan.monthly_prices|safe }}'>
+                            <strong>Monthly:</strong> 
+                            <span class="currency-symbol"></span>
+                            <span class="price-value"></span>
                         </p>
-                        <p class="annual-price" data-prices='{{ plan.annual_prices|json_script:"annual_prices" }}' style="display:none;">
-                            <strong>Annually:</strong> <span class="currency-symbol"></span><span class="price-value"></span>
+                        <p class="annual-price" data-prices='{{ plan.annual_prices|safe }}' style="display:none;">
+                            <strong>Annually:</strong> 
+                            <span class="currency-symbol"></span>
+                            <span class="price-value"></span>
                         </p>
                     </div>
 
@@ -73,97 +77,77 @@
 
 {% block additional_js %}
 <script>
-    document.addEventListener("DOMContentLoaded", async function () {
-        const monthlyBtn = document.getElementById("monthlyBtn");
-        const annualBtn = document.getElementById("annualBtn");
+document.addEventListener("DOMContentLoaded", async function () {
+    // Safe element references
+    const monthlyBtn = document.getElementById("monthlyBtn");
+    const annualBtn = document.getElementById("annualBtn");
     
-        if (!monthlyBtn || !annualBtn) {
-            console.error("Monthly or Annual button not found in the DOM");
-            return;
+    // Currency Mapping
+    const currencyMap = {
+        "US": { symbol: "$", code: "USD" },
+        "IN": { symbol: "₹", code: "INR" },
+        "GB": { symbol: "£", code: "GBP" }
+    };
+
+    // Validate elements exist
+    if (!monthlyBtn || !annualBtn) return;
+
+    // Fetch User Country
+    async function getCountryFromIP() {
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            return data.country_code || 'US';
+        } catch (error) {
+            return 'US';
         }
-    
-        // Currency Mapping
-        const currencyMap = {
-            "US": { symbol: "$", code: "USD" },
-            "IN": { symbol: "₹", code: "INR" },
-            "GB": { symbol: "£", code: "GBP" },
-            "EU": { symbol: "€", code: "EUR" },
-        };
-    
-        // Fetch User Country
-        async function getCountryFromIP() {
-            try {
-                const response = await fetch('http://ip-api.com/json/');
-                const data = await response.json();
-                return data.countryCode || 'US'; // Default to US
-            } catch (error) {
-                console.error("Error fetching country:", error);
-                return 'US'; // Fallback to US
-            }
-        }
-    
-        // Update Prices Dynamically
-        async function updatePrices() {
+    }
+
+    // Update Prices Dynamically
+    async function updatePrices() {
+        try {
             const country = await getCountryFromIP();
-            console.log("User's Country:", country);
-    
-            const currencyInfo = currencyMap[country] || currencyMap["US"]; // Default to US if country is not in the map
-            const currencySymbol = currencyInfo.symbol;
-    
-            document.querySelectorAll(".plan-card").forEach((plan) => {
-                try {
-                    // Get and parse the prices from data-prices
-                    const monthlyPrices = JSON.parse(plan.querySelector(".monthly-price").getAttribute("data-prices"));
-                    const annualPrices = JSON.parse(plan.querySelector(".annual-price").getAttribute("data-prices"));
-    
-                    console.log("Monthly Prices:", monthlyPrices);
-                    console.log("Annual Prices:", annualPrices);
-    
-                    // Get the monthly and annual prices for the user's country
-                    const monthlyPrice = monthlyPrices[country] || monthlyPrices["US"] || 0; // Fallback to US price, then 0
-                    const annualPrice = annualPrices[country] || annualPrices["US"] || 0;   // Fallback to US price, then 0
-    
-                    console.log("Monthly Price for User's Country:", monthlyPrice);
-                    console.log("Annual Price for User's Country:", annualPrice);
-    
-                    // Ensure prices are valid numbers
-                    if (isNaN(monthlyPrice) || isNaN(annualPrice)) {
-                        console.error("Invalid price data for the user's country.");
-                        return;
-                    }
-    
-                    // Update the displayed prices and currency symbol
-                    plan.querySelector(".monthly-price .price-value").textContent = monthlyPrice.toFixed(2);
-                    plan.querySelector(".annual-price .price-value").textContent = annualPrice.toFixed(2);
-                    plan.querySelectorAll(".currency-symbol").forEach(symbol => symbol.textContent = currencySymbol);
-                } catch (error) {
-                    console.error("Error updating prices for plan:", plan, error);
-                }
+            const currencyInfo = currencyMap[country] || currencyMap.US;
+
+            document.querySelectorAll(".card").forEach((plan) => {
+                const monthlyElement = plan.querySelector(".monthly-price");
+                const annualElement = plan.querySelector(".annual-price");
+                
+                // Parse JSON safely
+                const monthlyPrices = JSON.parse(monthlyElement.dataset.prices);
+                const annualPrices = JSON.parse(annualElement.dataset.prices);
+                
+                // Get prices with fallback
+                const monthlyPrice = monthlyPrices[country] || monthlyPrices.US;
+                const annualPrice = annualPrices[country] || annualPrices.US;
+
+                // Update display
+                monthlyElement.querySelector(".price-value").textContent = monthlyPrice.toFixed(2);
+                annualElement.querySelector(".price-value").textContent = annualPrice.toFixed(2);
+                
+                // Update currency symbols
+                plan.querySelectorAll(".currency-symbol").forEach(symbol => {
+                    symbol.textContent = currencyInfo.symbol;
+                });
             });
+        } catch (error) {
+            console.error("Price update error:", error);
         }
-    
-        await updatePrices();
-    
-        // Toggle Monthly/Annual Prices
-        monthlyBtn.addEventListener("click", function () {
-            this.classList.add("active");
-            annualBtn.classList.remove("active");
-    
-            document.querySelectorAll(".plan-card").forEach(plan => {
-                plan.querySelector(".monthly-price").style.display = "block";
-                plan.querySelector(".annual-price").style.display = "none";
-            });
-        });
-    
-        annualBtn.addEventListener("click", function () {
-            this.classList.add("active");
-            monthlyBtn.classList.remove("active");
-    
-            document.querySelectorAll(".plan-card").forEach(plan => {
-                plan.querySelector(".monthly-price").style.display = "none";
-                plan.querySelector(".annual-price").style.display = "block";
-            });
-        });
-    });     
+    }
+
+    // Initial load
+    await updatePrices();
+
+    // Toggle handlers
+    monthlyBtn.addEventListener("click", () => {
+        document.querySelectorAll(".monthly-price").forEach(el => el.style.display = 'block');
+        document.querySelectorAll(".annual-price").forEach(el => el.style.display = 'none');
+    });
+
+    annualBtn.addEventListener("click", () => {
+        document.querySelectorAll(".monthly-price").forEach(el => el.style.display = 'none');
+        document.querySelectorAll(".annual-price").forEach(el => el.style.display = 'block');
+    });
+});
 </script>
 {% endblock %}

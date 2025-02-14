@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-from .models import UserProfile, JobOpening
+from .models import UserProfile
 from rescue.models import AnimalReport
 from .forms import SignUpForm, PasswordResetForm
 from rescue.utils import send_notification_to_volunteer
@@ -24,43 +24,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import SignUpSerializer, LoginSerializer, PasswordResetRequestSerializer, UserProfileSerializer, AnimalReportSerializer
 
 logger = logging.getLogger(__name__)
-
-from django.shortcuts import render
-
-def career_view(request):
-    jobs = JobOpening.objects.all()
-    return render(request, 'registration/career.html', {'jobs': jobs})
-
-def team(request):
-    return render(request, 'registration/team.html')
-
-def contact_us(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        message = request.POST.get("message")
-
-        subject = f"New Contact Us Message from {name}"
-        body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
-
-        try:
-            send_mail(
-                subject, 
-                body, 
-                email, 
-                [settings.DEFAULT_FROM_EMAIL],  # Replace with the receiver's email
-                fail_silently=False
-            )
-            messages.success(request, "Your message has been sent successfully!")
-        except Exception as e:
-            messages.error(request, f"Error sending email: {e}")
-
-        return redirect("contact_us")  # Ensure 'contact_us' is the correct URL name
-
-    return render(request, "registration/contact_us.html", {"contact_email": settings.ADMIN_EMAIL})
-
-def about(request):
-    return render(request, 'registration/about.html')
 
 class NearbyVolunteersView(generics.ListAPIView):
     serializer_class = UserProfileSerializer
