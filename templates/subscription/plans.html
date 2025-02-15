@@ -32,15 +32,15 @@
 
                     <!-- Monthly and Annual Prices -->
                     <div class="text-center">
-                        <p class="monthly-price" data-prices='{{ plan.monthly_prices|safe }}'>
+                        <p class="monthly-price" data-prices="{{ plan.monthly_prices|safe }}">
                             <strong>Monthly:</strong> 
                             <span class="currency-symbol"></span>
-                            <span class="price-value"></span>
+                            <span class="price-value">0.00</span>
                         </p>
-                        <p class="annual-price" data-prices='{{ plan.annual_prices|safe }}' style="display:none;">
+                        <p class="annual-price" data-prices="{{ plan.annual_prices|safe }}" style="display:none;">
                             <strong>Annually:</strong> 
                             <span class="currency-symbol"></span>
-                            <span class="price-value"></span>
+                            <span class="price-value">0.00</span>
                         </p>
                     </div>
 
@@ -112,19 +112,29 @@ document.addEventListener("DOMContentLoaded", async function () {
             document.querySelectorAll(".card").forEach((plan) => {
                 const monthlyElement = plan.querySelector(".monthly-price");
                 const annualElement = plan.querySelector(".annual-price");
-                
-                // Parse JSON safely
-                const monthlyPrices = JSON.parse(monthlyElement.dataset.prices);
-                const annualPrices = JSON.parse(annualElement.dataset.prices);
-                
+            
+                // Parse JSON safely and handle string JSON
+                const monthlyPrices = typeof monthlyElement.dataset.prices === 'string' ? 
+                    JSON.parse(monthlyElement.dataset.prices.replace(/'/g, '"')) : 
+                    monthlyElement.dataset.prices;
+            
+                const annualPrices = typeof annualElement.dataset.prices === 'string' ? 
+                    JSON.parse(annualElement.dataset.prices.replace(/'/g, '"')) : 
+                    annualElement.dataset.prices;
+            
                 // Get prices with fallback
-                const monthlyPrice = monthlyPrices[country] || monthlyPrices.US;
-                const annualPrice = annualPrices[country] || annualPrices.US;
+                const monthlyPrice = monthlyPrices[country] || monthlyPrices.US || 0;
+                const annualPrice = annualPrices[country] || annualPrices.US || 0;
 
-                // Update display
-                monthlyElement.querySelector(".price-value").textContent = monthlyPrice.toFixed(2);
-                annualElement.querySelector(".price-value").textContent = annualPrice.toFixed(2);
-                
+                // Update display with proper formatting
+                monthlyElement.querySelector(".price-value").textContent = 
+                    parseFloat(monthlyPrice).toFixed(2);
+                annualElement.querySelector(".price-value").textContent = 
+                    parseFloat(annualPrice).toFixed(2);
+            
+                // Show the elements after setting prices
+                monthlyElement.style.display = 'block';
+            
                 // Update currency symbols
                 plan.querySelectorAll(".currency-symbol").forEach(symbol => {
                     symbol.textContent = currencyInfo.symbol;
