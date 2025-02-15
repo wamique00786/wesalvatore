@@ -1,0 +1,2 @@
+C:/Users/nitin/Desktop/Intenship/wesalvatore/android/app/.cxx/RelWithDebInfo/4r6n9153/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/nitin/Desktop/Intenship/wesalvatore/android/app/.cxx/RelWithDebInfo/4r6n9153/x86_64/CMakeFiles/rebuild_cache.dir
