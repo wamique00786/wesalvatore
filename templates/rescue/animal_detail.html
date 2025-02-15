@@ -49,23 +49,28 @@
                     <h4>Medical Records</h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" class="mb-4">
+                    <form method="post" style="margin-bottom: 2rem;">
                         {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="date">Date:</label>
-                                <input type="date" id="date" name="date" class="form-control">
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Date</label>
+                                <input type="date" name="date" style="width: 100%; padding: 0.375rem;">
                             </div>
-                            <div class="col-md-4">
-                                <label for="treatment">Treatment:</label>
-                                <textarea id="treatment" name="treatment" class="form-control"></textarea>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Treatment</label>
+                                <textarea name="treatment" style="width: 100%; padding: 0.375rem; height: 80px;"></textarea>
                             </div>
-                            <div class="col-md-4">
-                                <label for="notes">Notes:</label>
-                                <textarea id="notes" name="notes" class="form-control"></textarea>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Notes</label>
+                                <textarea name="notes" style="width: 100%; padding: 0.375rem; height: 80px;"></textarea>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 mt-3">Add Record</button>
+                        
+                        <button type="submit" style="padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 4px;">
+                            Add Record
+                        </button>
                     </form>
 
                     <div class="timeline">
