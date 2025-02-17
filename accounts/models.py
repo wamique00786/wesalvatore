@@ -18,6 +18,7 @@ class UserProfile(models.Model):
 # Signal to create user profile
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
+    """Create UserProfile only if it doesn't exist (no updates)."""
     if created:
+        # Use get_or_create to avoid duplicates
         UserProfile.objects.get_or_create(user=instance)
-

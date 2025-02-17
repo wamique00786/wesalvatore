@@ -6,8 +6,19 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: #333; /* Dark color for text */
+    color: #fff; /* Dark color for text */
     overflow: hidden;
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Semi-transparent black overlay */
+    z-index: 1; /* Overlay stays behind the text */
 }
 
 .slideshow {
@@ -73,6 +84,7 @@
 /* Who We Are Section */
 .who-we-are-section {
     padding: 40px 0;
+    z-index: 2;
 }
 
 .who-we-are-section .slideshow {

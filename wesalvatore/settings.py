@@ -169,7 +169,7 @@ REST_FRAMEWORK = {
 #CSP_CONNECT_SRC = ["'self'", 'https://nominatim.openstreetmap.org']
 
 CSRF_TRUSTED_ORIGINS = [
-       'https://c218-2409-40e3-48-e232-dd14-2ff6-4d3b-da82.ngrok-free.app',
+       'https://7a74-2409-40e3-1019-e3da-68ca-1f91-559b-c9b5.ngrok-free.app',
        # Add any other trusted origins here
    ]
 

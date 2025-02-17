@@ -61,51 +61,50 @@ class LoginSerializer(serializers.Serializer):
 
 class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    user_type = serializers.ChoiceField(choices=[
-        ('USER', 'Regular User'),
-        ('VOLUNTEER', 'Volunteer'),
-        ('ADMIN', 'Administrator')
-    ])
-    mobile_number = PhoneNumberField()  # Validate phone number with international format
+    password2 = serializers.CharField(write_only=True, style={'input_type': 'password'}, label='Confirm Password')
+    user_type = serializers.ChoiceField(  # Keep this field for input
+        choices=[('USER', 'Regular User'), ('VOLUNTEER', 'Volunteer'), ('ADMIN', 'Administrator')],
+        write_only=True  # Mark as write-only to avoid serialization issues
+    )
+    mobile_number = PhoneNumberField(write_only=True)  # Mark as write-only
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'user_type', 'mobile_number']
+        fields = ['username', 'email', 'mobile_number', 'password', 'password2', 'user_type']
 
-    def validate_username(self, value):
-        """Ensure username is unique"""
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("This username is already taken.")
-        return value
-
-    def validate_email(self, value):
-        """Ensure email is unique"""
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email is already registered.")
-        return value
-
-    def validate_mobile_number(self, value):
-        """Ensure the phone number is valid and formatted correctly"""
-        if not value.is_valid():
-            raise serializers.ValidationError("Enter a valid phone number (e.g., +12125552368).")
-        return value.as_e164  # Convert to standard E.164 format before saving
+    # Keep validate() method the same
 
     def create(self, validated_data):
-        """Create a new user and associated UserProfile"""
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password']  # Hashing handled by `create_user`
-        )
+        # Extract UserProfile fields
+        user_type = validated_data.pop('user_type')
+        mobile_number = validated_data.pop('mobile_number')
+        validated_data.pop('password2')
 
-        # Create or update UserProfile
-        UserProfile.objects.create(
+        # Create User
+        user = User.objects.create_user(**validated_data)
+
+        # Update or create UserProfile with user_type and mobile_number
+        UserProfile.objects.update_or_create(
             user=user,
-            user_type=validated_data['user_type'],
-            mobile_number=validated_data['mobile_number']
+            defaults={
+                'user_type': user_type,
+                'mobile_number': mobile_number
+            }
         )
-
         return user
+
+    def to_representation(self, instance):
+        """Include UserProfile data in the response."""
+        data = super().to_representation(instance)
+        try:
+            profile = instance.userprofile
+            data['user_type'] = profile.user_type
+            data['mobile_number'] = str(profile.mobile_number)
+        except UserProfile.DoesNotExist:
+            data['user_type'] = None
+            data['mobile_number'] = None
+        return data
+
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)

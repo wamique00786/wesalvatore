@@ -214,7 +214,6 @@ class LoginView(generics.GenericAPIView):
     permission_classes = [AllowAny]  # Allow any user to access this view
 
     def get(self, request, *args, **kwargs):
-        # Example response: returning a message or available fields
         return Response({
             "message": "Please provide your username, password, and user type to log in."
         }, status=status.HTTP_200_OK)
@@ -226,30 +225,30 @@ class LoginView(generics.GenericAPIView):
             password = serializer.validated_data['password']
             user_type = serializer.validated_data['user_type']
 
+            # Authenticate user
             user = authenticate(request, username=username, password=password)
-            if user is not None:
-                try:
-                    profile = UserProfile.objects.get(user=user)
-                    if profile.user_type == user_type:
-                        login(request, user)  # Optional: Only needed if you want to maintain session
-                        token, created = Token.objects.get_or_create(user=user)  # Get or create token
-                        return Response({
-                            "message": "Login successful.",
-                            "user_type": profile.user_type,
-                            "token": token.key  # Return the token
-                        }, status=status.HTTP_200_OK)
-                    else:
-                        return Response({
-                            "error": f"This account is not registered as {user_type}."
-                        }, status=status.HTTP_403_FORBIDDEN)
-                except UserProfile.DoesNotExist:
-                    return Response({
-                        "error": "User profile not found."
-                    }, status=status.HTTP_404_NOT_FOUND)
-            else:
+            if user is None:
                 return Response({
                     "error": "Invalid username or password."
                 }, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Retrieve or create user profile
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            if profile.user_type != user_type:
+                return Response({
+                    "error": f"This account is not registered as {user_type}."
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Log in the user and generate a token
+            login(request, user)  # Optional: Only needed for session-based authentication
+            token, _ = Token.objects.get_or_create(user=user)
+
+            return Response({
+                "message": "Login successful.",
+                "user_type": profile.user_type,
+                "token": token.key  # Return the token
+            }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
