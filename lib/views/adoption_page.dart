@@ -1,11 +1,12 @@
-// ignore_for_file: sort_child_properties_last, use_key_in_widget_constructors, library_private_types_in_public_api, no_leading_underscores_for_local_identifiers
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AdoptionPage extends StatefulWidget {
+  const AdoptionPage({super.key});
+
   @override
   _AdoptionPageState createState() => _AdoptionPageState();
 }
@@ -19,12 +20,12 @@ class _AdoptionPageState extends State<AdoptionPage>
     {
       'image': 'assets/parrot.jpg',
       'name': 'Buddy',
-      'description': 'A friendly golden retriever.'
+      'description': 'A friendly parrot looking for a home.'
     },
     {
       'image': 'assets/cat.jpg',
       'name': 'Whiskers',
-      'description': 'A playful tabby cat.'
+      'description': 'A playful tabby cat full of energy!'
     },
   ];
 
@@ -32,24 +33,34 @@ class _AdoptionPageState extends State<AdoptionPage>
   void initState() {
     super.initState();
     _controller =
-        AnimationController(vsync: this, duration: Duration(seconds: 1));
+        AnimationController(vsync: this, duration: Duration(milliseconds: 800));
     _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+  }
+
+  Future<File> _saveImageToStorage(File imageFile) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path =
+        '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final File newImage = await imageFile.copy(path);
+    return newImage;
   }
 
   void _showAddAnimalDialog() {
     String name = '';
     String description = '';
     bool isAdoptable = false;
-    File? _image;
+    File? image;
 
-    Future<void> _pickImage() async {
+    Future<void> pickImage(ImageSource source) async {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await picker.pickImage(source: source);
 
       if (pickedFile != null) {
+        final File savedImage =
+            await _saveImageToStorage(File(pickedFile.path));
         setState(() {
-          _image = File(pickedFile.path);
+          image = savedImage;
         });
       }
     }
@@ -58,36 +69,64 @@ class _AdoptionPageState extends State<AdoptionPage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Add Adoptable Animal'),
+          title: Text(
+            'Add Adoptable Animal',
+            style: GoogleFonts.poppins(),
+          ),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 GestureDetector(
-                  onTap: _pickImage,
+                  onTap: () async {
+                    await showModalBottomSheet(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Wrap(
+                          children: [
+                            ListTile(
+                              leading: Icon(Icons.camera),
+                              title: Text('Take a Photo'),
+                              onTap: () {
+                                Navigator.pop(context);
+                                pickImage(ImageSource.camera);
+                              },
+                            ),
+                            ListTile(
+                              leading: Icon(Icons.photo_library),
+                              title: Text('Choose from Gallery'),
+                              onTap: () {
+                                Navigator.pop(context);
+                                pickImage(ImageSource.gallery);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                   child: Container(
                     height: 100,
                     width: 100,
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: Colors.teal.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: _image == null
-                        ? Icon(Icons.camera_alt, color: Colors.grey[800])
-                        : Image.file(_image!, fit: BoxFit.cover),
+                    child: image == null
+                        ? Icon(Icons.camera_alt, color: Colors.teal)
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(image!, fit: BoxFit.cover),
+                          ),
                   ),
                 ),
                 SizedBox(height: 10),
                 TextField(
                   decoration: InputDecoration(labelText: 'Animal Name'),
-                  onChanged: (value) {
-                    name = value;
-                  },
+                  onChanged: (value) => name = value,
                 ),
                 TextField(
                   decoration: InputDecoration(labelText: 'Description'),
-                  onChanged: (value) {
-                    description = value;
-                  },
+                  onChanged: (value) => description = value,
                 ),
                 SizedBox(height: 10),
                 Row(
@@ -108,23 +147,25 @@ class _AdoptionPageState extends State<AdoptionPage>
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel', style: TextStyle(color: Colors.teal)),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
-                setState(() {
-                  animals.add({
-                    'image': _image?.path ??
-                        'assets/default.jpg', // Use selected image or default
-                    'name': name,
-                    'description': description,
+                if (name.isNotEmpty &&
+                    description.isNotEmpty &&
+                    image != null) {
+                  setState(() {
+                    animals.add({
+                      'image': image!.path,
+                      'name': name,
+                      'description': description,
+                    });
                   });
-                });
-                Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                }
               },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
               child: Text('Add Animal'),
             ),
           ],
@@ -136,43 +177,19 @@ class _AdoptionPageState extends State<AdoptionPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.teal[50],
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.pets, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Wesalvatore', style: GoogleFonts.lobster(fontSize: 22)),
-              ],
-            ),
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Row(
-                    children: [
-                      Icon(Icons.language, color: Colors.blueAccent),
-                      SizedBox(width: 5),
-                      Text('Select Language',
-                          style: TextStyle(color: Colors.blueAccent)),
-                    ],
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-                SizedBox(width: 10),
-                Icon(Icons.menu, color: Colors.white),
-              ],
-            ),
-          ],
+        title: Text(
+          'Adopt a Friend',
+          style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blueAccent,
-        automaticallyImplyLeading: false,
+        backgroundColor: Colors.teal[700],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add, color: Colors.white),
+            onPressed: _showAddAnimalDialog,
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -184,20 +201,9 @@ class _AdoptionPageState extends State<AdoptionPage>
               style: GoogleFonts.poppins(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent),
+                  color: Colors.teal),
             ),
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _showAddAnimalDialog,
-              child: Text('Add Animal', style: TextStyle(fontSize: 18)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-              ),
-            ),
-            SizedBox(height: 20),
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnimation,
@@ -207,7 +213,7 @@ class _AdoptionPageState extends State<AdoptionPage>
                     return Card(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      elevation: 4,
+                      elevation: 3,
                       margin: EdgeInsets.symmetric(vertical: 10),
                       child: Padding(
                         padding: EdgeInsets.all(12),
@@ -216,10 +222,16 @@ class _AdoptionPageState extends State<AdoptionPage>
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.network(animals[index]['image']!,
-                                  height: 150,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover),
+                              child: animals[index]['image']!
+                                      .startsWith('assets/')
+                                  ? Image.asset(animals[index]['image']!,
+                                      height: 150,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover)
+                                  : Image.file(File(animals[index]['image']!),
+                                      height: 150,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover),
                             ),
                             SizedBox(height: 10),
                             Text(
@@ -227,24 +239,24 @@ class _AdoptionPageState extends State<AdoptionPage>
                               style: GoogleFonts.poppins(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87),
+                                  color: Colors.teal[800]),
                             ),
                             Text(
                               animals[index]['description']!,
                               style: GoogleFonts.poppins(
-                                  fontSize: 14, color: Colors.black54),
+                                  fontSize: 14, color: Colors.teal[600]),
                             ),
                             SizedBox(height: 10),
                             Align(
                               alignment: Alignment.centerRight,
                               child: ElevatedButton(
                                 onPressed: () {},
-                                child: Text('View Details'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blueAccent,
+                                  backgroundColor: Colors.teal,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                 ),
+                                child: Text('View Details'),
                               ),
                             ),
                           ],

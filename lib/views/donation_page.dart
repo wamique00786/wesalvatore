@@ -1,4 +1,4 @@
-// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api, sort_child_properties_last
+// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,7 +32,7 @@ class _DonationListPageState extends State<DonationListPage>
   void initState() {
     super.initState();
     _controller =
-        AnimationController(vsync: this, duration: Duration(seconds: 1));
+        AnimationController(vsync: this, duration: Duration(milliseconds: 700));
     _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
   }
@@ -40,91 +40,23 @@ class _DonationListPageState extends State<DonationListPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.pets, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Wesalvatore', style: GoogleFonts.lobster(fontSize: 22)),
-              ],
-            ),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Icon(Icons.language, color: Colors.blueAccent),
-                  label: Text('Select Language',
-                      style: TextStyle(color: Colors.blueAccent)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-                SizedBox(width: 10),
-                Icon(Icons.menu, color: Colors.white),
-              ],
-            ),
-          ],
-        ),
-        backgroundColor: Colors.blueAccent,
-        automaticallyImplyLeading: false,
-      ),
+      backgroundColor: Colors.white, //Colors.teal[50],
+      appBar: _buildAppBar(),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              'Donation List',
-              style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent),
-            ),
+            _titleSection(),
             SizedBox(height: 10),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _tableHeader('User'),
-                  _tableHeader('Amount'),
-                  _tableHeader('Date'),
-                  _tableHeader('NGO'),
-                ],
-              ),
-            ),
+            _tableHeader(),
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: ListView.builder(
                   itemCount: donations.length,
                   itemBuilder: (context, index) {
-                    return Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(color: Colors.grey.shade300)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _tableCell(donations[index]['user']!),
-                          _tableCell(donations[index]['amount']!),
-                          _tableCell(donations[index]['date']!),
-                          _tableCell(donations[index]['ngo']!),
-                        ],
-                      ),
-                    );
+                    return _donationRow(donations[index]);
                   },
                 ),
               ),
@@ -135,22 +67,87 @@ class _DonationListPageState extends State<DonationListPage>
     );
   }
 
-  Widget _tableHeader(String title) {
-    return Expanded(
-      child: Text(
-        title,
+  /// **🔹 App Bar - Styled to Match Previous Page**
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.teal[700],
+      title: Text(
+        'Donation List',
         style: GoogleFonts.poppins(
-            fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-        textAlign: TextAlign.center,
+            fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+      centerTitle: true,
+      actions: [
+        // ElevatedButton.icon(
+        //   onPressed: () {},
+        //   icon: Icon(Icons.language, color: Colors.blueAccent),
+        //   label: Text('Select Language',
+        //       style: TextStyle(color: Colors.blueAccent)),
+        //   style: ElevatedButton.styleFrom(
+        //     backgroundColor: Colors.white,
+        //     shape:
+        //         RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        //   ),
+        // ),
+      ],
+    );
+  }
+
+  /// **🔹 Page Title Section**
+  Widget _titleSection() {
+    return Text(
+      'Recent Donations',
+      style: GoogleFonts.poppins(
+          fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal[800]),
+    );
+  }
+
+  /// **🔹 Table Header**
+  Widget _tableHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.teal[700],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: ['User', 'Amount', 'Date', 'NGO']
+            .map((title) => _tableText(title, isHeader: true))
+            .toList(),
       ),
     );
   }
 
-  Widget _tableCell(String text) {
+  /// **🔹 Donation Row**
+  Widget _donationRow(Map<String, String> donation) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _tableText(donation['user']!),
+          _tableText(donation['amount']!),
+          _tableText(donation['date']!),
+          _tableText(donation['ngo']!),
+        ],
+      ),
+    );
+  }
+
+  /// **🔹 Table Cell Text Widget (Reusable)**
+  Widget _tableText(String text, {bool isHeader = false}) {
     return Expanded(
       child: Text(
         text,
-        style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+        style: GoogleFonts.poppins(
+          fontSize: isHeader ? 16 : 14,
+          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+          color: isHeader ? Colors.white : Colors.black87,
+        ),
         textAlign: TextAlign.center,
       ),
     );
