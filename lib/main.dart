@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:wesalvatore/Pages/splash_screen.dart';
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:wesalvatore/Pages/splash_screen.dart';
+import 'package:wesalvatore/views/user_dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,14 +27,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'WeSalvatore',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple, primary: Colors.teal[900]),
-        useMaterial3: true,
-      ),
-      home: SplashScreen(),
-    );
+        title: 'WeSalvatore',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple, primary: Colors.teal[900]),
+          useMaterial3: true,
+        ),
+        home: UserDashBoardScreen()
+        //home: SplashScreen(),
+        );
   }
 }

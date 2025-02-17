@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../../services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -9,30 +11,62 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final AuthService authService = AuthService();
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   String? _selectedUserType;
+  final bool _isLoading = false; // Loading state
+
+  void _signup() async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+    String confirmPassword = _confirmPasswordController.text.trim();
+    String phone = _phoneController.text.trim();
+    String? userType = _selectedUserType;
+
+    if (email.isEmpty ||
+        password.isEmpty ||
+        phone.isEmpty ||
+        userType == null) {
+      Fluttertoast.showToast(msg: "Please fill all fields");
+      return;
+    }
+    if (password != confirmPassword) {
+      Fluttertoast.showToast(msg: "Passwords do not match");
+      return;
+    }
+
+    var response = await authService.signup(email, password, phone, userType);
+
+    if (response.containsKey("error")) {
+      Fluttertoast.showToast(msg: response["error"]); // Show API error message
+    } else {
+      print(response);
+      Fluttertoast.showToast(msg: "Signup successful! Please login.");
+      Navigator.pop(context); // Close the signup screen
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset:
-          false, // Prevent layout shift when keyboard opens
+      resizeToAvoidBottomInset: false,
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/plainyellow.jpg"),
-            fit: BoxFit.cover, // Ensures full screen coverage
+            fit: BoxFit.cover,
           ),
         ),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 50),
             child: Column(
-              mainAxisSize: MainAxisSize.max, // Centers content
+              mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
@@ -59,7 +93,12 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 10),
                 _buildDropdownField(Icons.person, "Select User Type"),
                 const SizedBox(height: 20),
-                Center(child: _buildButton("Sign Up", Colors.teal[900]!)),
+                Center(
+                  child: _isLoading
+                      ? CircularProgressIndicator(
+                          color: Colors.teal[900]) // Show loading spinner
+                      : _buildButton("Sign Up", Colors.teal[900]!, _signup),
+                ),
               ],
             ),
           ),
@@ -87,11 +126,10 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // User Type Dropdown with Icon
   Widget _buildDropdownField(IconData icon, String hint) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.25), // Lighter background for clarity
+        color: Colors.white.withOpacity(0.25),
         borderRadius: BorderRadius.circular(12),
       ),
       child: DropdownButtonFormField<String>(
@@ -107,8 +145,8 @@ class _SignupScreenState extends State<SignupScreen> {
             borderSide: BorderSide.none,
           ),
         ),
-        dropdownColor: Colors.white, // Reduced darkness
-        style: TextStyle(color: Colors.black), // White text inside dropdown
+        dropdownColor: Colors.white,
+        style: TextStyle(color: Colors.black),
         items: const [
           DropdownMenuItem(value: 'User', child: Text('Regular User')),
           DropdownMenuItem(value: 'Admin', child: Text('Admin')),
@@ -123,16 +161,14 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildButton(String text, Color color) {
+  Widget _buildButton(String text, Color color, void Function() signup) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 50),
       ),
-      onPressed: () {
-        // Handle signup logic here
-      },
+      onPressed: signup,
       child: Text(text,
           style: GoogleFonts.poppins(fontSize: 18, color: Colors.white)),
     );

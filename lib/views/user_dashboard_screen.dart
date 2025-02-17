@@ -5,14 +5,14 @@ import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 // import translation file
 
-class DashBoardScreen extends StatefulWidget {
-  const DashBoardScreen({super.key});
+class UserDashBoardScreen extends StatefulWidget {
+  const UserDashBoardScreen({super.key});
 
   @override
-  State<DashBoardScreen> createState() => _DashBoardScreenState();
+  State<UserDashBoardScreen> createState() => _UserDashBoardScreenState();
 }
 
-class _DashBoardScreenState extends State<DashBoardScreen> {
+class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
   final List<XFile> _capturedImages = [];
   Position? _currentPosition;
   String _selectedPriority = 'Medium';
