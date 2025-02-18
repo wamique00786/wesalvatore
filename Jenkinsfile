@@ -9,10 +9,6 @@ pipeline {
         TIMESTAMP = new Date().format("yyyyMMddHHmmss")
     }
 
-    options {
-        withDockerRegistry([credentialsId: 'dockerhub'])
-    }
-
     stages {
         stage('Build') {
             steps {
