@@ -209,7 +209,7 @@ body {
 
 /* Cards */
 .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 1.5rem;
     border: none;
     border-radius: 8px;
@@ -217,7 +217,7 @@ body {
 
 .card-header {
     background-color: #f8f9fa;
-    border-bottom: 1px solid rgba(0,0,0,0.125);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
     font-weight: bold;
 }
 
@@ -338,7 +338,7 @@ body {
     padding: 2rem;
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .login-form h2 {
@@ -507,9 +507,34 @@ textarea.form-control {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .card-body {
     text-align: center;
 }
+
 .btn {
+    width: 100%;
+}
+
+/* Removing google logo image..  */
+#google_translate_element img
+, .skiptranslate>iframe 
+{
+    display: none;
+}
+
+html body {
+    position: static !important; /* Override the position */
+    min-height: auto !important; /* Override min-height */
+    top: 0 !important; /* Override top */
+}
+
+
+.hero-cta a {
+    width: 90%;
+}
+
+.hero-section,
+.scanner-section {
     width: 100%;
 }
