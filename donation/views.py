@@ -31,7 +31,7 @@ def donate_to_ngo(request, ngo_id):
         form = DonationForm()
 
     return render(request, 'donation/donate_to_ngo.html', {'form': form, 'ngo': ngo})
-@login_required
+
 def ngo_list(request):
     ngos = NGO.objects.all()  # Fetch all NGOs
     return render(request, 'donation/ngo_list.html', {'ngos': ngos})

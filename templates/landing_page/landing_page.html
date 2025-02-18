@@ -4,6 +4,8 @@
 {% block extra_head %}
 <!-- Additional CSS for animations and landing page -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/landing.css' %}">
 {% endblock %}
 
@@ -16,10 +18,13 @@
         <img src="{% static 'images/hero3.jpg' %}" alt="Hero Image 3" class="slide">
         <img src="{% static 'images/hero4.jpg' %}" alt="Hero Image 4" class="slide">
     </div>
-    <div class="container">
+    <div class="container hero-content">
         <h1 class="animate__animated animate__fadeInDown">Welcome to Wesalvatore</h1>
         <p class="animate__animated animate__fadeInUp">Your trusted partner in animal rescue and management.</p>
-        <a href="#who-we-are" class="btn btn-primary btn-lg cta-button animate__animated animate__fadeIn">Learn More</a>
+        <div class="hero-cta">
+        <a href="#who-we-are" class="btn btn-outline-light btn-lg cta-button animate__animated animate__fadeIn">Learn More</a>
+        <a href="#donate" class="btn btn-outline-light btn-lg cta-button animate__animated animate__fadeIn">Donate Now</a>
+        </div>
     </div>
 </section>
 
@@ -93,6 +98,15 @@
         </div>
     </div>
 </section>
+
+<!-- Donation Section -->
+<section id="donate" class="donate-section">
+    <div class="container text-center">
+        <h2>Support Our Mission</h2>
+        <p>Your donation helps rescue, shelter, and find homes for animals in need.</p>
+        <a href="http://127.0.0.1:8000/donation/organizations/" class="btn btn-primary btn-lg">Donate Now</a>
+    </div>
+</section>
 {% endblock %}
 
 {% block additional_js %}
@@ -102,9 +116,15 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         gsap.from("h1", { duration: 1, x: -100, opacity: 0 });
+        setTimeout(() => {
+            document.querySelector("h1").style.opacity = "1";
+            document.querySelector("p").style.opacity = "1";
+        }, 1500);
         const progress = document.querySelector(".progress");
-        const progressValue = progress.getAttribute("data-progress");
-        progress.style.width = `${progressValue}%`;
+        if (progress) {
+            const progressValue = progress.getAttribute("data-progress");
+            progress.style.width = `${progressValue}%`;
+        }
         // GSAP Animations
         gsap.registerPlugin(ScrollTrigger);
 

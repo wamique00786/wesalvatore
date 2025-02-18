@@ -46,7 +46,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'csp.middleware.CSPMiddleware',
-    'rescue.csp_middleware.ContentSecurityPolicyMiddleware',
+    'base.csp_middleware.ContentSecurityPolicyMiddleware',
     'session_timeout.middleware.SessionTimeoutMiddleware',
 ]
 
@@ -169,7 +169,7 @@ REST_FRAMEWORK = {
 #CSP_CONNECT_SRC = ["'self'", 'https://nominatim.openstreetmap.org']
 
 CSRF_TRUSTED_ORIGINS = [
-       'https://7a74-2409-40e3-1019-e3da-68ca-1f91-559b-c9b5.ngrok-free.app',
+       'https://e015-2409-40e3-38f-97d8-b962-6632-4005-e4cf.ngrok-free.app',
        # Add any other trusted origins here
    ]
 
