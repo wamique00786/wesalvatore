@@ -1,16 +1,14 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http show post;
+import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../views/user_dashboard_screen.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
-
-import 'package:fluttertoast/fluttertoast.dart';
-import '../../services/auth_service.dart';
-
-AuthService authService = AuthService();
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,6 +23,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   String? _selectedUserType;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  final String _baseUrl =
+      "https://your-api.com"; // Store API base URL centrally
 
   @override
   void dispose() {
@@ -33,27 +35,49 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // Save auth token to local storage
+  void _saveToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("auth_token", token);
+  }
+
+  // Handle login
   void _login() async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
 
-    if (username.isEmpty || password.isEmpty) {
-      Fluttertoast.showToast(msg: "Please fill all fields");
+    if (username.isEmpty || password.isEmpty || _selectedUserType == null) {
+      Fluttertoast.showToast(
+          msg: "Please fill all fields and select user type");
       return;
     }
 
-    final Uri loginUrl = Uri.parse(
-        "https://c218-2409-40e3-48-e232-dd14-2ff6-4d3b-da82.ngrok-free.app/api/accounts/login/");
+    final Uri loginUrl = Uri.parse("https://your-api.com/api/accounts/login/");
 
     try {
       final response = await http.post(
         loginUrl,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"username": username, "password": password}),
+        body: jsonEncode({
+          "username": username,
+          "password": password,
+          "user_type": _selectedUserType
+        }),
       );
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
+      print("Response Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      // Check if response is empty
+      if (response.body.isEmpty) {
+        Fluttertoast.showToast(msg: "Error: Empty response from server.");
+        return;
+      }
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData.containsKey("token")) {
+        _saveToken(responseData["token"]);
         Fluttertoast.showToast(msg: "Login successful!");
 
         Navigator.pushReplacement(
@@ -61,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => UserDashBoardScreen()),
         );
       } else {
-        final responseData = jsonDecode(response.body);
         Fluttertoast.showToast(
             msg: responseData["error"] ?? "Invalid login credentials");
       }
@@ -77,14 +100,14 @@ class _LoginScreenState extends State<LoginScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("assets/backgroundimg.jpg"),
                 fit: BoxFit.cover,
               ),
             ),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -105,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       isPassword: true),
                   SizedBox(height: constraints.maxHeight * 0.015),
                   _buildDropdownField(Icons.person, "Select User Type"),
-                  SizedBox(height: constraints.maxHeight * 0.002),
+                  SizedBox(height: constraints.maxHeight * 0.01),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -113,7 +136,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ForgotPasswordScreen()),
+                              builder: (context) =>
+                                  const ForgotPasswordScreen()),
                         );
                       },
                       child: Text(
@@ -122,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: constraints.maxHeight * 0.002),
+                  SizedBox(height: constraints.maxHeight * 0.01),
                   _buildButton(
                       "Login", Colors.teal[900]!, _login, constraints.maxWidth),
                   SizedBox(height: constraints.maxHeight * 0.03),
@@ -131,12 +155,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontSize: 14, color: Colors.white)),
                   SizedBox(height: constraints.maxHeight * 0.015),
                   _buildSocialButtons(),
-                  SizedBox(height: constraints.maxHeight * 0.0002),
+                  SizedBox(height: constraints.maxHeight * 0.01),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SignupScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const SignupScreen()),
                       );
                     },
                     child: Text(
@@ -152,75 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildDropdownField(IconData icon, String hint) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButtonFormField<String>(
-        value: _selectedUserType,
-        decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.teal[300]),
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
-          filled: true,
-          fillColor: Colors.transparent,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        dropdownColor: Colors.white.withOpacity(0.9),
-        style: TextStyle(color: Colors.white),
-        items: const [
-          DropdownMenuItem(value: 'User', child: Text('Regular User')),
-          DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-          DropdownMenuItem(value: 'Volunteer', child: Text('Volunteer')),
-        ],
-        onChanged: (value) {
-          setState(() {
-            _selectedUserType = value;
-          });
-        },
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-      IconData icon, String hint, TextEditingController controller,
-      {bool isPassword = false}) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword ? _obscurePassword : false,
-      style: TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.teal[300]),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.white.withOpacity(0.8),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
-              )
-            : null,
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
       ),
     );
   }
@@ -246,29 +202,82 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Widget _buildDropdownField(IconData icon, String hint) {
+    return DropdownButtonFormField<String>(
+      value: _selectedUserType,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.teal[300]),
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.2),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      dropdownColor: Colors.white.withOpacity(0.9),
+      items: const [
+        DropdownMenuItem(value: 'User', child: Text('Regular User')),
+        DropdownMenuItem(value: 'Administrator', child: Text('Administrator')),
+        DropdownMenuItem(value: 'Volunteer', child: Text('Volunteer')),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedUserType = value;
+        });
+      },
+    );
+  }
+
+  Widget _buildTextField(
+      IconData icon, String hint, TextEditingController controller,
+      {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword ? _obscurePassword : false,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.teal[300]),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.white,
+                ),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+              )
+            : null,
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.2),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSocialButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildIconButton("assets/icon/apple.png"),
-        SizedBox(width: 15),
-        _buildIconButton("assets/icon/google.png"),
-        SizedBox(width: 15),
-        _buildIconButton("assets/icon/facebook.png"),
+        _buildIconButton("assets/icon/google.png", () {}),
       ],
     );
   }
 
-  Widget _buildIconButton(String asset) {
+  Widget _buildIconButton(String asset, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {
-        // Handle social login
-      },
+      onTap: onTap,
       child: CircleAvatar(
         radius: 28,
         backgroundColor: Colors.white,
         child: Padding(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           child: Image.asset(asset, fit: BoxFit.cover),
         ),
       ),
