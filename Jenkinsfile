@@ -7,6 +7,7 @@ pipeline {
         CONTAINER_NAME = 'wesalvatore'
         DOCKER_BUILDKIT = '0'
         TIMESTAMP = new Date().format("yyyyMMddHHmmss")
+        DOCKER_CONFIG = "$HOME/.docker"  // Set Docker config path to Jenkins home
     }
 
     stages {
@@ -24,7 +25,6 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh '''
-                        export DOCKER_CONFIG=$HOME/.docker
                         mkdir -p $DOCKER_CONFIG
                         echo "{ \\"auths\\": { \\"https://index.docker.io/v1/\\": { \\"auth\\": \\"$(echo -n ${DOCKER_USER}:${DOCKER_PASSWORD} | base64)\\" } } }" > $DOCKER_CONFIG/config.json
                         docker push ${DOCKER_IMAGE}:latest
