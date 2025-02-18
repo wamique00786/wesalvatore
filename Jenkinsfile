@@ -24,7 +24,8 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh '''
-                        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        mkdir -p $HOME/.docker
+                        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USER}" --password-stdin --config $HOME/.docker
                         docker push ${DOCKER_IMAGE}:latest
                         docker push ${DOCKER_IMAGE}:${TIMESTAMP}
                         '''
@@ -44,18 +45,14 @@ pipeline {
                         echo 'Network already exists. Skipping creation...'
                     fi
 
-                    def containerExists = sh(script: "docker ps -a -q -f name=${CONTAINER_NAME}", returnStdout: true).trim()
-
-                    if (containerExists) {
+                    if [ ! -z "$(docker ps -a -q -f name=${CONTAINER_NAME})" ]; then
                         echo 'Stopping and removing existing container...'
-                         docker stop ${CONTAINER_NAME} || true
-                         docker rm ${CONTAINER_NAME} || true
-                    } else {
-                        echo 'No existing container to stop. Skipping removal process...'
-                    }
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
+                    fi
 
                     echo 'Starting new container...'
-                     docker run -d --restart=always --name ${CONTAINER_NAME} --network wesalvatore_network -p 8000:8000 ${DOCKER_IMAGE}:latest
+                    docker run -d --restart=always --name ${CONTAINER_NAME} --network wesalvatore_network -p 8000:8000 ${DOCKER_IMAGE}:latest
                     '''
                 }
             }
