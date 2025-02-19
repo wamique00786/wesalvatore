@@ -1,4 +1,5 @@
 ﻿alabaster==1.0.0
+unicorn
 asgiref==3.8.1
 async-timeout==5.0.1
 babel==2.16.0
