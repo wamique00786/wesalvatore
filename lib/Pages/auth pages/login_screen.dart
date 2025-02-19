@@ -23,10 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   String? _selectedUserType;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-  final String _baseUrl =
-      "https://your-api.com"; // Store API base URL centrally
 
   @override
   void dispose() {
@@ -52,7 +48,8 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final Uri loginUrl = Uri.parse("https://your-api.com/api/accounts/login/");
+    final Uri loginUrl = Uri.parse(
+        "https://fb95-2409-40e3-3155-731-8ec-8191-1ca9-13a8.ngrok-free.app/api/accounts/login/");
 
     try {
       final response = await http.post(
@@ -218,9 +215,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       dropdownColor: Colors.white.withOpacity(0.9),
       items: const [
-        DropdownMenuItem(value: 'User', child: Text('Regular User')),
-        DropdownMenuItem(value: 'Administrator', child: Text('Administrator')),
-        DropdownMenuItem(value: 'Volunteer', child: Text('Volunteer')),
+        DropdownMenuItem(value: 'USER', child: Text('Regular User')),
+        DropdownMenuItem(value: 'ADMIN', child: Text('Administrator')),
+        DropdownMenuItem(value: 'VOLUNTEER', child: Text('Volunteer')),
       ],
       onChanged: (value) {
         setState(() {

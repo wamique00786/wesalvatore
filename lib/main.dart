@@ -35,9 +35,9 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.deepPurple, primary: Colors.teal[900]),
         useMaterial3: true,
       ),
-      home: VolunteerDashboard(),
+      //home: VolunteerDashboard(),
       // home: UserDashBoardScreen()
-      //home: SplashScreen(),
+      home: SplashScreen(),
     );
   }
 }

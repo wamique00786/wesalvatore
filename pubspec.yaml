@@ -55,6 +55,7 @@ dependencies:
   font_awesome_flutter: ^10.8.0
   google_fonts: ^6.2.1
   fluttertoast: ^8.2.12
+  flutter_polyline_points: ^2.1.0
 
 dev_dependencies:
   flutter_test:

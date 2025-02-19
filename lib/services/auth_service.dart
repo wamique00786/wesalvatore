@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AuthService {
   final String baseUrl =
-      "https://c218-2409-40e3-48-e232-dd14-2ff6-4d3b-da82.ngrok-free.app/api/accounts";
+      "https://fb95-2409-40e3-3155-731-8ec-8191-1ca9-13a8.ngrok-free.app/api/accounts";
 
   // Login Function
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -24,29 +24,35 @@ class AuthService {
     }
   }
 
-  // Signup Function
   Future<Map<String, dynamic>> signup(
-      String email, String password, String phone, String userType) async {
+      String username,
+      String email,
+      String password,
+      String confirmPassword,
+      String phone,
+      String userType) async {
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/signup/"),
+        Uri.parse(
+            "https://fb95-2409-40e3-3155-731-8ec-8191-1ca9-13a8.ngrok-free.app/api/accounts/signup/"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
+          "username": username,
           "email": email,
           "password": password,
-          "phone": phone,
+          "password2": confirmPassword, // API requires this
+          "mobile_number": phone, // API expects 'mobile_number', not 'phone'
           "user_type": userType,
         }),
       );
 
-      // Print response for debugging
       print("Signup Response Code: ${response.statusCode}");
       print("Signup Response Body: ${response.body}");
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        return jsonDecode(response.body); // Return the API error message
+        return jsonDecode(response.body); // API error details
       }
     } catch (e) {
       print("Signup Error: $e");
