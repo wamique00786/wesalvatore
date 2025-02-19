@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import './rescue_map_page.dart';
+import 'package:wesalvatore/Volunteer/map_page.dart';
 
 class TaskDetailsPages extends StatefulWidget {
   TaskDetailsPages({super.key});
@@ -47,9 +47,13 @@ class _TaskDetailsPagesState extends State<TaskDetailsPages> {
         title: const Text("Cat Rescue Task Details"),
         backgroundColor: Colors.orange,
       ),
-      body: Stack(
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Text("Feed the cat "),
+          Text(
+            "Feed the cat ",
+            style: TextStyle(fontSize: 24),
+          ),
           Text("Details about the task  "),
           startingLocation == null
               ? const Center(child: CircularProgressIndicator())
@@ -57,8 +61,7 @@ class _TaskDetailsPagesState extends State<TaskDetailsPages> {
                   height: 400,
                   width: 400,
                   padding: EdgeInsets.all(8),
-                  child: RescueMap(
-                    currentPosition: startingLocation!,
+                  child: GeolocTrackingWidget(
                     destination: destination,
                   ),
                 ),

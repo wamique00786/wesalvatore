@@ -13,24 +13,29 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final AuthService authService = AuthService();
 
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _mobileNumberController = TextEditingController();
+
   String? _selectedUserType;
-  final bool _isLoading = false; // Loading state
+  bool _isLoading = false; // Changed from final to mutable
 
   void _signup() async {
+    String username = _usernameController.text.trim();
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
-    String phone = _phoneController.text.trim();
+    String mobileNumber = _mobileNumberController.text.trim();
     String? userType = _selectedUserType;
 
-    if (email.isEmpty ||
+    if (username.isEmpty ||
+        email.isEmpty ||
         password.isEmpty ||
-        phone.isEmpty ||
+        confirmPassword.isEmpty ||
+        mobileNumber.isEmpty ||
         userType == null) {
       Fluttertoast.showToast(msg: "Please fill all fields");
       return;
@@ -40,14 +45,24 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    var response = await authService.signup(email, password, phone, userType);
+    setState(() => _isLoading = true);
+
+    var response = await authService.signup(
+      username,
+      email,
+      password,
+      confirmPassword,
+      mobileNumber,
+      userType,
+    );
+
+    setState(() => _isLoading = false);
 
     if (response.containsKey("error")) {
-      Fluttertoast.showToast(msg: response["error"]); // Show API error message
+      Fluttertoast.showToast(msg: response["error"]);
     } else {
-      print(response);
       Fluttertoast.showToast(msg: "Signup successful! Please login.");
-      Navigator.pop(context); // Close the signup screen
+      Navigator.pop(context);
     }
   }
 
@@ -80,6 +95,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                _buildTextField(Icons.person, "Username", _usernameController),
+                const SizedBox(height: 10),
                 _buildTextField(Icons.email, "Email", _emailController),
                 const SizedBox(height: 10),
                 _buildTextField(Icons.lock, "Password", _passwordController,
@@ -89,14 +106,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     Icons.lock, "Confirm Password", _confirmPasswordController,
                     isPassword: true),
                 const SizedBox(height: 10),
-                _buildTextField(Icons.phone, "Phone", _phoneController),
+                _buildTextField(
+                    Icons.phone, "Mobile Number", _mobileNumberController),
                 const SizedBox(height: 10),
                 _buildDropdownField(Icons.person, "Select User Type"),
                 const SizedBox(height: 20),
                 Center(
                   child: _isLoading
-                      ? CircularProgressIndicator(
-                          color: Colors.teal[900]) // Show loading spinner
+                      ? CircularProgressIndicator(color: Colors.teal[900])
                       : _buildButton("Sign Up", Colors.teal[900]!, _signup),
                 ),
               ],
@@ -148,9 +165,9 @@ class _SignupScreenState extends State<SignupScreen> {
         dropdownColor: Colors.white,
         style: TextStyle(color: Colors.black),
         items: const [
-          DropdownMenuItem(value: 'User', child: Text('Regular User')),
-          DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-          DropdownMenuItem(value: 'Volunteer', child: Text('Volunteer')),
+          DropdownMenuItem(value: 'USER', child: Text('Regular User')),
+          DropdownMenuItem(value: 'ADMIN', child: Text('Admin')),
+          DropdownMenuItem(value: 'VOLUNTEER', child: Text('Volunteer')),
         ],
         onChanged: (value) {
           setState(() {
