@@ -6,7 +6,7 @@ echo "Database is ready!"
 
 echo "Applying database migrations..."
 python manage.py makemigrations && python manage.py makemigrations accounts && python manage.py migrate
-
+python manage.py migrate adoption
 if [ $? -ne 0 ]; then
   echo "Migrations failed. Exiting..."
   exit 1
