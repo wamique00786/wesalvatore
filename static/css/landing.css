@@ -14,14 +14,15 @@ html, body {
 
 /* Hero Section */
 .hero-section {
-    position: relative;
+    /*position: relative; */
     height: 100vh; /* Full screen height */
-    width: 100vw; /* Full screen width */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     color: #fff;
+    background-size: cover;
+    background-position: center;
     overflow: hidden;
     font-family: 'Poppins', sans-serif;
 }
