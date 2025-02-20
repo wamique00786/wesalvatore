@@ -10,7 +10,7 @@ echo "Applying database migrations..."
 python manage.py makemigrations && python manage.py makemigrations accounts && python manage.py migrate
 
 python manage.py migrate accounts
-python manage.py migrate rescue
+
 python manage.py migrate adoption
 python manage.py migrate donation
 python manage.py migrate subscription
