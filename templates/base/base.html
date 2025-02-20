@@ -182,7 +182,7 @@
             try {
                 new google.translate.TranslateElement({
                     pageLanguage: 'en',
-                    includedLanguages: 'af,ar,bn,zh-CN,zh-TW,nl,en,fr,de,hi,id,it,ja,ko,ml,mr,pa,pt,ru,es,ta,te,th,tr,ur,vi',
+                    includedLanguages: 'af,ar,zh-CN,zh-TW,nl,en,fr,de,hi,id,it,ja,ko,pt,ru,es,th,tr,ur,vi',
                     layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
                     autoDisplay: false
                 }, 'google_translate_element');
@@ -190,7 +190,6 @@
                 console.warn('Google Translate initialization error:', error);
             }
         }
-    
         function changeLanguage() {
             var language = document.getElementById("languageSelector").value;
             if (language) {
