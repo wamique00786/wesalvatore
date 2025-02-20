@@ -55,6 +55,7 @@ pipeline {
 
                     echo 'Starting new container...'
                     docker run -d --restart=always --name ${CONTAINER_NAME} --network wesalvatore_network -p 8000:8000 ${DOCKER_IMAGE}:latest
+                    docker system prune -a -f
                     '''
                 }
             }

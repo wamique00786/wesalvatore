@@ -1,0 +1,22 @@
+services:
+  app:
+    container_name: django_app
+    build: .
+    command: [ "sh", "-c", "chmod +x /app/entrypoint.sh && sh /app/entrypoint.sh" ]
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_NAME: "wesalvatore"
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "Pass#test00786"
+      DATABASE_HOST: "postgres_db"
+      DATABASE_PORT: "5432"
+    volumes:
+      - .:/app
+    networks:
+      - wesalvatore_network
+
+networks:
+  wesalvatore_network:
+    external: true
+
