@@ -20,6 +20,8 @@ html, body {
     align-items: center;
     justify-content: center;
     text-align: center;
+    background-size: cover;
+    background-position: center;
     color: #fff;
     background-size: cover;
     background-position: center;
@@ -261,10 +263,14 @@ html {
 /* Scanner Section */
 .scanner-section {
     height: 100vh; /* Full screen height */
-    width: 100vw;
-    background: #007bff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #007bff; /* Blue background */
     color: #fff;
-    padding: 60px 0;
+    padding: 0; /* Remove extra padding */
+    margin: 0;
     text-align: center;
 }
 
