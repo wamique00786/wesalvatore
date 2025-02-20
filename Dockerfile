@@ -18,6 +18,8 @@ COPY . .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Set the entrypoint
-ENTRYPOINT ["/bin/sh", "./entrypoint.sh"]
+# Make sure entrypoint.sh is executable
+RUN chmod +x /app/entrypoint.sh
 
+# Set the entrypoint
+ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
