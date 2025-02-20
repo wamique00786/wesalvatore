@@ -21,6 +21,7 @@ class NavBar extends StatelessWidget {
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80';
 
     return Drawer(
+      width: MediaQuery.of(context).size.width * 0.7,
       child: Material(
         color: Colors.teal[900],
         child: ListView(
@@ -122,6 +123,18 @@ class NavBar extends StatelessWidget {
                         MaterialPageRoute(
                             builder: (context) => ContactUsPage()),
                       );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Select language',
+                    icon: Icons.language,
+                    onClicked: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //       builder: (context) => ContactUsPage()),
+                      // );
                     },
                   ),
                   const SizedBox(height: 16),

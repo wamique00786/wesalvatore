@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:wesalvatore/splash_screen.dart';
-import 'package:wesalvatore/Volunteer/volunteer_dashboard.dart';
-import 'package:wesalvatore/views/user_dashboard_screen.dart';
+import 'package:wesalvatore/Admin/admin_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,14 +27,38 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'WeSalvatore',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple, primary: Colors.teal[900]),
-        useMaterial3: true,
-      ),
-      //home: VolunteerDashboard(),
-      // home: UserDashBoardScreen()
-      home: SplashScreen(),
+      // theme: ThemeData(
+      //   colorScheme: const ColorScheme.light(
+      //     primary: Color(0xFF4CAF50),
+      //     secondary: Color(0xFFFF9800),
+      //     background: Color(0xFFF5F5F5),
+      //     surface: Colors.white,
+      //     error: Color(0xFFF44336),
+      //     onPrimary: Colors.white,
+      //     onSecondary: Colors.black,
+      //     onBackground: Colors.black,
+      //     onSurface: Colors.black,
+      //     onError: Colors.white,
+      //   ),
+      //   useMaterial3: true,
+      // ),
+      // darkTheme: ThemeData(
+      //   colorScheme: const ColorScheme.dark(
+      //     primary: Color(0xFF66BB6A),
+      //     secondary: Color(0xFFFFA726),
+      //     background: Color(0xFF121212),
+      //     surface: Color(0xFF1E1E1E),
+      //     error: Color(0xFFEF5350),
+      //     onPrimary: Colors.black,
+      //     onSecondary: Colors.black,
+      //     onBackground: Colors.white,
+      //     onSurface: Colors.white,
+      //     onError: Colors.black,
+      //   ),
+      //   useMaterial3: true,
+      // ),
+      themeMode: ThemeMode.system, // System default, can be .light or .dark
+      home: const AdminDashboard(),
     );
   }
 }

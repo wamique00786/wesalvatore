@@ -14,38 +14,29 @@ class RecentAnimalsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Wesalvatore',
-          style: TextStyle(color: Colors.white), // Change text color to white
+          style: TextStyle(color: Colors.white),
         ),
-        leading: Icon(
-          Icons.pets,
-          color: Colors.white, // Change icon color to white
-        ), // Paw icon
-        actions: [
-          IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-        backgroundColor: Colors.black, // Set background color to black
+        backgroundColor: Colors.teal[900],
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Recent Animals',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  border: TableBorder.all(),
-                  columns: [
+                  border: TableBorder.all(color: Colors.grey),
+                  columns: const [
                     DataColumn(label: Text('Name')),
                     DataColumn(label: Text('Species')),
                     DataColumn(label: Text('Status')),
@@ -56,14 +47,23 @@ class RecentAnimalsScreen extends StatelessWidget {
                         (animal) => DataRow(cells: [
                           DataCell(Text(animal["name"]!)),
                           DataCell(Text(animal["species"]!)),
-                          DataCell(Text(animal["status"]!,
-                              style: TextStyle(fontWeight: FontWeight.bold))),
+                          DataCell(
+                            Text(
+                              animal["status"]!,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.teal,
+                              ),
+                            ),
+                          ),
                           DataCell(
                             ElevatedButton(
-                              onPressed: () {
-                                // Handle "View" button click
-                              },
-                              child: Text('View'),
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal[900],
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text('View'),
                             ),
                           ),
                         ]),
