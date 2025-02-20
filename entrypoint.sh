@@ -13,11 +13,11 @@ python manage.py makemigrations
 python manage.py migrate
 
 # Apply migrations for specific apps
-python manage.py migrate accounts
-python manage.py migrate rescue
-python manage.py migrate adoption
-python manage.py migrate donation
-python manage.py migrate subscription
+python manage.py migrate accounts --fake
+python manage.py migrate rescue  --fake
+python manage.py migrate adoption --fake
+python manage.py migrate donation --fake
+python manage.py migrate subscription --fake
 # Check if migrations were successful
 if [ $? -ne 0 ]; then
   echo "Migrations failed. Exiting..."
