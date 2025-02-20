@@ -9,7 +9,7 @@ echo "Database is ready!"
 echo "Applying database migrations..."
 python manage.py makemigrations 
 python manage.py migrate subscription --fake 
-python manage.py migrate recuse --fake 
+python manage.py migrate rescue --fake 
 
 
 
