@@ -19,8 +19,8 @@ def adopt_animal(request):
 
 @login_required
 def add_adoptable_animal(request):
-    if request.user.userprofile.user_type != 'ADMIN':
-        return redirect('not_authorized')  # Redirect to a 'not authorized' page
+    #if request.user.userprofile.user_type != 'ADMIN':
+        #return redirect('not_authorized')  # Redirect to a 'not authorized' page
 
     if request.method == 'POST':
         form = AdoptableAnimalForm(request.POST, request.FILES)

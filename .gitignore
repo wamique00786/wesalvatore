@@ -1,5 +1,5 @@
 # Ignore .env file
-#.env
+.env
 
 # Ignore virtual environment directory
 venv/
@@ -14,4 +14,6 @@ docs/
 */migrations/*
 
 # Ignore Python bytecode files
-*.pyc
+*.pyc.env
+.env
+postgres/
