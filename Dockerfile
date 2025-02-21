@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
     netcat \
+    pkg-config \
+    libpq-dev \
+    postgresql-client \
     && apt-get clean
 
 # Copy application files
