@@ -1,15 +1,19 @@
-FROM python:3.10
+FROM python:3.10-slim
 
-# Install required system dependencies
+# Install GDAL dependencies (Ensure correct version)
 RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
+    && apt-get update && apt-get install -y \
+    gdal-bin \
+    libgdal-dev \
     python3-gdal \
     netcat-openbsd \
     binutils \
     libproj-dev \
-    gdal-bin \
-    libgdal-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Set GDAL environment variables
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
@@ -21,7 +25,8 @@ WORKDIR /app
 # Copy the project files
 COPY . .
 
-# Install Python dependencies
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Make sure entrypoint.sh is executable
