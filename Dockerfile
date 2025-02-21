@@ -20,7 +20,7 @@ ENV GDAL_CONFIG=/usr/bin/gdal-config
 
 # Set working directory
 WORKDIR /app
-
+RUN pip install --no-cache-dir gdal==3.10.2
 # Copy project files
 COPY . .
 
