@@ -1,19 +1,34 @@
-FROM ubuntu:latest
+# Use Manjaro as the base image
+FROM manjaro:latest
 
-RUN apt update && apt install -y \
-    gdal-bin \
-    libgdal-dev \
-    python3-gdal \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN pacman -Sy --noconfirm \
+    gdal \
+    python \
+    python-pip \
+    python-virtualenv \
+    proj \
+    && pacman -Scc --noconfirm  # Clean package cache to reduce image size
 
-ENV GDAL_VERSION=3.10.1
-ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
+# Set environment variables
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-WORKDIR /app
-COPY . .
+# Create and activate virtual environment
+RUN python -m venv $VIRTUAL_ENV
+
+# Upgrade pip inside the virtual environment
 RUN pip install --upgrade pip setuptools wheel
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir gdal==${GDAL_VERSION}
 
+# Set working directory
+WORKDIR /app
+
+# Copy project files
+COPY . .
+
+# Install dependencies inside the virtual environment
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir gdal==3.10.1
+
+# Set entrypoint
 ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
