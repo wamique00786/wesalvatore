@@ -1,3 +1,5 @@
+#!/bin/sh
+
 echo "Waiting for database to be ready..."
 while ! nc -z postgres_db  5432; do
   sleep 1
@@ -37,8 +39,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "Collecting static files..."
-python manage.py collectstatic --noinput --clear
+
 
 
 echo "Starting Gunicorn server..."
