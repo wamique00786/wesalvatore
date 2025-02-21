@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesalvatore/Admin/admin_dashboard.dart';
+import 'package:wesalvatore/Volunteer/volunteer_dashboard.dart';
 import 'package:wesalvatore/user/user_dashboard_screen.dart';
 
 import 'signup_screen.dart';
@@ -48,8 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final Uri loginUrl = Uri.parse(
-        "https://fb95-2409-40e3-3155-731-8ec-8191-1ca9-13a8.ngrok-free.app/api/accounts/login/");
+    final Uri loginUrl = Uri.parse("http://144.24.122.171/api/accounts/login/");
 
     try {
       final response = await http.post(
@@ -76,11 +76,24 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200 && responseData.containsKey("token")) {
         _saveToken(responseData["token"]);
         Fluttertoast.showToast(msg: "Login successful!");
+        //"user_type":"ADMIN"
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => UserDashBoardScreen()),
+        // );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => UserDashBoardScreen()),
-        );
+        responseData["user_type"] == "ADMIN"
+            ? Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => AdminDashboard()))
+            : responseData["user_type"] == 'USER'
+                ? Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => UserDashBoardScreen()))
+                : Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => VolunteerDashboard()));
       } else {
         Fluttertoast.showToast(
             msg: responseData["error"] ?? "Invalid login credentials");

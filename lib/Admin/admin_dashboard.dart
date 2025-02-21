@@ -13,151 +13,157 @@ class AdminDashboard extends StatefulWidget {
 class AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Wesalvatore',
-          style: TextStyle(color: Colors.white),
+        backgroundColor: colorScheme.surface,
+        elevation: 2,
+        centerTitle: true,
+        title: Text(
+          'Admin Dashboard',
+          style: theme.textTheme.headlineSmall!
+              .copyWith(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.teal[900],
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const NavBar()),
-            );
-          },
-        ),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          double screenWidth = constraints.maxWidth;
-          double screenHeight = constraints.maxHeight;
-
-          return Padding(
-            padding: EdgeInsets.all(screenWidth * 0.05),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Administrator Dashboard',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.05,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.02),
-                Expanded(
-                  child: ListView(
-                    children: const [
-                      DashboardCard(title: 'Total Animals', value: '0'),
-                      DashboardCard(title: 'Under Treatment', value: '0'),
-                      DashboardCard(title: 'Recovered', value: '0'),
-                      DashboardCard(title: 'Total Volunteers', value: '3'),
-                    ]
-                        .map((card) => Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: card,
-                            ))
-                        .toList(),
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.02),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildButton(
-                      context,
-                      label: 'Recent Animals',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RecentAnimalsScreen(),
-                        ),
-                      ),
-                    ),
-                    _buildButton(
-                      context,
-                      label: 'Active Volunteers',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ActiveVolunteersScreen(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  ElevatedButton _buildButton(BuildContext context,
-      {required String label, required VoidCallback onTap}) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal[700],
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      ),
-      onPressed: onTap,
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class DashboardCard extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const DashboardCard({super.key, required this.title, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 6,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          gradient: const LinearGradient(
-            colors: [Colors.white, Colors.blueGrey],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.menu, color: colorScheme.primary),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const NavBar()));
+            },
           ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildDashboardHeader(theme),
+            const SizedBox(height: 20),
+            Expanded(child: _buildDashboardGrid(theme)),
+            const SizedBox(height: 20),
+            _buildActionButtons(context, theme),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDashboardHeader(ThemeData theme) {
+    return Column(
+      children: [
+        Text(
+          "Overview",
+          style:
+              theme.textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Divider(
+            color: theme.colorScheme.primary,
+            thickness: 2,
+            indent: 50,
+            endIndent: 50),
+      ],
+    );
+  }
+
+  Widget _buildDashboardGrid(ThemeData theme) {
+    List<Map<String, dynamic>> data = [
+      {'title': 'Total Animals', 'value': '12', 'icon': Icons.pets},
+      {'title': 'Under Treatment', 'value': '5', 'icon': Icons.healing},
+      {'title': 'Recovered', 'value': '7', 'icon': Icons.favorite},
+      {'title': 'Total Volunteers', 'value': '3', 'icon': Icons.group},
+    ];
+
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.1,
+      ),
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        return _buildDashboardCard(
+          title: data[index]['title'],
+          value: data[index]['value'],
+          icon: data[index]['icon'],
+          theme: theme,
+        );
+      },
+    );
+  }
+
+  Widget _buildDashboardCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required ThemeData theme,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Icon(icon, size: 40, color: theme.colorScheme.primary),
+            const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.bodyMedium!
+                  .copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 20,
+              style: theme.textTheme.headlineSmall!.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: theme.colorScheme.primary,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context, ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildButton(context, 'Recent Animals', () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => RecentAnimalsScreen()));
+        }, theme),
+        _buildButton(context, 'Active Volunteers', () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const ActiveVolunteersScreen()));
+        }, theme),
+      ],
+    );
+  }
+
+  Widget _buildButton(
+      BuildContext context, String label, VoidCallback onTap, ThemeData theme) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+      ),
+      onPressed: onTap,
+      child: Text(
+        label,
+        style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
       ),
     );
   }

@@ -57,6 +57,7 @@ dependencies:
   fluttertoast: ^8.2.12
   flutter_polyline_points: ^2.1.0
   flutter_translate: ^3.1.0
+  provider: ^5.0.0-nullsafety.3
 
 dev_dependencies:
   flutter_test:
