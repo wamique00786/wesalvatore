@@ -1,29 +1,27 @@
-FROM python:3.10
+# Use the latest stable GDAL image as base
+FROM osgeo/gdal:ubuntu-small-3.6.2  
 
-# Install dependencies
-RUN apt-get update && apt-get install -y software-properties-common \
-    && add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
-    && apt-get update \
-    && apt-get install -y gdal-bin libgdal-dev python3-gdal \
-    netcat-openbsd \
-    binutils \
-    libproj-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Verify GDAL installation
-RUN gdal-config --version
-
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the project files
+# Install required system dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    netcat \
+    && apt-get clean
+
+# Copy application files
 COPY . .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Make sure entrypoint.sh is executable
-RUN chmod +x /app/entrypoint.sh
+# Ensure entrypoint script is executable
+RUN chmod +x entrypoint.sh
 
-# Set the entrypoint
-ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
+# Set the entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Expose the application port
+EXPOSE 8001
