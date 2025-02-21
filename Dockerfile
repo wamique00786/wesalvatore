@@ -1,5 +1,5 @@
-# Use the official Manjaro image
-FROM manjaro:latest
+# Use official Arch Linux base image
+FROM archlinux:latest
 
 # Set environment variables
 ENV GDAL_VERSION=3.10.1
