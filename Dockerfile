@@ -2,6 +2,7 @@ FROM python:3.10
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
+    apt-get install gdal \
     netcat-openbsd \
     binutils \
     libproj-dev \
