@@ -85,6 +85,8 @@ pipeline {
                       -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
                       -e DATABASE_NAME=${DATABASE_NAME} \
                       -e SECRET_KEY=${SECRET_KEY} \
+                      -v static_volume:/app/staticfiles \
+                      -v media_volume:/app/media \
                       ${DOCKER_IMAGE}:latest
                     docker system prune -a -f
                     '''
