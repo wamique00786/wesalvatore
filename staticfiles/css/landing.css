@@ -1,22 +1,57 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+}
+
 /* Hero Section */
 .hero-section {
     position: relative;
-    height: 100vh;
+    height: 100vh; /* Full screen height */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: #333; /* Dark color for text */
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+    background-size: cover;
+    background-position: center;
     overflow: hidden;
+    font-family: 'Poppins', sans-serif;
+}
+
+.hero-section:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+    z-index: 1; /* Overlay stays behind the text */
 }
 
 .slideshow {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1; /* Place the slideshow behind the content */
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
 }
 
 .slide {
@@ -27,7 +62,7 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    animation: slideshow 20s infinite; /* 4 images * 5 seconds each */
+    animation: slideshow 20s infinite;
 }
 
 .slide:nth-child(1) {
@@ -54,25 +89,78 @@
     100% { opacity: 0; }
 }
 
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 20px;
+    max-width: 800px;
+}
+
 .hero-section h1 {
-    font-size: 4rem;
-    font-weight: bold;
-    animation: fadeInDown 2s;
+    font-size: 3.5rem;
+    font-weight: 700;
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.8); 
+    line-height: 1.2;
+    animation: fadeInDown 2s ease-in-out forwards;
+    opacity: 1;
 }
 
 .hero-section p {
-    font-size: 1.5rem;
-    animation: fadeInUp 2s;
+    font-size: 1.2rem;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+    animation: fadeInUp 2s ease-in-out forwards;
+    opacity: 1;
+}
+
+.hero-cta {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .cta-button {
-    margin-top: 20px;
-    animation: fadeIn 3s;
+    display: inline-block;
+    padding: 0.75rem 1.25rem; /* Adjusted padding */
+    border-radius: 5px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+.btn-primary:hover {
+    background: #ff5252;
+    border-color: #ff5252;
+    transform: translateY(-2px);
+}
+
+.btn-outline-light {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 /* Who We Are Section */
 .who-we-are-section {
-    padding: 40px 0;
+    padding: 40px 20px;
+    z-index: 2;
 }
 
 .who-we-are-section .slideshow {
@@ -87,7 +175,6 @@
 
 .who-we-are-section h2 {
     font-size: 2.5rem;
-    margin-bottom: 20px;
     color: #007bff; /* Blue color for heading */
 }
 
@@ -98,7 +185,7 @@
 
 /* What We Do Section */
 .what-we-do-section {
-    padding: 20px 0;
+    padding: 20px 20px;
     background: #f8f9fa; /* Light gray background */
 }
 
@@ -127,6 +214,9 @@
 
 /* Interactive Feature Cards */
 .feature-card {
+    flex: 1;
+    min-width: 280px;
+    max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -134,7 +224,7 @@
     justify-content: space-between;
     width: 100%;
     height: 100%;
-    padding: 20px 15px;
+    padding: 20px;
     border-radius: 10px;
     background: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -163,7 +253,6 @@
 .card-icon {
     font-size: 3rem;
     color: #007bff;
-    margin-bottom: 20px;
     transition: transform 0.3s ease;
 }
 
@@ -173,9 +262,15 @@
 
 /* Scanner Section */
 .scanner-section {
-    background: #007bff;
+    height: 100vh; /* Full screen height */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #007bff; /* Blue background */
     color: #fff;
-    padding: 60px 0;
+    padding: 0; /* Remove extra padding */
+    margin: 0;
     text-align: center;
 }
 
@@ -215,6 +310,51 @@
     background: #007bff;
     border-radius: 10px;
     transition: width 2s ease;
+}
+
+/* Donation Section */
+.donate-section {
+    margin: 0;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    text-align: center;
+}
+
+.donate-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #007bff;
+}
+
+.donate-section p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.donate-section .btn {
+    padding: 0.75rem 1.5rem; /* Adjust button size */
+    font-size: 1rem; /* Adjust font size */
+    border-radius: 30px; /* Rounded corners */
+    transition: all 0.3s ease;
+}
+
+.donate-section .btn-primary {
+    background: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+.donate-section .btn-primary:hover {
+    background: #ff5252;
+    border-color: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Full Width Layout */
+.container {
+    max-width: 100%;
+    padding: 0 20px;
 }
 
 /* Animations */
