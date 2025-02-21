@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     binutils \
     libproj-dev \
     gdal-bin \
-@@ -21,5 +21,5 @@ RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 # Make sure entrypoint.sh is executable
 RUN chmod +x /app/entrypoint.sh
 
