@@ -19,7 +19,7 @@ ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
 
 # Set working directory
 WORKDIR /app
-RUN pip install --no-cache-dir gdal==3.10.2
+RUN pip install --no-cache-dir gdal==3.10.1
 # Copy project files
 COPY . .
 
