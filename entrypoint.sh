@@ -38,7 +38,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput --clear
+
 
 echo "Starting Gunicorn server..."
 exec gunicorn wesalvatore.wsgi:application --bind 0.0.0.0:8000 --workers 4
