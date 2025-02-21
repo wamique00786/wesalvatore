@@ -1,30 +1,26 @@
-# Use the latest stable GDAL image as base
-FROM osgeo/gdal:ubuntu-small-3.6.2  
+FROM python:3.10
 
-# Set working directory
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    netcat-openbsd \  
+    binutils \
+    libproj-dev \
+    gdal-bin \
+    libgdal-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
 WORKDIR /app
 
-# Install required system dependencies
-RUN apt-get update && apt-get install -y \
-    python3-pip \
-    python3-dev \
-    libpq-dev \
-    postgresql-client \
-    netcat \
-    pkg-config \
-    && apt-get clean
-
-# Copy application files
+# Copy the project files
 COPY . .
 
 # Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Ensure entrypoint script is executable
-RUN chmod +x entrypoint.sh
 
-# Set the entrypoint script
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Make sure entrypoint.sh is executable
+RUN chmod +x /app/entrypoint.sh
 
-# Expose the application port
-EXPOSE 8050
+# Set the entrypoint
+ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
