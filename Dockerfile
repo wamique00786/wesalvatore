@@ -27,4 +27,4 @@ RUN chmod +x entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Expose the application port
-EXPOSE 8001
+EXPOSE 8050
