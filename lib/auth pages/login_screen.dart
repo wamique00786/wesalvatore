@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesalvatore/user/user_dashboard_screen.dart';
 
-import '../../views/user_dashboard_screen.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -103,73 +103,78 @@ class _LoginScreenState extends State<LoginScreen> {
                 fit: BoxFit.cover,
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "Welcome to Rescue Animals",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: constraints.maxWidth * 0.12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.teal[900],
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: constraints.maxWidth * 0.05,
+                  vertical: constraints.maxHeight * 0.05,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Welcome to Rescue Animals",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: constraints.maxWidth * 0.08,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.teal[900],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: constraints.maxHeight * 0.03),
-                  _buildTextField(
-                      Icons.person, "Username", _usernameController),
-                  SizedBox(height: constraints.maxHeight * 0.01),
-                  _buildTextField(Icons.lock, "Password", _passwordController,
-                      isPassword: true),
-                  SizedBox(height: constraints.maxHeight * 0.015),
-                  _buildDropdownField(Icons.person, "Select User Type"),
-                  SizedBox(height: constraints.maxHeight * 0.01),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
+                    SizedBox(height: constraints.maxHeight * 0.03),
+                    _buildTextField(
+                        Icons.person, "Username", _usernameController),
+                    SizedBox(height: constraints.maxHeight * 0.02),
+                    _buildTextField(Icons.lock, "Password", _passwordController,
+                        isPassword: true),
+                    SizedBox(height: constraints.maxHeight * 0.02),
+                    _buildDropdownField(Icons.person, "Select User Type"),
+                    SizedBox(height: constraints.maxHeight * 0.02),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const ForgotPasswordScreen()),
+                          );
+                        },
+                        child: Text(
+                          "Forgot Password?",
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: constraints.maxHeight * 0.02),
+                    _buildButton("Login", Colors.teal[900]!, _login,
+                        constraints.maxWidth),
+                    SizedBox(height: constraints.maxHeight * 0.03),
+                    Text("Or login with",
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, color: Colors.white)),
+                    SizedBox(height: constraints.maxHeight * 0.02),
+                    _buildSocialButtons(),
+                    SizedBox(height: constraints.maxHeight * 0.02),
+                    TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  const ForgotPasswordScreen()),
+                              builder: (context) => const SignupScreen()),
                         );
                       },
                       child: Text(
-                        "Forgot Password?",
-                        style: GoogleFonts.poppins(color: Colors.white),
+                        "New here? Sign Up",
+                        style: GoogleFonts.poppins(
+                          color: Colors.teal[300],
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: constraints.maxHeight * 0.01),
-                  _buildButton(
-                      "Login", Colors.teal[900]!, _login, constraints.maxWidth),
-                  SizedBox(height: constraints.maxHeight * 0.03),
-                  Text("Or login with",
-                      style: GoogleFonts.poppins(
-                          fontSize: 14, color: Colors.white)),
-                  SizedBox(height: constraints.maxHeight * 0.015),
-                  _buildSocialButtons(),
-                  SizedBox(height: constraints.maxHeight * 0.01),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const SignupScreen()),
-                      );
-                    },
-                    child: Text(
-                      "New here? Sign Up",
-                      style: GoogleFonts.poppins(
-                        color: Colors.teal[300],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -181,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildButton(
       String text, Color color, VoidCallback onTap, double width) {
     return SizedBox(
-      width: width * 0.7,
+      width: width * 0.8,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: color,

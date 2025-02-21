@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:wesalvatore/Volunteer/map_page.dart';
 
 class TaskDetailsPages extends StatefulWidget {
-  TaskDetailsPages({super.key});
+  const TaskDetailsPages({super.key});
 
   @override
   State<TaskDetailsPages> createState() => _TaskDetailsPagesState();

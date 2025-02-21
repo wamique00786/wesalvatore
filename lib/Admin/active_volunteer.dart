@@ -35,59 +35,47 @@ class ActiveVolunteersScreenState extends State<ActiveVolunteersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Wesalvatore',
-          style: TextStyle(color: Colors.white), // Change text color to white
-        ),
-        leading: Icon(
-          Icons.pets,
-          color: Colors.white, // Change icon color to white
-        ), // Paw icon
-        actions: [
-          IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-        backgroundColor: Colors.black, // Set background color to black
+        title: const Text('Wesalvatore', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.teal[900],
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Active Volunteers',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  border: TableBorder.all(),
-                  columns: [
+                  border: TableBorder.all(color: Colors.grey),
+                  columns: const [
                     DataColumn(label: Text('Username')),
                     DataColumn(label: Text('Email')),
                     DataColumn(label: Text('Location')),
                     DataColumn(label: Text('Action')),
                   ],
                   rows: volunteers
-                      .map(
-                        (volunteer) => DataRow(cells: [
-                          DataCell(Text(volunteer["username"]!)),
-                          DataCell(Text(volunteer["email"]!)),
-                          DataCell(Text(volunteer["location"]!)),
-                          DataCell(
-                            ElevatedButton(
-                              onPressed: () {
-                                // Handle "View" button click
-                              },
-                              child: Text('View'),
+                      .map((volunteer) => DataRow(cells: [
+                            DataCell(Text(volunteer["username"]!)),
+                            DataCell(Text(volunteer["email"]!)),
+                            DataCell(Text(volunteer["location"]!)),
+                            DataCell(
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.teal[700],
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () {},
+                                child: const Text('View'),
+                              ),
                             ),
-                          ),
-                        ]),
-                      )
+                          ]))
                       .toList(),
                 ),
               ),

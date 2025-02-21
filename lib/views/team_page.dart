@@ -1,5 +1,3 @@
-// ignore_for_file: use_key_in_widget_constructors
-
 import 'package:flutter/material.dart';
 
 class TeamPage extends StatelessWidget {
@@ -35,29 +33,37 @@ class TeamPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text("Meet Our Team"),
-          backgroundColor: Colors.blueAccent,
-          automaticallyImplyLeading: false,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              bottom: Radius.circular(20),
-              top: Radius.circular(20),
-            ),
-          )),
+        title: const Text(
+          "Wesalvatore",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.teal[900],
+        leading: const Icon(
+          Icons.pets,
+          color: Colors.white,
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onPressed: () {},
+          ),
+        ],
+      ),
       body: Padding(
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // 2 columns
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 0.8, // Controls card height
+            childAspectRatio: 0.9,
           ),
           itemCount: teamMembers.length,
           itemBuilder: (context, index) {
             final member = teamMembers[index];
             return Card(
-              elevation: 3,
+              color: Colors.teal[50],
+              elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -65,19 +71,26 @@ class TeamPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircleAvatar(
-                    radius: 40,
-                    backgroundImage: NetworkImage(member["image"]!),
+                    radius: 45,
+                    backgroundImage: AssetImage(member["image"]!),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Text(
                     member["name"]!,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 6),
                   Text(
                     member["role"]!,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.teal[800],
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
