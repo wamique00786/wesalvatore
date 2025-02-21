@@ -13,10 +13,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set GDAL environment variables
-ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
-ENV C_INCLUDE_PATH=/usr/include/gdal
+
 ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
-ENV GDAL_CONFIG=/usr/bin/gdal-config
+
 
 # Set working directory
 WORKDIR /app
