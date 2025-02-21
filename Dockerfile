@@ -1,5 +1,5 @@
-# Use official Arch Linux base image
-FROM archlinux:latest
+# Use Arch Linux ARM base image
+FROM archlinuxarm/base
 
 # Set environment variables
 ENV GDAL_VERSION=3.10.1
