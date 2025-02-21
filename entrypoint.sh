@@ -32,7 +32,7 @@ python manage.py collectstatic --noinput --verbosity 3
 
 # Start Gunicorn server
 echo "Starting Gunicorn server..."
-exec gunicorn wesalvatore.wsgi:application --bind 0.0.0.0:8001 --workers 4 --timeout 120 --access-logfile -
+exec gunicorn wesalvatore.wsgi:application --bind 0.0.0.0:8050 --workers 4 --timeout 120 --access-logfile -
 
 if [ $? -ne 0 ]; then
   echo "Migrations failed. Exiting..."
@@ -43,4 +43,4 @@ fi
 
 
 echo "Starting Gunicorn server..."
-exec gunicorn wesalvatore.wsgi:application --bind 0.0.0.0:8001 --workers 4
+exec gunicorn wesalvatore.wsgi:application --bind 0.0.0.0:8050 --workers 4
