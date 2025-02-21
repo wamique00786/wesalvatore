@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesalvatore/auth%20pages/login_screen.dart';
 import 'package:wesalvatore/views/career_page.dart';
 import 'package:wesalvatore/views/contact_us_page.dart';
 import 'package:wesalvatore/views/organization_page.dart';
 import 'package:wesalvatore/views/premium_page.dart';
 import 'package:wesalvatore/views/donation_page.dart';
 import 'package:wesalvatore/views/adoption_page.dart';
+import 'package:wesalvatore/views/setting_screen.dart';
 import 'package:wesalvatore/views/team_page.dart';
 
 class NavBar extends StatelessWidget {
@@ -18,148 +21,102 @@ class NavBar extends StatelessWidget {
     final name = 'John Doe';
     final email = 'john.doe@example.com';
     final imageUrl =
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80';
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=634&q=80';
 
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.7,
-      child: Material(
-        color: Colors.teal[900],
+      width: MediaQuery.of(context).size.width * 0.75,
+      child: Container(
+        color: Theme.of(context).colorScheme.surface,
         child: ListView(
           children: <Widget>[
             buildHeader(
+              context,
               urlImage: imageUrl,
               name: name,
               email: email,
               onClicked: () => Navigator.pop(context),
             ),
-            Container(
-              padding: padding,
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Donation',
-                    icon: Icons.attach_money,
-                    onClicked: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => DonationListPage()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Adoption',
-                    icon: Icons.pets,
-                    onClicked: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => AdoptionPage()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Organizations',
-                    icon: Icons.business,
-                    onClicked: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrganizationPage()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Premium',
-                    icon: Icons.money,
-                    onClicked: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SubscriptionPlans()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Team',
-                    icon: Icons.people,
-                    onClicked: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => TeamPage()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Divider(color: Colors.white70),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Notifications',
-                    icon: Icons.notifications_outlined,
-                    onClicked: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Careers',
-                    icon: Icons.work,
-                    onClicked: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => CareerPage()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Contact Us',
-                    icon: Icons.contact_page,
-                    onClicked: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ContactUsPage()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  buildMenuItem(
-                    text: 'Select language',
-                    icon: Icons.language,
-                    onClicked: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //       builder: (context) => ContactUsPage()),
-                      // );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  // Add the Logout option here
-                  buildMenuItem(
-                    text: 'Logout',
-                    icon: Icons.exit_to_app,
-                    onClicked: () async {
-                      // Step 1: Clear the session data (e.g., user token, user data)
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      await prefs
-                          .clear(); // Clears all data stored in SharedPreferences
+            const SizedBox(height: 12),
+            Divider(color: Colors.grey.shade300, thickness: 1),
+            buildMenuSection(context, "Main", [
+              buildMenuItem(context,
+                  text: 'Donation',
+                  icon: Icons.attach_money,
+                  route: DonationListPage()),
+              buildMenuItem(context,
+                  text: 'Adoption', icon: Icons.pets, route: AdoptionPage()),
+              buildMenuItem(context,
+                  text: 'Organizations',
+                  icon: Icons.business,
+                  route: OrganizationPage()),
+              buildMenuItem(context,
+                  text: 'Premium',
+                  icon: Icons.workspace_premium,
+                  route: SubscriptionPlans()),
+            ]),
+            Divider(color: Colors.grey.shade300, thickness: 1),
+            buildMenuSection(context, "More", [
+              buildMenuItem(context,
+                  text: 'Team', icon: Icons.people, route: TeamPage()),
+              buildMenuItem(context,
+                  text: 'Careers', icon: Icons.work, route: CareerPage()),
+              buildMenuItem(context,
+                  text: 'Contact Us',
+                  icon: Icons.contact_mail,
+                  route: ContactUsPage()),
+              buildMenuItem(context,
+                  text: 'Settings',
+                  icon: Icons.settings,
+                  route: SettingsPage()),
+            ]),
+            Divider(color: Colors.grey.shade300, thickness: 1),
+            buildMenuItem(
+              context,
+              text: 'Logout',
+              icon: Icons.exit_to_app,
+              onClicked: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
+                // try {
+                //   SharedPreferences prefs =
+                //       await SharedPreferences.getInstance();
+                //   String? token =
+                //       prefs.getString('auth_token'); // Get stored auth token
 
-                      // Step 2: Close the drawer
-                      // ignore: use_build_context_synchronously
-                      Navigator.pop(context);
+                //   if (token != null) {
+                //     // Step 1: Call the API to logout (if backend supports it)
+                //     final response = await http.post(
+                //       Uri.parse(
+                //           'https://http://144.24.122.171/api/accounts/logout'),
+                //       headers: {
+                //         'Authorization': 'Bearer $token',
+                //         'Content-Type': 'application/json',
+                //       },
+                //     );
 
-                      // Step 3: Navigate to the login screen
-                      // ignore: use_build_context_synchronously
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                  ),
-                ],
-              ),
+                //     if (response.statusCode == 200) {
+                //       print("Successfully logged out from backend.");
+                //     } else {
+                //       print("Logout failed on server: ${response.body}");
+                //     }
+                //   }
+
+                //   // Step 2: Clear the stored token and user data
+                //   await prefs.clear();
+
+                //   // Step 3: Close the drawer
+                //   // ignore: use_build_context_synchronously
+                //   Navigator.pop(context);
+
+                //   // Step 4: Navigate to login screen
+                //   // ignore: use_build_context_synchronously
+                //   Navigator.pushReplacementNamed(context, '/login');
+                // } catch (e) {
+                //   print("Error during logout: $e");
+                // }
+              },
             ),
           ],
         ),
@@ -167,46 +124,86 @@ class NavBar extends StatelessWidget {
     );
   }
 
-  Widget buildHeader({
+  Widget buildHeader(
+    BuildContext context, {
     required String urlImage,
     required String name,
     required String email,
     required VoidCallback onClicked,
-  }) =>
-      InkWell(
-        onTap: onClicked,
-        child: Container(
-          padding: padding.add(EdgeInsets.symmetric(vertical: 40)),
-          child: Row(
-            children: [
-              CircleAvatar(radius: 30, backgroundImage: NetworkImage(urlImage)),
-              SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name,
-                      style: TextStyle(fontSize: 20, color: Colors.white)),
-                  SizedBox(height: 4),
-                  Text(email,
-                      style: TextStyle(fontSize: 14, color: Colors.white)),
-                ],
-              ),
-            ],
-          ),
+  }) {
+    return InkWell(
+      onTap: onClicked,
+      child: Container(
+        padding: padding.add(const EdgeInsets.symmetric(vertical: 30)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+          borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20)),
         ),
-      );
+        child: Row(
+          children: [
+            const SizedBox(width: 16),
+            CircleAvatar(radius: 35, backgroundImage: NetworkImage(urlImage)),
+            const SizedBox(width: 20),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
+                const SizedBox(height: 4),
+                Text(email,
+                    style: TextStyle(fontSize: 14, color: Colors.white70)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  Widget buildMenuItem({
+  Widget buildMenuSection(
+      BuildContext context, String title, List<Widget> items) {
+    return Padding(
+      padding: padding.add(const EdgeInsets.symmetric(vertical: 10)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onBackground)),
+          const SizedBox(height: 8),
+          ...items,
+        ],
+      ),
+    );
+  }
+
+  Widget buildMenuItem(
+    BuildContext context, {
     required String text,
     required IconData icon,
+    Widget? route,
     VoidCallback? onClicked,
   }) {
-    const color = Colors.white;
-
     return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(text, style: const TextStyle(color: color)),
-      onTap: onClicked,
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      title: Text(text,
+          style: TextStyle(
+              fontSize: 16, color: Theme.of(context).colorScheme.onBackground)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      onTap: onClicked ??
+          () {
+            if (route != null) {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => route));
+            }
+          },
     );
   }
 }

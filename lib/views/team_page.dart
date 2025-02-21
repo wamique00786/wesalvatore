@@ -29,6 +29,8 @@ class TeamPage extends StatelessWidget {
     },
   ];
 
+  TeamPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
