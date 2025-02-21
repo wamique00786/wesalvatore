@@ -209,7 +209,7 @@ body {
 
 /* Cards */
 .card {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 1.5rem;
     border: none;
     border-radius: 8px;
@@ -217,7 +217,7 @@ body {
 
 .card-header {
     background-color: #f8f9fa;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    border-bottom: 1px solid rgba(0,0,0,0.125);
     font-weight: bold;
 }
 
@@ -338,7 +338,7 @@ body {
     padding: 2rem;
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .login-form h2 {
@@ -507,15 +507,12 @@ textarea.form-control {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 .card-body {
     text-align: center;
 }
-
 .btn {
     width: 100%;
 }
-
 /* Removing google logo image..  */
 #google_translate_element img
 , .skiptranslate>iframe 
@@ -523,18 +520,21 @@ textarea.form-control {
     display: none;
 }
 
-html body {
-    position: static !important; /* Override the position */
-    min-height: auto !important; /* Override min-height */
-    top: 0 !important; /* Override top */
-}
-
-
-.hero-cta a {
-    width: 90%;
-}
-
-.hero-section,
-.scanner-section {
+/* Styling the grandchild dropdown of google_translate_element */
+#google_translate_element > div > div{
+    background-color: #000000; /* Pure black background */
+    color: #ffffff; /* White text for contrast */
+    font-family: Arial, sans-serif;
+    border: 1px solid #ffffff; /* Subtle white border */
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 16px;
     width: 100%;
-}
+    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2); /* Light white shadow */
+    appearance: none; /* Removes default arrow styling */
+    outline: none;
+    cursor: pointer;
+  }
+  #google_translate_element span{
+      color: white !important;
+  }
