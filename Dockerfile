@@ -4,7 +4,7 @@ FROM python:3.10
 RUN apt-get update && apt-get install -y software-properties-common \
     && add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
     && apt-get update \
-    && apt-get install -y gdal-bin libgdal-dev python3-gdal
+    && apt-get install -y gdal-bin libgdal-dev python3-gdal \
     netcat-openbsd \  
     binutils \
     libproj-dev \
