@@ -14,7 +14,7 @@ html, body {
 
 /* Hero Section */
 .hero-section {
-    /*position: relative;*/
+    position: relative;
     height: 100vh; /* Full screen height */
     display: flex;
     align-items: center;
