@@ -1,23 +1,20 @@
-# Use a Debian-based image
-FROM debian:bullseye
+# Use the official Manjaro image
+FROM manjaro:latest
 
-# Set environment variables for GDAL
-ENV DEBIAN_FRONTEND=noninteractive
+# Set environment variables
 ENV GDAL_VERSION=3.10.1
 ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
 
-# Update package list and install system dependencies
-RUN apt-get update && apt-get install -y \
-    gdal-bin \
-    libgdal-dev \
-    python3-gdal \
-    python3-pip \
-    software-properties-common \
-    dbus \
-    netcat-openbsd \
-    binutils \
-    libproj-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Update package database and install dependencies
+RUN pacman -Syu --noconfirm \
+    gdal \
+    python-pip \
+    proj \
+    libspatialite \
+    sqlite \
+    gcc \
+    make \
+    && rm -rf /var/cache/pacman/pkg/*
 
 # Upgrade pip, setuptools, and install Python GDAL bindings
 RUN pip install --upgrade pip setuptools wheel
