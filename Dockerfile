@@ -1,33 +1,19 @@
-# Use Arch Linux ARM base image
-FROM archlinuxarm/base
+FROM ubuntu:latest
 
-# Set environment variables
+RUN apt update && apt install -y \
+    gdal-bin \
+    libgdal-dev \
+    python3-gdal \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV GDAL_VERSION=3.10.1
 ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
 
-# Update package database and install dependencies
-RUN pacman -Syu --noconfirm \
-    gdal \
-    python-pip \
-    proj \
-    libspatialite \
-    sqlite \
-    gcc \
-    make \
-    && rm -rf /var/cache/pacman/pkg/*
-
-# Upgrade pip, setuptools, and install Python GDAL bindings
+WORKDIR /app
+COPY . .
 RUN pip install --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir gdal==${GDAL_VERSION}
 
-# Set the working directory
-WORKDIR /app
-
-# Copy project files
-COPY . .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Set entrypoint
 ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
