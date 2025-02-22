@@ -117,7 +117,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 class AnimalReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnimalReport
-        fields = ['photo', 'description']
+        fields = ['photo', 'description', 'priority']
 
     def validate(self, data):
         request = self.context.get('request')

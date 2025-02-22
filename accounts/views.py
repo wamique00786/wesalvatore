@@ -65,6 +65,7 @@ class NearbyVolunteersView(generics.ListAPIView):
         context['distance'] = True  # Add flag to include distance in serializer
         return context
 
+
 class UserReportView(generics.CreateAPIView):
     serializer_class = AnimalReportSerializer
     permission_classes = [IsAuthenticated]
@@ -77,34 +78,28 @@ class UserReportView(generics.CreateAPIView):
 
             # Validate incoming data
             if 'photo' not in request.FILES:
-                return Response({
-                    'status': 'error',
-                    'message': 'Photo is required'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'status': 'error', 'message': 'Photo is required'}, status=status.HTTP_400_BAD_REQUEST)
 
             if not request.data.get('description'):
-                return Response({
-                    'status': 'error',
-                    'message': 'Description is required'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'status': 'error', 'message': 'Description is required'}, status=status.HTTP_400_BAD_REQUEST)
 
             if not request.data.get('latitude') or not request.data.get('longitude'):
-                return Response({
-                    'status': 'error',
-                    'message': 'Location coordinates are required'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'status': 'error', 'message': 'Location coordinates are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Create report object directly
+            # Validate priority (default to MEDIUM)
+            priority = request.data.get('priority', 'MEDIUM').upper()
+            valid_priorities = ['LOW', 'MEDIUM', 'HIGH']
+            if priority not in valid_priorities:
+                return Response({'status': 'error', 'message': 'Invalid priority. Choose from LOW, MEDIUM, HIGH'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create report object
             report = AnimalReport.objects.create(
                 user=request.user,
                 photo=request.FILES['photo'],
                 description=request.data['description'],
-                location=Point(
-                    float(request.data['longitude']),
-                    float(request.data['latitude']),
-                    srid=4326
-                ),
-                status='PENDING'
+                location=Point(float(request.data['longitude']), float(request.data['latitude']), srid=4326),
+                status='PENDING',
+                priority=priority
             )
 
             # Find nearest volunteer within 10km
@@ -127,11 +122,12 @@ class UserReportView(generics.CreateAPIView):
                 
                 return Response({
                     'status': 'success',
-                    'message': 'Report submitted and assigned to volunteer',
+                    'message': 'Report submitted and assigned to a volunteer.',
                     'volunteer': {
                         'name': nearest_volunteer.user.get_full_name() or nearest_volunteer.user.username,
                         'distance': f"{nearest_volunteer.distance.km:.2f} km"
-                    }
+                    },
+                    'priority': report.priority
                 }, status=status.HTTP_201_CREATED)
             
             # If no volunteer found, assign to admin
@@ -146,6 +142,7 @@ class UserReportView(generics.CreateAPIView):
                     subject="New Animal Report - No Volunteers Available",
                     message=f"""
                     A new animal report requires admin attention.
+                    Priority: {report.priority}
                     Description: {report.description}
                     Location: {report.location.y}, {report.location.x}
                     Reported by: {request.user.get_full_name() or request.user.username}
@@ -159,20 +156,19 @@ class UserReportView(generics.CreateAPIView):
                 return Response({
                     'status': 'success',
                     'message': 'No nearby volunteers available. Report assigned to admin.',
-                    'assigned_to': 'admin'
+                    'assigned_to': 'admin',
+                    'priority': report.priority
                 }, status=status.HTTP_201_CREATED)
             
             return Response({
                 'status': 'success',
                 'message': 'Report submitted. Waiting for assignment.',
+                'priority': report.priority
             }, status=status.HTTP_201_CREATED)
                 
         except Exception as e:
             logger.error(f"Error in UserReportView: {str(e)}")
-            return Response({
-                'status': 'error',
-                'message': f"Error processing report: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': f"Error processing report: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
         
     def get(self, request, *args, **kwargs):
         return Response({
@@ -181,7 +177,8 @@ class UserReportView(generics.CreateAPIView):
                 'photo': 'Image file from camera',
                 'description': 'Text description of the situation',
                 'latitude': 'Current location latitude',
-                'longitude': 'Current location longitude'
+                'longitude': 'Current location longitude',
+                'priority': 'LOW, MEDIUM, or HIGH (optional, defaults to MEDIUM)'
             }
         }, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
