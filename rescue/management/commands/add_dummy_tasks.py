@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Assuming you have a volunteer user with ID 1
-        volunteer_user = User.objects.get(username='volunteer2')
+        volunteer_user = User.objects.get(username='volunteer1')
 
         # Create dummy tasks
         tasks = [
