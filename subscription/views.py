@@ -13,7 +13,7 @@ def subscription_plans(request):
 def buy_subscription(request, plan_id):
     """ Handle subscription purchase (Placeholder for payment integration) """
     plan = get_object_or_404(SubscriptionPlan, id=plan_id)
-    return redirect('dashboard')  # Replace with actual purchase logic
+    return redirect('/subscription/plans')  # Replace with actual purchase logic
 
 def update_prices(request):
     """ API endpoint to update prices dynamically """
