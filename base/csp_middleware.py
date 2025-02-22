@@ -14,12 +14,13 @@ class ContentSecurityPolicyMiddleware:
             "https://www.gstatic.com https://fonts.googleapis.com 'unsafe-inline'; "
             "img-src 'self' data: https://*.tile.openstreetmap.org https://unpkg.com "
             "https://fonts.gstatic.com https://www.google.com https://www.gstatic.com "
-            "https://translate.googleapis.com; "
+            "https://translate.googleapis.com http://translate.google.com https://translate.google.com; "  # ✅ Added translate.google.com
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com https://fonts.googleapis.com; "
             "object-src 'none'; "
-            "connect-src 'self' https://nominatim.openstreetmap.org "
+            "connect-src 'self' data: https://nominatim.openstreetmap.org "
             "https://translate.googleapis.com https://translate-pa.googleapis.com "
-            "https://ipwhois.app https://ipapi.co http://ip-api.com; "  # ✅ Added APIs here
+            "https://ipwhois.app https://ipapi.co http://ip-api.com; "
+            "form-action 'self' data:; "
         )
 
         return response
