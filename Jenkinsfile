@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/wamique00786/wesalvatore.git'
-        DOCKER_IMAGE = 'wamique00786/wesalvatore'
-        CONTAINER_NAME = 'wesalvatore'
+        REPO_URL = 'https://github.com/wamique00786/wesalvator.git'
+        DOCKER_IMAGE = 'wamique00786/wesalvator'
+        CONTAINER_NAME = 'wesalvator'
         DOCKER_BUILDKIT = '0'
         TIMESTAMP = new Date().format("yyyyMMddHHmmss")
         
@@ -63,10 +63,10 @@ pipeline {
                 script {
                     echo "Deploying application container..."
                     sh '''
-                    NETWORK_EXISTS=$(docker network ls --format "{{.Name}}" | grep -w wesalvatore_network || true)
+                    NETWORK_EXISTS=$(docker network ls --format "{{.Name}}" | grep -w wesalvator_network || true)
                     if [ -z "$NETWORK_EXISTS" ]; then
                         echo 'Creating Docker network...'
-                        docker network create wesalvatore_network
+                        docker network create wesalvator_network
                     else
                         echo 'Network already exists. Skipping creation...'
                     fi
@@ -79,7 +79,7 @@ pipeline {
                     fi
 
                     echo 'Starting new app container...'
-                    docker run -d --restart=always --name ${CONTAINER_NAME} --network wesalvatore_network -p 8000:8000 \
+                    docker run -d --restart=always --name ${CONTAINER_NAME} --network wesalvator_network -p 8000:8000 \
                       -e DATABASE_HOST=${DATABASE_HOST} \
                       -e DATABASE_USER=${DATABASE_USER} \
                       -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
