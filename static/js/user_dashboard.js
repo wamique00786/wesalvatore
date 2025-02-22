@@ -101,9 +101,16 @@ function initMap() {
         }
     }, 10000); // Update every 10 seconds
 }
-
 async function updateUserInfo(latitude, longitude) {
     try {
+        console.log("Updating user location:", latitude, longitude); // Debugging log
+
+        // Ensure latitude & longitude are valid
+        if (latitude === undefined || longitude === undefined) {
+            console.error("Invalid coordinates received:", latitude, longitude);
+            return;
+        }
+
         // Fetch CSRF Token
         const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
         const csrfToken = csrfTokenElement ? csrfTokenElement.value : null;
@@ -117,8 +124,7 @@ async function updateUserInfo(latitude, longitude) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, // This may be null
-
+                'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify({ latitude, longitude })
         });
@@ -130,6 +136,10 @@ async function updateUserInfo(latitude, longitude) {
 
         // Get user info
         const userInfoResponse = await fetch('/api/user-info/');
+        if (!userInfoResponse.ok) {
+            console.error("Failed to fetch user info:", await userInfoResponse.text());
+            return;
+        }
         const userInfo = await userInfoResponse.json();
 
         // Create or update marker
@@ -150,18 +160,18 @@ async function updateUserInfo(latitude, longitude) {
             </div>
         `;
 
-        // Update popup
-        if (userPopup) {
-            userPopup.setContent(popupContent);
-            userMarker.bindPopup(userPopup).openPopup();
+        // Check if popup exists, then update content
+        if (userMarker.getPopup()) {
+            userMarker.getPopup().setContent(popupContent);
         } else {
-            userPopup = userMarker.bindPopup(popupContent);
+            userMarker.bindPopup(popupContent).openPopup();
         }
 
     } catch (error) {
         console.error('Error updating user info:', error);
     }
 }
+
 
 
 function watchLocation() {
