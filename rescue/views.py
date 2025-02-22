@@ -142,7 +142,7 @@ def get_user_info(request):
         user_profile = request.user.userprofile
         return JsonResponse({
             'username': request.user.username,
-            'phone': user_profile.mobile_number,
+            'phone': str(user_profile.mobile_number),  # Convert PhoneNumber object to string
             'location': {
                 'latitude': user_profile.location.y if user_profile.location else None,
                 'longitude': user_profile.location.x if user_profile.location else None
@@ -471,24 +471,27 @@ def nearby_volunteers(request):
             'message': str(e)
         }, status=400)
     
-@api_view(['POST'])
-def save_user_location(request):
-    try:
-        latitude = float(request.data.get('latitude'))
-        longitude = float(request.data.get('longitude'))
+# @api_view(['POST'])
+# def save_user_location(request):
+#     try:
+#         latitude = float(request.data.get('latitude'))
+#         longitude = float(request.data.get('longitude'))
         
-        user_profile = request.user.userprofile
-        user_profile.location = Point(longitude, latitude, srid=4326)
-        user_profile.save()
+#         user_profile = request.user.userprofile
+#         user_profile.location = Point(longitude, latitude, srid=4326)
+#         user_profile.save()
         
-        return JsonResponse({'status': 'success'})
-    except Exception as e:
-        logger.error(f"Error saving user location: {str(e)}")
-        return JsonResponse({
-            'status': 'error',
-            'message': str(e)
-        }, status=400)
+#         return JsonResponse({'status': 'success'})
+#     except Exception as e:
+#         logger.error(f"Error saving user location: {str(e)}")
+#         return JsonResponse({
+#             'status': 'error',
+#             'message': str(e)
+#         }, status=400)
         
+
+    
+
 def volunteer_locations(request):
     volunteers = UserProfile.objects.filter(user_type='VOLUNTEER').exclude(location__isnull=True)
     data = [
