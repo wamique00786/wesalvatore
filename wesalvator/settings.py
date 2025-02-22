@@ -176,7 +176,3 @@ CSRF_TRUSTED_ORIGINS = [
 
 SESSION_COOKIE_AGE = 300  # 5 minutes in seconds
 SESSION_SAVE_EVERY_REQUEST = True  # Reset the session expiry time on every request
-
-SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
-SESSION_COOKIE_SECURE = True  # Ensure cookies are only sent over HTTPS
-CSRF_COOKIE_SECURE = True  # Prevent CSRF attacks on HTTP
