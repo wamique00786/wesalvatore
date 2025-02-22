@@ -6,6 +6,15 @@ const startButton = document.getElementById('startCamera');
 const captureButton = document.getElementById('capturePhoto');
 const retakeButton = document.getElementById('retakePhoto');
 
+// to retrive cookies
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null; // Return null if the cookie does not exist
+}
+
+
 // Camera handling
 startButton.addEventListener('click', async () => {
     try {
@@ -103,7 +112,7 @@ function initMap() {
 }
 async function updateUserInfo(latitude, longitude) {
     try {
-        console.log("Updating user location:", latitude, longitude); // Debugging log
+        // console.log("Updating user location:", latitude, longitude); // Debugging log
 
         // Ensure latitude & longitude are valid
         if (latitude === undefined || longitude === undefined) {
@@ -185,7 +194,7 @@ function watchLocation() {
 
                 const latitude = position.coords.latitude;
                 const longitude = position.coords.longitude;
-                console.log("Live location:", latitude, longitude); // Debugging
+                // console.log("Live location:", latitude, longitude); // Debugging
 
                 updateUserInfo(latitude, longitude);
             },
@@ -313,44 +322,45 @@ async function sendReportToAdmin() {
         alert('Failed to send report to admin.');
     }
 }
+document.cookie = "user_latitude=25.5940947; path=/";
+document.cookie = "user_longitude=85.1375645; path=/";
 
 // Function to submit the report
 async function submitReport() {
     const descriptionInput = document.getElementById('description');
-    const photoData = document.getElementById('image');
+    const photoDataInput = document.getElementById('photoData'); // This holds base64
 
-    // Ensure all elements are found
-    if (!descriptionInput || !photoData) {
+    if (!descriptionInput || !photoDataInput) {
         alert('Required input elements are missing.');
         return;
     }
 
-    // Check if all required fields are filled
-    if (!descriptionInput.value || !photoData.files[0]) {
-        alert('Please fill in all fields and ensure an image is selected.');
+    if (!descriptionInput.value || !photoDataInput.value) {
+        alert('Please fill in all fields and ensure an image is captured.');
         return;
     }
 
-    const latitudeInput = getCookie('user_latitude'); // Assuming you have a function to get cookies
-    const longitudeInput = getCookie('user_longitude'); // Assuming you have a function to get cookies
+    const latitudeInput = getCookie('user_latitude'); 
+    const longitudeInput = getCookie('user_longitude'); 
 
-    console.log('Latitude:', latitudeInput); // Debugging line
-    console.log('Longitude:', longitudeInput); // Debugging line
-
-    // Check if latitude and longitude are available
     if (!latitudeInput || !longitudeInput) {
         alert('Location is not available. Please enable location services.');
         return;
     }
 
+    // Convert base64 to File object
+    const base64Data = photoDataInput.value;
+    const blob = await fetch(base64Data).then(res => res.blob());
+    const file = new File([blob], "captured_photo.jpg", { type: "image/jpeg" });
+
     const formData = new FormData();
-    formData.append('photo', photoData.files[0]); // Ensure this is the file input
+    formData.append('photo', file); 
     formData.append('description', descriptionInput.value);
-    formData.append('latitude', latitudeInput); // Use the latitude from cookies or input
-    formData.append('longitude', longitudeInput); // Use the longitude from cookies or input
+    formData.append('latitude', latitudeInput);
+    formData.append('longitude', longitudeInput);
 
     try {
-        const response = await fetch('/api/user/report/', {
+        const response = await fetch('/api/accounts/user/', {
             method: 'POST',
             body: formData,
         });
@@ -362,6 +372,7 @@ async function submitReport() {
         alert('Failed to submit report.');
     }
 }
+
 
 // Add event listener to the report form submission
 document.getElementById('reportAnimalForm').addEventListener('submit', (event) => {
