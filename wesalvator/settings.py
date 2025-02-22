@@ -182,6 +182,6 @@ SESSION_COOKIE_SECURE = True  # Ensure cookies are only sent over HTTPS
 CSRF_COOKIE_SECURE = True  # Prevent CSRF attacks on HTTP
 
 CORS_ALLOWED_ORIGINS = [
-    "https://http://144.24.122.171/",
+    "https://144.24.122.171/",
 ]
 CORS_ALLOW_CREDENTIALS = True
