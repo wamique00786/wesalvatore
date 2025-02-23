@@ -85,11 +85,7 @@ pipeline {
                       -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
                       -e DATABASE_NAME=${DATABASE_NAME} \
                       -e SECRET_KEY=${SECRET_KEY} \
-                      -e GDAL_LIBRARY_PATH="/usr/lib/libgdal.so" \
-                      -e CPLUS_INCLUDE_PATH="/usr/include/gdal" \
-                      -e C_INCLUDE_PATH="/usr/include/gdal" \
-                      -e GDAL_DATA="/usr/share/gdal" \
-                      -e PROJ_LIB="/usr/share/proj" \
+                      -e GDAL_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/libgdal.so \
                       -v static_volume:/app/staticfiles \
                       -v media_volume:/app/media \
                       ${DOCKER_IMAGE}:latest
