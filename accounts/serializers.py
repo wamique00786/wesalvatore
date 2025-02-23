@@ -115,59 +115,42 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         return value
     
 class AnimalReportSerializer(serializers.ModelSerializer):
+    latitude = serializers.FloatField(write_only=True, required=True)
+    longitude = serializers.FloatField(write_only=True, required=True)
+
     class Meta:
         model = AnimalReport
-        fields = ['photo', 'description', 'priority']
+        fields = ['photo', 'description', 'priority', 'latitude', 'longitude']
 
     def validate(self, data):
         request = self.context.get('request')
         if not request:
             raise serializers.ValidationError("No request object found")
 
-        # Validate photo
-        if 'photo' not in data:
+        # Ensure photo is present
+        if 'photo' not in request.FILES:
             raise serializers.ValidationError("A photo is required")
 
         # Validate description
         if 'description' not in data:
             raise serializers.ValidationError("A description is required")
 
-        # Validate location
-        try:
-            latitude = float(request.data.get('latitude'))
-            longitude = float(request.data.get('longitude'))
-            if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
-                raise serializers.ValidationError("Invalid coordinates")
-        except (TypeError, ValueError):
-            raise serializers.ValidationError("Valid latitude and longitude are required")
+        # Validate location coordinates
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        if latitude is None or longitude is None:
+            raise serializers.ValidationError("Location coordinates are required")
+
+        if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+            raise serializers.ValidationError("Invalid latitude or longitude")
 
         return data
 
     def create(self, validated_data):
-        request = self.context.get('request')
-        if request:
-            try:
-                latitude = float(request.data.get('latitude'))
-                longitude = float(request.data.get('longitude'))
-                validated_data['location'] = Point(longitude, latitude, srid=4326)
-                validated_data['user'] = request.user
-            except (TypeError, ValueError) as e:
-                raise serializers.ValidationError("Valid latitude and longitude are required")
-        return super().create(validated_data)
-    
-    def create(self, validated_data):
-        request = self.context.get('request')
-        latitude = float(request.data.get('latitude'))
-        longitude = float(request.data.get('longitude'))
-        
-        # Add additional data to validated_data
+        latitude = validated_data.pop('latitude')
+        longitude = validated_data.pop('longitude')
+
         validated_data['location'] = Point(longitude, latitude, srid=4326)
-        validated_data['user'] = request.user
-        validated_data['status'] = 'PENDING'
-        
-        # ✅ Set default priority to 'MEDIUM' if not provided
-        if 'priority' not in validated_data:
-            validated_data['priority'] = 'MEDIUM'
-            
+
         return super().create(validated_data)
-    
+
