@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     gdal-bin \
     libgdal-dev \
     python3-gdal \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables for GDAL
