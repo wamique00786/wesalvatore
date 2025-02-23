@@ -13,6 +13,7 @@ ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 ENV GDAL_DATA=/usr/share/gdal
 ENV PROJ_LIB=/usr/share/proj
+ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
 
 # Set working directory
 WORKDIR /app
