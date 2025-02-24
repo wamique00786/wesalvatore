@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:wesalvatore/Admin/admin_dashboard.dart';
 import 'package:wesalvatore/Volunteer/volunteer_dashboard.dart';
+import 'package:wesalvatore/provider/user_provider.dart';
 import 'package:wesalvatore/user/user_dashboard_screen.dart';
-
-import 'signup_screen.dart';
-import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,7 +19,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
   bool _obscurePassword = true;
   String? _selectedUserType;
 
@@ -32,14 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Save auth token to local storage
-  void _saveToken(String token) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString("auth_token", token);
-  }
-
-  // Handle login
-  void _login() async {
+  void _login(BuildContext context) async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
 
@@ -65,7 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
       print("Response Status Code: ${response.statusCode}");
       print("Response Body: ${response.body}");
 
-      // Check if response is empty
       if (response.body.isEmpty) {
         Fluttertoast.showToast(msg: "Error: Empty response from server.");
         return;
@@ -74,26 +63,24 @@ class _LoginScreenState extends State<LoginScreen> {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200 && responseData.containsKey("token")) {
-        _saveToken(responseData["token"]);
-        Fluttertoast.showToast(msg: "Login successful!");
-        //"user_type":"ADMIN"
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => UserDashBoardScreen()),
-        // );
+        String token = responseData["token"];
+        String userType = responseData["user_type"];
 
-        responseData["user_type"] == "ADMIN"
-            ? Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => AdminDashboard()))
-            : responseData["user_type"] == 'USER'
-                ? Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => UserDashBoardScreen()))
-                : Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => VolunteerDashboard()));
+        Provider.of<UserProvider>(context, listen: false)
+            .setUser(username, userType, token);
+
+        Fluttertoast.showToast(msg: "Login successful!");
+
+        if (userType == "ADMIN") {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => AdminDashboard()));
+        } else if (userType == "USER") {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => UserDashBoardScreen()));
+        } else {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => VolunteerDashboard()));
+        }
       } else {
         Fluttertoast.showToast(
             msg: responseData["error"] ?? "Invalid login credentials");
@@ -105,114 +92,88 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Container(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background Image Covering Entire Screen
+          Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("assets/backgroundimg.jpg"),
                 fit: BoxFit.cover,
               ),
             ),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: constraints.maxWidth * 0.05,
-                  vertical: constraints.maxHeight * 0.05,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Welcome to Rescue Animals",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: constraints.maxWidth * 0.08,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.teal[900],
-                      ),
+          ),
+
+          // Login Form with Scrollable View
+          SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.08,
+                  vertical: screenHeight * 0.08),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Welcome to Rescue Animals",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: screenWidth * 0.08,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.teal[900],
                     ),
-                    SizedBox(height: constraints.maxHeight * 0.03),
-                    _buildTextField(
-                        Icons.person, "Username", _usernameController),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    _buildTextField(Icons.lock, "Password", _passwordController,
-                        isPassword: true),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    _buildDropdownField(Icons.person, "Select User Type"),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const ForgotPasswordScreen()),
-                          );
-                        },
-                        child: Text(
-                          "Forgot Password?",
-                          style: GoogleFonts.poppins(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    _buildButton("Login", Colors.teal[900]!, _login,
-                        constraints.maxWidth),
-                    SizedBox(height: constraints.maxHeight * 0.03),
-                    Text("Or login with",
-                        style: GoogleFonts.poppins(
-                            fontSize: 14, color: Colors.white)),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    _buildSocialButtons(),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SignupScreen()),
-                        );
-                      },
-                      child: Text(
-                        "New here? Sign Up",
-                        style: GoogleFonts.poppins(
-                          color: Colors.teal[300],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  SizedBox(height: screenHeight * 0.05),
+                  _buildTextField(
+                      Icons.person, "Username", _usernameController),
+                  SizedBox(height: screenHeight * 0.02),
+                  _buildTextField(Icons.lock, "Password", _passwordController,
+                      isPassword: true),
+                  SizedBox(height: screenHeight * 0.02),
+                  _buildDropdownField(Icons.person, "Select User Type"),
+                  SizedBox(height: screenHeight * 0.04),
+                  _buildButton("Login", Colors.teal[900]!,
+                      () => _login(context), screenWidth),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildButton(
-      String text, Color color, VoidCallback onTap, double width) {
-    return SizedBox(
-      width: width * 0.8,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          padding: EdgeInsets.symmetric(vertical: 16),
-          elevation: 6,
+  Widget _buildTextField(
+      IconData icon, String hint, TextEditingController controller,
+      {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword ? _obscurePassword : false,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.teal[300]),
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.2),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
-        onPressed: onTap,
-        child: Text(
-          text,
-          style: GoogleFonts.poppins(fontSize: 18, color: Colors.white),
-        ),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.teal[300]),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              )
+            : null,
       ),
     );
   }
@@ -223,7 +184,6 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.teal[300]),
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white),
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
         border: OutlineInputBorder(
@@ -231,7 +191,6 @@ class _LoginScreenState extends State<LoginScreen> {
           borderSide: BorderSide.none,
         ),
       ),
-      dropdownColor: Colors.white.withOpacity(0.9),
       items: const [
         DropdownMenuItem(value: 'USER', child: Text('Regular User')),
         DropdownMenuItem(value: 'ADMIN', child: Text('Administrator')),
@@ -245,55 +204,22 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(
-      IconData icon, String hint, TextEditingController controller,
-      {bool isPassword = false}) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword ? _obscurePassword : false,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.teal[300]),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.white,
-                ),
-                onPressed: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
-              )
-            : null,
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+  Widget _buildButton(
+      String text, Color color, VoidCallback onPressed, double width) {
+    return SizedBox(
+      width: width * 0.8,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildIconButton("assets/icon/google.png", () {}),
-      ],
-    );
-  }
-
-  Widget _buildIconButton(String asset, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: CircleAvatar(
-        radius: 28,
-        backgroundColor: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Image.asset(asset, fit: BoxFit.cover),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
     );
