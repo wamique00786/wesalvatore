@@ -194,7 +194,7 @@ function watchLocation() {
 
                 const latitude = position.coords.latitude;
                 const longitude = position.coords.longitude;
-                // console.log("Live location:", latitude, longitude); // Debugging
+                console.log("Live location:", latitude, longitude); // Debugging
 
                 updateUserInfo(latitude, longitude);
             },
@@ -322,8 +322,8 @@ async function sendReportToAdmin() {
         alert('Failed to send report to admin.');
     }
 }
-document.cookie = "user_latitude=25.5940947; path=/";
-document.cookie = "user_longitude=85.1375645; path=/";
+// document.cookie = "user_latitude=25.5940947; path=/";
+// document.cookie = "user_longitude=85.1375645; path=/";
 
 // Function to submit the report
 async function submitReport() {
@@ -340,39 +340,66 @@ async function submitReport() {
         return;
     }
 
-    const latitudeInput = getCookie('user_latitude'); 
-    const longitudeInput = getCookie('user_longitude'); 
+    const latitude = getCookie('user_latitude');
+    const longitude = getCookie('user_longitude');
 
-    if (!latitudeInput || !longitudeInput) {
+    if (!latitude || !longitude) {
         alert('Location is not available. Please enable location services.');
         return;
     }
 
-    // Convert base64 to File object
-    const base64Data = photoDataInput.value;
-    const blob = await fetch(base64Data).then(res => res.blob());
-    const file = new File([blob], "captured_photo.jpg", { type: "image/jpeg" });
-
-    const formData = new FormData();
-    formData.append('photo', file); 
-    formData.append('description', descriptionInput.value);
-    formData.append('latitude', latitudeInput);
-    formData.append('longitude', longitudeInput);
-
     try {
+        // Convert base64 to Blob
+        const base64Data = photoDataInput.value;
+        const byteCharacters = atob(base64Data.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new File([byteArray], "captured_photo.jpg", { type: "image/jpeg" });
+
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('description', descriptionInput.value);
+        formData.append('latitude', latitude);
+        formData.append('longitude', longitude);
+        formData.append('priority', document.getElementById('priority').value || 'MEDIUM');
+
+        // Fetch CSRF Token
+        const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+        const csrfToken = csrfTokenElement ? csrfTokenElement.value : null;
+        if (!csrfToken) {
+            console.error("CSRF token not found.");
+            return;
+        }
+
+        // const token = localStorage.getItem('token');  // Ensure user is authenticated
+        // if (!token) {
+        //     alert("You need to log in first.");
+        //     return;
+        // }
+
         const response = await fetch('/api/accounts/user/', {
             method: 'POST',
             body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,  // Include CSRF token in the request headers
+            },
+            credentials: "include"  // Required to include cookies (session authentication)
         });
-        if (!response.ok) throw new Error('Network response was not ok');
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
         const result = await response.json();
         alert(result.message);
     } catch (error) {
         console.error('Error submitting report:', error);
-        alert('Failed to submit report.');
+        alert('Failed to submit report. Please try again.');
     }
 }
-
 
 // Add event listener to the report form submission
 document.getElementById('reportAnimalForm').addEventListener('submit', (event) => {
