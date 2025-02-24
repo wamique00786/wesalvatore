@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <application
-        android:label="wesalvatore"
+        android:label="Wesalvator"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
