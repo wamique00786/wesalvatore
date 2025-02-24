@@ -87,10 +87,17 @@ class UserReportView(generics.CreateAPIView):
                 return Response({'status': 'error', 'message': 'Location coordinates are required'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Validate priority (default to MEDIUM)
-            priority = request.data.get('priority', 'MEDIUM').upper()
-            valid_priorities = ['LOW', 'MEDIUM', 'HIGH']
-            if priority not in valid_priorities:
+            priority = request.data.get('priority', None)
+
+            if priority is None or priority.strip() == "":
+                priority = "MEDIUM"
+            else:
+                priority = priority.strip().upper()
+
+            if priority not in ['LOW', 'MEDIUM', 'HIGH']:
                 return Response({'status': 'error', 'message': 'Invalid priority. Choose from LOW, MEDIUM, HIGH'}, status=status.HTTP_400_BAD_REQUEST)
+
+            logger.info(f"Final Priority assigned: {priority}")  # Debugging log
 
             # Create report object
             report = AnimalReport.objects.create(

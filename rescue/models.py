@@ -52,7 +52,6 @@ class AnimalReport(models.Model):
         ('LOW', 'Low'),
         ('MEDIUM', 'Medium'),
         ('HIGH', 'High'),
-        ('URGENT', 'Urgent'),
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

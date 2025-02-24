@@ -115,6 +115,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         return value
     
 class AnimalReportSerializer(serializers.ModelSerializer):
+    priority = serializers.ChoiceField(choices=['LOW', 'MEDIUM', 'HIGH'], default='MEDIUM')
     latitude = serializers.FloatField(write_only=True, required=True)
     longitude = serializers.FloatField(write_only=True, required=True)
 
