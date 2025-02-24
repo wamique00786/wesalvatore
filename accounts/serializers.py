@@ -117,7 +117,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 class AnimalReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnimalReport
-        fields = ['photo', 'description']
+        fields = ['photo', 'description', 'priority']
 
     def validate(self, data):
         request = self.context.get('request')
@@ -165,5 +165,9 @@ class AnimalReportSerializer(serializers.ModelSerializer):
         validated_data['user'] = request.user
         validated_data['status'] = 'PENDING'
         
+        # ✅ Set default priority to 'MEDIUM' if not provided
+        if 'priority' not in validated_data:
+            validated_data['priority'] = 'MEDIUM'
+            
         return super().create(validated_data)
     

@@ -48,6 +48,12 @@ class AnimalReport(models.Model):
         ('ADMIN_REVIEW', 'Admin Review'),
         ('COMPLETED', 'Completed'),
     )
+    PRIORITY_CHOICES = (
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High'),
+        ('URGENT', 'Urgent'),
+    )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     photo = models.ImageField(upload_to='animal_reports/')
@@ -62,7 +68,9 @@ class AnimalReport(models.Model):
         blank=True,
         related_name='assigned_reports'
     )
-
+    # ✅ New Priority Column
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='MEDIUM')
+    
     def __str__(self):
         return f"Report by {self.user.username} on {self.timestamp}"
     
