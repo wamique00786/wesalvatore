@@ -136,7 +136,7 @@ pipeline {
                 
                 // Slack Notification on success
                 slackSend(
-                    channel:  '#logs-and-errors',  // Adjusted to your specific channel
+                    channel:  '#bugs-and-errors',  // Adjusted to your specific channel
                     message: "✅ Jenkins Pipeline: Deployment Successful! 🚀 Repository: ${REPO_URL}"
                 )
             }
@@ -167,7 +167,7 @@ pipeline {
 
                 // Slack Notification on failure
                 slackSend(
-                    channel: '#logs-and-errors',  // Adjusted to your specific channel
+                    channel: '#bugs-and-errors',  // Adjusted to your specific channel
                     message: "❌ Jenkins Pipeline: Deployment Failed! 🚨 Failed Stage: ${failedStage}"
                 )
             }
