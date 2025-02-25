@@ -26,6 +26,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated #AllowAny  # Import AllowAny
 #from accounts.serializers import UserProfileSerializer
 from django.contrib.auth import get_user_model
+from .serializers import UserProfileSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -434,14 +435,33 @@ def report_animal(request):
         }, status=400)
     
 @api_view(['GET'])
-def nearby_volunteers(request):
+def nearby_volunteers(request, *args, **kwargs):
     try:
-        lat = float(request.GET.get('lat'))
-        lng = float(request.GET.get('lng'))
-        radius = float(request.GET.get('radius', 10))  # Default 10km
-        
+        lat = request.GET.get('lat')
+        lng = request.GET.get('lng')
+        radius = request.GET.get('radius', 10)  # Default 10km if not provided
+
+        # Validate parameters
+        if lat is None or lng is None:
+            return Response({
+                'status': 'error',
+                'message': 'Missing required parameters: lat and lng'
+            }, status=400)
+
+        try:
+            lat = float(lat)
+            lng = float(lng)
+            radius = float(radius)
+        except ValueError:
+            return Response({
+                'status': 'error',
+                'message': 'Invalid lat, lng, or radius. They must be valid numbers.'
+            }, status=400)
+
+        # Convert user coordinates into a GeoDjango Point
         user_location = Point(lng, lat, srid=4326)
-        
+
+        # Query for volunteers within the given radius
         nearby_volunteers = UserProfile.objects.filter(
             user_type='VOLUNTEER',
             location__isnull=False,
@@ -450,46 +470,20 @@ def nearby_volunteers(request):
             distance=Distance('location', user_location)
         ).order_by('distance')
 
-        volunteer_data = [{
-            'id': v.user.id,
-            'name': v.user.get_full_name() or v.user.username,
-            'distance': f"{v.distance.km:.2f}",
-            'location': {
-                'latitude': v.location.y,
-                'longitude': v.location.x
-            }
-        } for v in nearby_volunteers]
+        # Serialize the data using DRF Serializer
+        serializer = UserProfileSerializer(nearby_volunteers, many=True)
 
         return Response({
             'status': 'success',
-            'volunteers': volunteer_data
+            'volunteers': serializer.data
         })
+
     except Exception as e:
         logger.error(f"Error fetching nearby volunteers: {str(e)}")
         return Response({
             'status': 'error',
-            'message': str(e)
-        }, status=400)
-    
-# @api_view(['POST'])
-# def save_user_location(request):
-#     try:
-#         latitude = float(request.data.get('latitude'))
-#         longitude = float(request.data.get('longitude'))
-        
-#         user_profile = request.user.userprofile
-#         user_profile.location = Point(longitude, latitude, srid=4326)
-#         user_profile.save()
-        
-#         return JsonResponse({'status': 'success'})
-#     except Exception as e:
-#         logger.error(f"Error saving user location: {str(e)}")
-#         return JsonResponse({
-#             'status': 'error',
-#             'message': str(e)
-#         }, status=400)
-        
-
+            'message': 'An unexpected error occurred. Please try again later.'
+        }, status=500)
     
 
 def volunteer_locations(request):

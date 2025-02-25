@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chat Support - Wesalvator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>
+                        Wesalvator Support Chat
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="chat-container" class="mb-3" style="height: 400px; overflow-y: auto;">
+                        {% for message in chat_history %}
+                            <div class="message user-message mb-2 text-end">
+                                <div class="d-inline-block bg-primary text-white rounded p-2">
+                                    {{ message.user_message }}
+                                </div>
+                            </div>
+                            <div class="message bot-message mb-2">
+                                <div class="d-inline-block bg-light rounded p-2">
+                                    {{ message.bot_response }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="user-input" class="form-control" placeholder="Type your message...">
+                        <button class="btn btn-primary" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function sendMessage() {
+        var message = $('#user-input').val();
+        if (message.trim() === '') return;
+
+        // Display user message
+        $('#chat-container').append(`
+            <div class="message user-message mb-2 text-end">
+                <div class="d-inline-block bg-primary text-white rounded p-2">
+                    ${message}
+                </div>
+            </div>
+        `);
+
+        // Send message to server
+        $.ajax({
+            url: '{% url "get_bot_response" %}',
+            type: 'POST',
+            data: {
+                'message': message,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                // Display bot response
+                $('#chat-container').append(`
+                    <div class="message bot-message mb-2">
+                        <div class="d-inline-block bg-light rounded p-2">
+                            ${response.response}
+                        </div>
+                    </div>
+                `);
+                $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+            }
+        });
+
+        $('#user-input').val('');
+    }
+
+    // Allow Enter key to send message
+    $('#user-input').keypress(function(e) {
+        if(e.which == 13) {
+            sendMessage();
+        }
+    });
+
+    // Scroll to bottom on load
+    $(document).ready(function() {
+        $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+    });
+</script>
+{% endblock %}

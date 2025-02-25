@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'subscription',
     'session_timeout',
     'base',
+    'chatbot',
     'rest_framework',
     'rest_framework.authtoken',
 ]
@@ -68,6 +69,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'chatbot.context_processors.chat_widget_context',
             ],
         },
     },
@@ -172,8 +174,27 @@ REST_FRAMEWORK = {
 
 #CSP_CONNECT_SRC = ["'self'", 'https://nominatim.openstreetmap.org']
 
+CSRF_COOKIE_SECURE = True  # for HTTPS sites
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access the CSRF token
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
+
 CSRF_TRUSTED_ORIGINS = [
-       'https://fb95-2409-40e3-3155-731-8ec-8191-1ca9-13a8.ngrok-free.app',
+       'https://73ae-2409-40e3-38d-4492-d14d-28c4-33f0-ef4c.ngrok-free.app',
        # Add any other trusted origins here
    ]
 
