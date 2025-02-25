@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:wesalvatore/auth%20pages/login_screen.dart';
+import 'package:wesalvatore/provider/user_provider.dart';
 import 'package:wesalvatore/views/career_page.dart';
 import 'package:wesalvatore/views/contact_us_page.dart';
 import 'package:wesalvatore/views/organization_page.dart';
@@ -18,8 +18,8 @@ class NavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = 'John Doe';
-    final email = 'john.doe@example.com';
+    final name = Provider.of<UserProvider>(context).username ?? "Guest";
+    final userType = Provider.of<UserProvider>(context).userType ?? "Unknown";
     final imageUrl =
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=634&q=80';
 
@@ -33,7 +33,7 @@ class NavBar extends StatelessWidget {
               context,
               urlImage: imageUrl,
               name: name,
-              email: email,
+              userType: userType,
               onClicked: () => Navigator.pop(context),
             ),
             const SizedBox(height: 12),
@@ -79,43 +79,6 @@ class NavBar extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (context) => LoginScreen()),
                 );
-                // try {
-                //   SharedPreferences prefs =
-                //       await SharedPreferences.getInstance();
-                //   String? token =
-                //       prefs.getString('auth_token'); // Get stored auth token
-
-                //   if (token != null) {
-                //     // Step 1: Call the API to logout (if backend supports it)
-                //     final response = await http.post(
-                //       Uri.parse(
-                //           'https://http://144.24.122.171/api/accounts/logout'),
-                //       headers: {
-                //         'Authorization': 'Bearer $token',
-                //         'Content-Type': 'application/json',
-                //       },
-                //     );
-
-                //     if (response.statusCode == 200) {
-                //       print("Successfully logged out from backend.");
-                //     } else {
-                //       print("Logout failed on server: ${response.body}");
-                //     }
-                //   }
-
-                //   // Step 2: Clear the stored token and user data
-                //   await prefs.clear();
-
-                //   // Step 3: Close the drawer
-                //   // ignore: use_build_context_synchronously
-                //   Navigator.pop(context);
-
-                //   // Step 4: Navigate to login screen
-                //   // ignore: use_build_context_synchronously
-                //   Navigator.pushReplacementNamed(context, '/login');
-                // } catch (e) {
-                //   print("Error during logout: $e");
-                // }
               },
             ),
           ],
@@ -128,7 +91,7 @@ class NavBar extends StatelessWidget {
     BuildContext context, {
     required String urlImage,
     required String name,
-    required String email,
+    required String userType,
     required VoidCallback onClicked,
   }) {
     return InkWell(
@@ -144,7 +107,10 @@ class NavBar extends StatelessWidget {
         child: Row(
           children: [
             const SizedBox(width: 16),
-            CircleAvatar(radius: 35, backgroundImage: NetworkImage(urlImage)),
+            CircleAvatar(
+              radius: 35,
+              backgroundImage: AssetImage("assets/user.png"),
+            ),
             const SizedBox(width: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +121,7 @@ class NavBar extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Colors.white)),
                 const SizedBox(height: 4),
-                Text(email,
+                Text(userType,
                     style: TextStyle(fontSize: 14, color: Colors.white70)),
               ],
             ),

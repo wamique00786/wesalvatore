@@ -1,4 +1,4 @@
-package com.example.wesalvatore
+package com.example.wesalvator
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:wesalvatore/provider/themeprovider.dart';
 
 class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
