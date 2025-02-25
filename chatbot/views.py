@@ -75,18 +75,18 @@ def generate_bot_response(message):
     elif any(word in message for word in ['location', 'address', 'contact', 'phone', 'visit']):
         responses = [
             "You can find us at:\n"
-            "[ADDRESS]\n"
-            "Phone: [PHONE_NUMBER]\n"
-            "Email: [EMAIL]\n"
+            "Pune, Maharashtra, India\n" 
+            "Phone: +911234567890\n"
+            "Email: contact@wesalvator.com\n"
             "Would you like directions?",
-            
+        
             "We're open Monday-Saturday, 9 AM - 6 PM.\n"
             "Sunday: 10 AM - 4 PM\n"
             "Best time for visits is during weekday afternoons!",
-            
+        
             "You can reach us through:\n"
-            "- Phone: [PHONE_NUMBER]\n"
-            "- Email: [EMAIL]\n"
+            "- Phone: +911234567890\n"
+            "- Email: contact@wesalvator.com\n" 
             "- Social Media: @WesalvatorRescue\n"
             "How would you prefer to connect?",
         ]
