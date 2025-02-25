@@ -9,12 +9,13 @@ class ContentSecurityPolicyMiddleware:
             "default-src 'self'; "
             "script-src 'self' https://unpkg.com https://cdn.jsdelivr.net "
             "https://translate.google.com https://translate.googleapis.com "
-            "https://translate-pa.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; "
+            "https://translate-pa.googleapis.com https://cdnjs.cloudflare.com "
+            "https://code.jquery.com 'unsafe-inline'; "  # ✅ Added code.jquery.com
             "style-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
             "https://www.gstatic.com https://fonts.googleapis.com 'unsafe-inline'; "
             "img-src 'self' data: https://*.tile.openstreetmap.org https://unpkg.com "
             "https://fonts.gstatic.com https://www.google.com https://www.gstatic.com "
-            "https://translate.googleapis.com http://translate.google.com https://translate.google.com; "  # ✅ Added translate.google.com
+            "https://translate.googleapis.com http://translate.google.com https://translate.google.com; "
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com https://fonts.googleapis.com; "
             "object-src 'none'; "
             "connect-src 'self' data: https://nominatim.openstreetmap.org "

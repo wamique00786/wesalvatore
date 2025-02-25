@@ -1,0 +1,426 @@
+{% if user.is_authenticated %}
+<div id="chat-widget" class="chat-widget collapsed">
+    <div class="chat-header" onclick="toggleChat()">
+        <span class="header-text"><i class="fas fa-comments"></i> Support Chat</span>
+        <button class="minimize-btn">
+            <i class="fas fa-minus" id="toggle-icon"></i>
+        </button>
+    </div>
+    <div class="chat-body">
+        <div id="chat-container">
+            {% for message in chat_history %}
+                <div class="message user-message">
+                    <div class="message-content">{{ message.user_message }}</div>
+                </div>
+                <div class="message bot-message">
+                    <div class="message-content">{{ message.bot_response }}</div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Base styles */
+.chat-widget {
+    position: fixed !important;;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    z-index: 100000 !important;
+}
+
+/* Desktop styles */
+@media (min-width: 769px) {
+    .chat-widget {
+        bottom: 20px;
+        right: 20px;
+        width: 300px;
+        border-radius: 10px;
+    }
+
+    .chat-widget.collapsed {
+        width: 300px;
+        height: auto;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .chat-widget {
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+    }
+
+    .chat-widget:not(.collapsed) {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh; /* Full height */
+        bottom: 0;
+        right: 0;
+        left: 0;
+        border-radius: 0; /* No radius when expanded */
+        margin: 0;
+    }
+
+    .chat-header {
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .chat-widget:not(.collapsed) .chat-header {
+        width: 100%;
+        height: 60px;
+        padding: 0 15px;
+        border-radius: 0;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .chat-widget.collapsed .header-text,
+    .chat-widget.collapsed .minimize-btn {
+        display: none;
+    }
+
+    .chat-widget:not(.collapsed) .header-text,
+    .chat-widget:not(.collapsed) .minimize-btn {
+        display: block;
+    }
+
+    .chat-body {
+        display: none;
+        height: calc(100vh - 120px);
+        margin-top: 60px; /* Space for fixed header */
+    }
+
+    .chat-widget:not(.collapsed) .chat-body {
+        display: flex;
+        flex-direction: column;
+        background: #f8f9fa;
+    }
+
+    #chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        margin-bottom: 60px; /* Space for input */
+    }
+
+    .chat-input {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        background: white;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-input input {
+        flex: 1;
+        height: 40px;
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+
+    .chat-input button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .message {
+        margin-bottom: 15px;
+        max-width: 80%;
+    }
+
+    .message-content {
+        padding: 10px 15px;
+        border-radius: 20px;
+        font-size: 15px;
+        line-height: 1.4;
+    }
+}
+
+/* Common styles */
+.chat-header {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+}
+
+.chat-widget.collapsed .chat-body {
+    display: none;
+}
+
+.minimize-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.chat-body {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    background: white
+}
+
+#chat-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.chat-input {
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    background: white;
+    border-top: 1px solid #dee2e6;
+}
+
+.chat-input input {
+    flex-grow: 1;
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.chat-input button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.chat-input button:hover {
+    background: #0056b3;
+}
+
+.message {
+    margin-bottom: 10px;
+    max-width: 85%;
+}
+
+.user-message {
+    text-align: right;
+    margin-left: auto;
+}
+
+.bot-message {
+    text-align: left;
+    margin-right: auto;
+}
+
+.message-content {
+    padding: 8px 12px;
+    border-radius: 15px;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.user-message .message-content {
+    background: #007bff;
+    color: white;
+}
+
+.bot-message .message-content {
+    background: #e9ecef;
+    color: #212529;
+}
+
+/* Add smooth scrolling */
+#chat-container {
+    scroll-behavior: smooth;
+}
+
+/* Style scrollbar */
+#chat-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#chat-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+#chat-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Add animation for new messages */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Safe area for mobile devices */
+@supports(padding: max(0px)) {
+    .chat-widget {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure chat widget is visible on mobile
+    const chatWidget = document.getElementById('chat-widget');
+    if (chatWidget) {
+        chatWidget.style.display = 'block';
+    }
+    // Scroll to bottom of chat on load
+    const chatContainer = document.getElementById('chat-container');
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Handle mobile viewport changes
+    function handleMobileViewport() {
+        if (window.innerWidth <= 768) {
+            document.body.style.paddingBottom = '80px'; // Add space for chat widget
+        } else {
+            document.body.style.paddingBottom = '0';
+        }
+    }
+
+    // Call on load and resize
+    handleMobileViewport();
+    window.addEventListener('resize', handleMobileViewport);
+
+    // Handle mobile keyboard
+    let viewportHeight = window.innerHeight;
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768) {
+            if (window.innerHeight < viewportHeight) {
+                // Keyboard is visible
+                chatWidget.style.bottom = '0';
+            } else {
+                // Keyboard is hidden
+                chatWidget.style.bottom = '20px';
+            }
+        }
+        viewportHeight = window.innerHeight;
+    });
+});
+
+function toggleChat() {
+    const widget = document.getElementById('chat-widget');
+    const icon = document.getElementById('toggle-icon');
+    widget.classList.toggle('collapsed');
+
+    // Update icon
+    if (widget.classList.contains('collapsed')) {
+        icon.classList.remove('fa-minus');
+        icon.classList.add('fa-plus');
+    } else {
+        icon.classList.remove('fa-plus');
+        icon.classList.add('fa-minus');
+        // Focus input when opening
+        setTimeout(() => {
+            const input = document.getElementById('user-input');
+            if (input) input.focus();
+        }, 300);
+    }
+
+    // Adjust body padding when chat is opened/closed on mobile
+    if (window.innerWidth <= 768) {
+        document.body.style.paddingBottom = widget.classList.contains('collapsed') ? '80px' : '0';
+    }
+}
+
+function sendMessage() {
+    var message = document.getElementById('user-input').value;
+    if (message.trim() === '') return;
+
+    // Display user message
+    appendMessage(message, true);
+
+    // Send message to server using fetch
+    fetch('{% url "get_bot_response" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: 'message=' + encodeURIComponent(message)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        appendMessage(data.response, false);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        appendMessage('Sorry, there was an error processing your message.', false);
+    });
+
+    document.getElementById('user-input').value = '';
+}
+
+function appendMessage(message, isUser) {
+    const chatContainer = document.getElementById('chat-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// Allow Enter key to send message
+document.getElementById('user-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+</script>
+{% endif %}
