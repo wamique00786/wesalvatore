@@ -17,6 +17,9 @@ pipeline {
 
         // Email recipient
         EMAIL_RECIPIENT = "pavansingh3000@gmail.com"
+        
+        // Slack API token for sending notifications
+        SLACK_API_TOKEN = credentials('slack_api')  // This references your Slack API token
     }
 
     stages {
@@ -130,6 +133,12 @@ pipeline {
                     mimeType: "text/html",
                     to: "${EMAIL_RECIPIENT}"
                 )
+                
+                // Slack Notification on success
+                slackSend(
+                    channel: '#all-wesalvator',  // Adjusted to your specific channel
+                    message: "✅ Jenkins Pipeline: Deployment Successful! 🚀 Repository: ${REPO_URL}"
+                )
             }
         }
 
@@ -154,6 +163,12 @@ pipeline {
                     """,
                     mimeType: "text/html",
                     to: "${EMAIL_RECIPIENT}"
+                )
+
+                // Slack Notification on failure
+                slackSend(
+                    channel: '#all-wesalvator',  // Adjusted to your specific channel
+                    message: "❌ Jenkins Pipeline: Deployment Failed! 🚨 Failed Stage: ${failedStage}"
                 )
             }
         }
