@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'csp.middleware.CSPMiddleware',
     'base.csp_middleware.ContentSecurityPolicyMiddleware',
     'session_timeout.middleware.SessionTimeoutMiddleware',
+    'chatbot.middleware.ChatWidgetMiddleware',
 ]
 
 ROOT_URLCONF = "wesalvator.urls"
@@ -155,9 +156,11 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
-#GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
-# GDAL_LIBRARY_PATH = "/usr/lib/libgdal.so"
-# GDAL_LIBRARY_PATH = "/usr/lib/aarch64-linux-gnu/libgdal.so"
+
+GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
+#GDAL_LIBRARY_PATH = "/usr/lib/libgdal.so"
+#GDAL_LIBRARY_PATH = "/usr/lib/aarch64-linux-gnu/libgdal.so"
+
 
 
 
@@ -194,7 +197,7 @@ LOGGING = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-       'https://73ae-2409-40e3-38d-4492-d14d-28c4-33f0-ef4c.ngrok-free.app',
+       'https://87d4-2409-40e3-38d-4492-d14d-28c4-33f0-ef4c.ngrok-free.app',
        # Add any other trusted origins here
    ]
 
