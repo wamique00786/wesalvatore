@@ -156,8 +156,8 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
 #GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"  # Verify this path
-#GDAL_LIBRARY_PATH = "/usr/lib/libgdal.so"
-GDAL_LIBRARY_PATH = "/usr/lib/aarch64-linux-gnu/libgdal.so"
+# GDAL_LIBRARY_PATH = "/usr/lib/libgdal.so"
+# GDAL_LIBRARY_PATH = "/usr/lib/aarch64-linux-gnu/libgdal.so"
 
 
 
