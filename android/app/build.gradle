@@ -57,6 +57,7 @@ flutter {
     source "../.."
 }
 
+
 dependencies {
     implementation 'androidx.annotation:annotation:1.7.0'
     implementation platform('com.google.firebase:firebase-bom:33.8.0')

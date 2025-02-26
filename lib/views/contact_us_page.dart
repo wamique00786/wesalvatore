@@ -1,9 +1,9 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors_in_immutables
-
 import 'package:flutter/material.dart';
 
 class ContactUsPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
+
+  ContactUsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +11,10 @@ class ContactUsPage extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue.shade800, Colors.blue.shade400],
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -22,7 +25,8 @@ class ContactUsPage extends StatelessWidget {
             child: Card(
               elevation: 10,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: Form(
@@ -32,20 +36,23 @@ class ContactUsPage extends StatelessWidget {
                     children: [
                       Text(
                         "Contact Us",
-                        style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade900),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                       ),
                       SizedBox(height: 15),
 
                       // Name Field
                       TextFormField(
                         decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.person, color: Colors.blue),
+                          prefixIcon: Icon(Icons.person,
+                              color: Theme.of(context).colorScheme.primary),
                           labelText: "Your Name",
+                          labelStyle: Theme.of(context).textTheme.bodyLarge,
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         validator: (value) =>
                             value!.isEmpty ? "Please enter your name" : null,
@@ -55,10 +62,13 @@ class ContactUsPage extends StatelessWidget {
                       // Email Field
                       TextFormField(
                         decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.email, color: Colors.blue),
+                          prefixIcon: Icon(Icons.email,
+                              color: Theme.of(context).colorScheme.primary),
                           labelText: "Email",
+                          labelStyle: Theme.of(context).textTheme.bodyLarge,
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) =>
@@ -72,10 +82,13 @@ class ContactUsPage extends StatelessWidget {
                       TextFormField(
                         maxLines: 4,
                         decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.message, color: Colors.blue),
+                          prefixIcon: Icon(Icons.message,
+                              color: Theme.of(context).colorScheme.primary),
                           labelText: "Your Message",
+                          labelStyle: Theme.of(context).textTheme.bodyLarge,
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         validator: (value) =>
                             value!.isEmpty ? "Message cannot be empty" : null,
@@ -89,21 +102,27 @@ class ContactUsPage extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 15),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            backgroundColor: Colors.blue.shade700,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                           ),
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content:
-                                        Text("Message Sent Successfully!")),
+                                  content: Text("Message Sent Successfully!"),
+                                ),
                               );
                             }
                           },
-                          child: Text("Send Message",
-                              style:
-                                  TextStyle(fontSize: 18, color: Colors.white)),
+                          child: Text(
+                            "Send Message",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
                         ),
                       ),
 
@@ -112,12 +131,18 @@ class ContactUsPage extends StatelessWidget {
                       // Contact Details
                       Column(
                         children: [
-                          ContactInfo(icon: Icons.phone, text: "+123 456 7890"),
                           ContactInfo(
-                              icon: Icons.email, text: "support@example.com"),
+                            icon: Icons.phone,
+                            text: "+123 456 7890",
+                          ),
                           ContactInfo(
-                              icon: Icons.location_on,
-                              text: "123 Street, City, Country"),
+                            icon: Icons.email,
+                            text: "support@example.com",
+                          ),
+                          ContactInfo(
+                            icon: Icons.location_on,
+                            text: "123 Street, City, Country",
+                          ),
                         ],
                       ),
                     ],
@@ -137,7 +162,7 @@ class ContactInfo extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  ContactInfo({required this.icon, required this.text});
+  const ContactInfo({super.key, required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -145,9 +170,16 @@ class ContactInfo extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blue, size: 20),
+          Icon(
+            icon,
+            color: Theme.of(context).colorScheme.primary,
+            size: 20,
+          ),
           SizedBox(width: 10),
-          Text(text, style: TextStyle(fontSize: 16)),
+          Text(
+            text,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
         ],
       ),
     );

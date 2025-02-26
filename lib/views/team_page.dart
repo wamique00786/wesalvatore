@@ -35,18 +35,22 @@ class TeamPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Wesalvatore",
-          style: TextStyle(color: Colors.white),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
         ),
-        backgroundColor: Colors.teal[900],
-        leading: const Icon(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        leading: Icon(
           Icons.pets,
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.primary,
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
+            icon:
+                Icon(Icons.menu, color: Theme.of(context).colorScheme.primary),
             onPressed: () {},
           ),
         ],
@@ -64,10 +68,10 @@ class TeamPage extends StatelessWidget {
           itemBuilder: (context, index) {
             final member = teamMembers[index];
             return Card(
-              color: Colors.teal[50],
+              color: Theme.of(context).colorScheme.surface,
               elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -79,20 +83,17 @@ class TeamPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     member["name"]!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     member["role"]!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.teal[800],
-                    ),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                     textAlign: TextAlign.center,
                   ),
                 ],

@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:wesalvatore/Admin/admin_dashboard.dart';
 import 'package:wesalvatore/Volunteer/volunteer_dashboard.dart';
+import 'package:wesalvatore/auth%20pages/forgot_password_screen.dart';
+import 'package:wesalvatore/auth%20pages/signup_screen.dart';
 import 'package:wesalvatore/provider/user_provider.dart';
 import 'package:wesalvatore/user/user_dashboard_screen.dart';
 
@@ -29,6 +33,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<String?> getBaseUrl() async {
+    final storage = FlutterSecureStorage();
+    return await storage.read(key: "BASE_URL");
+  }
+
   void _login(BuildContext context) async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
@@ -38,9 +47,9 @@ class _LoginScreenState extends State<LoginScreen> {
           msg: "Please fill all fields and select user type");
       return;
     }
-
-    final Uri loginUrl = Uri.parse("http://144.24.122.171/api/accounts/login/");
-
+    final String? baseUrl = await getBaseUrl();
+    final Uri loginUrl = Uri.parse("$baseUrl/login/");
+    print(loginUrl);
     try {
       final response = await http.post(
         loginUrl,
@@ -99,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Image Covering Entire Screen
+          // Background Image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -109,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          // Login Form with Scrollable View
+          // Login Form
           SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.symmetric(
@@ -135,9 +144,45 @@ class _LoginScreenState extends State<LoginScreen> {
                       isPassword: true),
                   SizedBox(height: screenHeight * 0.02),
                   _buildDropdownField(Icons.person, "Select User Type"),
-                  SizedBox(height: screenHeight * 0.04),
+
+                  // Forgot Password Button
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ForgotPasswordScreen()));
+                      },
+                      child: Text(
+                        "Forgot Password?",
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, color: Colors.teal[900]),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: screenHeight * 0.02),
                   _buildButton("Login", Colors.teal[900]!,
                       () => _login(context), screenWidth),
+
+                  // Sign Up Button
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SignupScreen()));
+                    },
+                    child: Text(
+                      "Don't have an account? Sign Up",
+                      style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal[900]),
+                    ),
+                  ),
                 ],
               ),
             ),

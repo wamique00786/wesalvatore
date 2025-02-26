@@ -1,5 +1,3 @@
-// ignore_for_file: use_key_in_widget_constructors
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,11 +32,13 @@ class OrganizationPage extends StatelessWidget {
     },
   ];
 
+  OrganizationPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, //Colors.teal[50],
-      appBar: _buildAppBar(),
+      backgroundColor: Theme.of(context).colorScheme.background,
+      appBar: _buildAppBar(context),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: ListView.builder(
@@ -51,14 +51,12 @@ class OrganizationPage extends StatelessWidget {
     );
   }
 
-  /// **🔹 Styled App Bar**
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.teal[700],
+      backgroundColor: Theme.of(context).colorScheme.surface,
       title: Text(
         "Organizations",
-        style: GoogleFonts.poppins(
-            fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+        style: Theme.of(context).textTheme.titleLarge,
       ),
       centerTitle: true,
       shape: RoundedRectangleBorder(
@@ -67,12 +65,11 @@ class OrganizationPage extends StatelessWidget {
     );
   }
 
-  /// **🔹 Organization Card Widget**
   Widget _organizationCard(BuildContext context, Map<String, String> org) {
     return Card(
       elevation: 3,
       margin: EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -80,15 +77,12 @@ class OrganizationPage extends StatelessWidget {
           children: [
             Text(
               org["name"]!,
-              style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal[800]),
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 5),
             Text(
               org["description"]!,
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             SizedBox(height: 15),
             Row(
@@ -96,16 +90,20 @@ class OrganizationPage extends StatelessWidget {
               children: [
                 TextButton.icon(
                   onPressed: () => _launchURL(org["website"]!),
-                  icon: Icon(Icons.public, color: Colors.teal[700]),
-                  label: Text("Visit Website",
-                      style: TextStyle(color: Colors.teal[700])),
+                  icon: Icon(Icons.public,
+                      color: Theme.of(context).colorScheme.primary),
+                  label: Text(
+                    "Visit Website",
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.primary),
+                  ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal[700],
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: () => _showDonationPopup(context, org["name"]!),
                   child: Text("Donate"),
@@ -118,7 +116,6 @@ class OrganizationPage extends StatelessWidget {
     );
   }
 
-  /// **🔹 Opens Website in Browser**
   void _launchURL(String url) async {
     if (await canLaunch(url)) {
       await launch(url);
@@ -127,7 +124,6 @@ class OrganizationPage extends StatelessWidget {
     }
   }
 
-  /// **🔹 Donation Popup**
   void _showDonationPopup(BuildContext context, String organizationName) {
     TextEditingController amountController = TextEditingController();
 
@@ -136,9 +132,11 @@ class OrganizationPage extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          title: Text("Donate to $organizationName",
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            "Donate to $organizationName",
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -147,7 +145,10 @@ class OrganizationPage extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: "Enter Amount",
-                  border: OutlineInputBorder(),
+                  labelStyle: Theme.of(context).textTheme.bodyLarge,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               SizedBox(height: 15),
@@ -155,8 +156,10 @@ class OrganizationPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal[700],
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: () {
                     Navigator.pop(context); // Close the dialog
@@ -164,13 +167,13 @@ class OrganizationPage extends StatelessWidget {
                       SnackBar(
                         content: Text(
                           "Donated \$${amountController.text} to $organizationName",
-                          style: GoogleFonts.poppins(),
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         duration: Duration(seconds: 2),
                       ),
                     );
                   },
-                  child: Text("Donate", style: GoogleFonts.poppins()),
+                  child: Text("Donate"),
                 ),
               ),
             ],
