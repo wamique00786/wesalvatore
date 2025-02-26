@@ -14,7 +14,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['wesalvator.com', 'www.wesalvator.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -196,8 +196,11 @@ LOGGING = {
 
 CSRF_TRUSTED_ORIGINS = [
        'https://87d4-2409-40e3-38d-4492-d14d-28c4-33f0-ef4c.ngrok-free.app',
-       # Add any other trusted origins here
+       'https://wesalvator.com',
+       'https://www.wesalvator.com',# Add any other trusted origins here
    ]
 
 SESSION_COOKIE_AGE = 300  # 5 minutes in seconds
 SESSION_SAVE_EVERY_REQUEST = True  # Reset the session expiry time on every request
+
+
