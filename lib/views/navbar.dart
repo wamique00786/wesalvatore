@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wesalvatore/auth%20pages/login_screen.dart';
@@ -94,6 +96,9 @@ class NavBar extends StatelessWidget {
     required String userType,
     required VoidCallback onClicked,
   }) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final profileImagePath = userProvider.profileImagePath;
+
     return InkWell(
       onTap: onClicked,
       child: Container(
@@ -109,7 +114,7 @@ class NavBar extends StatelessWidget {
             const SizedBox(width: 16),
             CircleAvatar(
               radius: 35,
-              backgroundImage: AssetImage("assets/user.png"),
+              backgroundImage: _getProfileImage(profileImagePath),
             ),
             const SizedBox(width: 20),
             Column(
@@ -129,6 +134,14 @@ class NavBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  ImageProvider _getProfileImage(String? imagePath) {
+    if (imagePath == null || imagePath.startsWith('assets/')) {
+      return AssetImage(imagePath ?? "assets/user.png");
+    } else {
+      return FileImage(File(imagePath));
+    }
   }
 
   Widget buildMenuSection(

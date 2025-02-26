@@ -51,13 +51,13 @@ dependencies:
   lottie: ^3.3.1
   flutter_spinkit: ^5.2.1
   shared_preferences: ^2.5.1
-  flutter_dotenv: ^5.2.1
   font_awesome_flutter: ^10.8.0
   google_fonts: ^6.2.1
   fluttertoast: ^8.2.12
   flutter_polyline_points: ^2.1.0
   flutter_translate: ^3.1.0
   provider: ^5.0.0-nullsafety.3
+  flutter_secure_storage: ^9.2.4
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +90,7 @@ flutter:
     - assets/icon/apple.png
     - assets/icon/facebook.png
     - assets/ws_logo.png
+
   # - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

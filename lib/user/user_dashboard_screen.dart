@@ -1,12 +1,11 @@
-import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:wesalvatore/views/navbar.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:geolocator/geolocator.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:mime/mime.dart';
+import 'package:wesalvatore/views/navbar.dart';
 
 class UserDashBoardScreen extends StatefulWidget {
   const UserDashBoardScreen({super.key});
@@ -18,10 +17,17 @@ class UserDashBoardScreen extends StatefulWidget {
 class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
   final List<XFile> _capturedImages = [];
   Position? _currentPosition;
-  String _selectedPriority = 'MEDIUM'; // Default to MEDIUM
+  String _selectedPriority = 'MEDIUM';
   final TextEditingController _descriptionController = TextEditingController();
+  bool _isSubmitting = false;
 
-  /// ✅ **Handles Location Permission**
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  /// Handles Location Permission
   Future<bool> _handleLocationPermission() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       _showSnackbar('Location services are disabled.');
@@ -52,15 +58,14 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
     } catch (e) {
       debugPrint('Error getting location: $e');
       _showSnackbar('Failed to get current location. Retrying...');
-      // Retry after a delay
-      Future.delayed(const Duration(seconds: 2), () => _getCurrentLocation());
+      Future.delayed(const Duration(seconds: 2), _getCurrentLocation);
     }
   }
 
-  void _pickImage(ImageSource source) async {
+  Future<void> _pickImage() async {
     try {
-      final XFile? photo =
-          await ImagePicker().pickImage(source: source, imageQuality: 80);
+      final XFile? photo = await ImagePicker()
+          .pickImage(source: ImageSource.camera, imageQuality: 80);
       if (photo != null) {
         setState(() => _capturedImages.add(photo));
         await _getCurrentLocation();
@@ -76,8 +81,13 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
   }
 
   void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+    );
   }
 
   Future<void> _submitReport() async {
@@ -94,6 +104,8 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
       _showSnackbar('Location not available. Please try again.');
       return;
     }
+
+    setState(() => _isSubmitting = true);
 
     try {
       // Create multipart request
@@ -129,10 +141,6 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
 
       // Handle response
       if (response.statusCode == 200) {
-        // Convert stream to string
-        final responseString = await response.stream.bytesToString();
-        final jsonResponse = jsonDecode(responseString);
-
         _showSnackbar('Report submitted successfully!');
 
         // Clear form
@@ -150,6 +158,8 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
     } catch (e) {
       debugPrint('Error submitting report: $e');
       _showSnackbar('Error submitting report: $e');
+    } finally {
+      setState(() => _isSubmitting = false);
     }
   }
 
@@ -161,98 +171,220 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
       backgroundColor: theme.colorScheme.background,
       drawer: const NavBar(),
       appBar: AppBar(
-        title: Text('Rescue Dashboard', style: theme.textTheme.titleLarge),
-        backgroundColor: theme.appBarTheme.backgroundColor,
+        title: const Text('Animal Rescue'),
+        centerTitle: true,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: IconButton(
-                icon: const Icon(Icons.camera_alt, size: 80),
-                color: theme.colorScheme.primary,
-                onPressed: () => _pickImage(ImageSource.camera),
-              ),
+            _buildCameraSection(theme),
+            if (_capturedImages.isNotEmpty) _buildImagePreviewList(),
+            const SizedBox(height: 24),
+            Text(
+              'Report Details',
+              style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 20),
-            if (_capturedImages.isNotEmpty)
-              SizedBox(
-                height: 120,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _capturedImages.length,
-                  itemBuilder: (context, index) {
-                    return Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(_capturedImages[index].path),
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.black54,
-                            radius: 12,
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              icon: const Icon(Icons.close,
-                                  size: 16, color: Colors.white),
-                              onPressed: () => _removeImage(index),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              value: _selectedPriority,
-              decoration: InputDecoration(
-                labelText: 'Select Priority',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              items: ['LOW', 'MEDIUM', 'HIGH']
-                  .map((priority) => DropdownMenuItem(
-                        value: priority,
-                        child: Text(priority),
-                      ))
-                  .toList(),
-              onChanged: (value) => setState(() => _selectedPriority = value!),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              decoration: InputDecoration(
-                labelText: 'Describe the animal and situation',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: _submitReport,
-                child:
-                    const Text('SUBMIT REPORT', style: TextStyle(fontSize: 18)),
-              ),
-            ),
+            const SizedBox(height: 16),
+            _buildPriorityDropdown(theme),
+            const SizedBox(height: 16),
+            _buildDescriptionField(theme),
+            const SizedBox(height: 24),
+            _buildSubmitButton(theme),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCameraSection(ThemeData theme) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Capture Photo',
+              style: theme.textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const Divider(height: 1),
+          // Center camera button
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32.0),
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    size: 64,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: Text(
+              'Tap to take a photo',
+              style: theme.textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagePreviewList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        Text(
+          'Photos (${_capturedImages.length})',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 120,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _capturedImages.length,
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(
+                        File(_capturedImages[index].path),
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: InkWell(
+                      onTap: () => _removeImage(index),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close,
+                            size: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriorityDropdown(ThemeData theme) {
+    return DropdownButtonFormField<String>(
+      value: _selectedPriority,
+      decoration: InputDecoration(
+        labelText: 'Priority Level',
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+        ),
+        prefixIcon: const Icon(Icons.warning_amber),
+      ),
+      items: [
+        DropdownMenuItem(
+          value: 'LOW',
+          child: Row(
+            children: [
+              Icon(Icons.circle, size: 12, color: Colors.green),
+              const SizedBox(width: 8),
+              const Text('LOW'),
+            ],
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'MEDIUM',
+          child: Row(
+            children: [
+              Icon(Icons.circle, size: 12, color: Colors.orange),
+              const SizedBox(width: 8),
+              const Text('MEDIUM'),
+            ],
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'HIGH',
+          child: Row(
+            children: [
+              Icon(Icons.circle, size: 12, color: Colors.red),
+              const SizedBox(width: 8),
+              const Text('HIGH'),
+            ],
+          ),
+        ),
+      ],
+      onChanged: (value) => setState(() => _selectedPriority = value!),
+    );
+  }
+
+  Widget _buildDescriptionField(ThemeData theme) {
+    return TextField(
+      controller: _descriptionController,
+      maxLines: 4,
+      decoration: InputDecoration(
+        labelText: 'Describe the animal and situation',
+        hintText:
+            'Include details about the animal, its condition, and the rescue situation',
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+        ),
+        prefixIcon: const Icon(Icons.description),
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton(ThemeData theme) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _isSubmitting ? null : _submitReport,
+        child: _isSubmitting
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  color: theme.colorScheme.onPrimary,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text('SUBMIT REPORT', style: TextStyle(fontSize: 16)),
       ),
     );
   }

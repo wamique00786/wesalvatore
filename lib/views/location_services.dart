@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-//import 'package:wesalvatore/locationservices.dart';
 
 class LocationServices extends StatefulWidget {
   const LocationServices({super.key});

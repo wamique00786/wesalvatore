@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -31,6 +33,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<String?> getBaseUrl() async {
+    final storage = FlutterSecureStorage();
+    return await storage.read(key: "BASE_URL");
+  }
+
   void _login(BuildContext context) async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
@@ -40,9 +47,9 @@ class _LoginScreenState extends State<LoginScreen> {
           msg: "Please fill all fields and select user type");
       return;
     }
-
-    final Uri loginUrl = Uri.parse("http://144.24.122.171/api/accounts/login/");
-
+    final String? baseUrl = await getBaseUrl();
+    final Uri loginUrl = Uri.parse("$baseUrl/login/");
+    print(loginUrl);
     try {
       final response = await http.post(
         loginUrl,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -71,7 +70,7 @@ class _AdoptionPageState extends State<AdoptionPage>
         return AlertDialog(
           title: Text(
             'Add Adoptable Animal',
-            style: GoogleFonts.poppins(),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -84,16 +83,20 @@ class _AdoptionPageState extends State<AdoptionPage>
                         return Wrap(
                           children: [
                             ListTile(
-                              leading: Icon(Icons.camera),
-                              title: Text('Take a Photo'),
+                              leading: Icon(Icons.camera,
+                                  color: Theme.of(context).colorScheme.primary),
+                              title: Text('Take a Photo',
+                                  style: Theme.of(context).textTheme.bodyLarge),
                               onTap: () {
                                 Navigator.pop(context);
                                 pickImage(ImageSource.camera);
                               },
                             ),
                             ListTile(
-                              leading: Icon(Icons.photo_library),
-                              title: Text('Choose from Gallery'),
+                              leading: Icon(Icons.photo_library,
+                                  color: Theme.of(context).colorScheme.primary),
+                              title: Text('Choose from Gallery',
+                                  style: Theme.of(context).textTheme.bodyLarge),
                               onTap: () {
                                 Navigator.pop(context);
                                 pickImage(ImageSource.gallery);
@@ -108,30 +111,41 @@ class _AdoptionPageState extends State<AdoptionPage>
                     height: 100,
                     width: 100,
                     decoration: BoxDecoration(
-                      color: Colors.teal.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(10),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: image == null
-                        ? Icon(Icons.camera_alt, color: Colors.teal)
+                        ? Icon(Icons.camera_alt,
+                            color: Theme.of(context).colorScheme.primary)
                         : ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(16),
                             child: Image.file(image!, fit: BoxFit.cover),
                           ),
                   ),
                 ),
                 SizedBox(height: 10),
                 TextField(
-                  decoration: InputDecoration(labelText: 'Animal Name'),
+                  decoration: InputDecoration(
+                    labelText: 'Animal Name',
+                    labelStyle: Theme.of(context).textTheme.bodyLarge,
+                  ),
                   onChanged: (value) => name = value,
                 ),
                 TextField(
-                  decoration: InputDecoration(labelText: 'Description'),
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    labelStyle: Theme.of(context).textTheme.bodyLarge,
+                  ),
                   onChanged: (value) => description = value,
                 ),
                 SizedBox(height: 10),
                 Row(
                   children: [
-                    Text('Is Adoptable?'),
+                    Text('Is Adoptable?',
+                        style: Theme.of(context).textTheme.bodyLarge),
                     Checkbox(
                       value: isAdoptable,
                       onChanged: (value) {
@@ -148,7 +162,9 @@ class _AdoptionPageState extends State<AdoptionPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel', style: TextStyle(color: Colors.teal)),
+              child: Text('Cancel',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -165,8 +181,15 @@ class _AdoptionPageState extends State<AdoptionPage>
                   Navigator.of(context).pop();
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-              child: Text('Add Animal'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Text('Add Animal',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary)),
             ),
           ],
         );
@@ -177,16 +200,17 @@ class _AdoptionPageState extends State<AdoptionPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal[50],
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         title: Text(
           'Adopt a Friend',
-          style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        backgroundColor: Colors.teal[700],
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
-            icon: Icon(Icons.add, color: Colors.white),
+            icon: Icon(Icons.add),
             onPressed: _showAddAnimalDialog,
           ),
         ],
@@ -198,10 +222,7 @@ class _AdoptionPageState extends State<AdoptionPage>
           children: [
             Text(
               'Animals Available for Adoption',
-              style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal),
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 10),
             Expanded(
@@ -212,16 +233,16 @@ class _AdoptionPageState extends State<AdoptionPage>
                   itemBuilder: (context, index) {
                     return Card(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(16)),
                       elevation: 3,
                       margin: EdgeInsets.symmetric(vertical: 10),
                       child: Padding(
-                        padding: EdgeInsets.all(12),
+                        padding: EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               child: animals[index]['image']!
                                       .startsWith('assets/')
                                   ? Image.asset(animals[index]['image']!,
@@ -236,15 +257,11 @@ class _AdoptionPageState extends State<AdoptionPage>
                             SizedBox(height: 10),
                             Text(
                               animals[index]['name']!,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.teal[800]),
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
                             Text(
                               animals[index]['description']!,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 14, color: Colors.teal[600]),
+                              style: Theme.of(context).textTheme.bodyLarge,
                             ),
                             SizedBox(height: 10),
                             Align(
@@ -252,11 +269,16 @@ class _AdoptionPageState extends State<AdoptionPage>
                               child: ElevatedButton(
                                 onPressed: () {},
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
+                                      borderRadius: BorderRadius.circular(16)),
                                 ),
-                                child: Text('View Details'),
+                                child: Text('View Details',
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary)),
                               ),
                             ),
                           ],
