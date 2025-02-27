@@ -163,6 +163,7 @@ GDAL_LIBRARY_PATH = "/usr/lib/aarch64-linux-gnu/libgdal.so"
 
 
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',

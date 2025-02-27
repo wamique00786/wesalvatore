@@ -22,17 +22,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
         <div class="container-fluid">
             <!-- Brand -->
-            <a class="navbar-brand d-flex align-items-center" 
-              href="{% if request.resolver_match.url_name == 'home' %} {% url 'home' %}
-                {% elif request.resolver_match.url_name == 'signup' %} {% url 'signup' %}
-                {% elif request.resolver_match.url_name == 'login' %} {% url 'login' %}
-                {% elif request.resolver_match.url_name == 'password_reset' %} {% url 'password_reset' %}
-                {% elif request.resolver_match.url_name == 'career' %} {% url 'career' %}
-                {% elif request.resolver_match.url_name == 'team' %} {% url 'team' %}
-                {% elif request.resolver_match.url_name == 'contact_us' %} {% url 'contact_us' %}
-                {% elif request.resolver_match.url_name == 'about' %} {% url 'about' %}
-                {% else %} {% url 'dashboard' %}
-              {% endif %}">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
                 <i class="fas fa-paw me-2"></i>
                 <span>Wesalvator</span>
             </a>
