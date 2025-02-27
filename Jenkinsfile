@@ -15,6 +15,11 @@ pipeline {
         DATABASE_NAME = credentials('DATABASE_NAME')
         SECRET_KEY = credentials('SECRET_KEY')
 
+        EMAIL_HOST_USER = credentials('EMAIL_HOST_USER')
+        EMAIL_HOST_PASSWORD = credentials('EMAIL_HOST_PASSWORD')
+        DEFAULT_FROM_EMAIL = credentials('DEFAULT_FROM_EMAIL')
+        ADMIN_EMAIL = credentials('ADMIN_EMAIL')
+
         // Email recipient
         EMAIL_RECIPIENT = "pavansingh3000@gmail.com"
         
