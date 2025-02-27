@@ -76,46 +76,53 @@ pipeline {
         stage('UAT Deployment') {
             steps {
                 script {
-                    try {
-                        echo "Deploying application container..."
-                        sh '''
-                        NETWORK_EXISTS=$(docker network ls --format "{{.Name}}" | grep -w wesalvator_network || true)
-                        if [ -z "$NETWORK_EXISTS" ]; then
-                            echo 'Creating Docker network...'
-                            docker network create wesalvator_network
-                        else
-                            echo 'Network already exists. Skipping creation...'
-                        fi
+                    withCredentials([
+                        string(credentialsId: 'EMAIL_HOST_USER', variable: 'EMAIL_HOST_USER'),
+                        string(credentialsId: 'EMAIL_HOST_PASSWORD', variable: 'EMAIL_HOST_PASSWORD'),
+                        string(credentialsId: 'DEFAULT_FROM_EMAIL', variable: 'DEFAULT_FROM_EMAIL'),
+                        string(credentialsId: 'ADMIN_EMAIL', variable: 'ADMIN_EMAIL')
+                    ]) {
+                        try {
+                            echo "Deploying application container..."
+                            sh '''
+                            NETWORK_EXISTS=$(docker network ls --format "{{.Name}}" | grep -w wesalvator_network || true)
+                            if [ -z "$NETWORK_EXISTS" ]; then
+                                echo 'Creating Docker network...'
+                                docker network create wesalvator_network
+                            else
+                                echo 'Network already exists. Skipping creation...'
+                            fi
 
-                        # Check if the app container exists and remove it
-                        if [ "$(docker ps -a -q -f name=${CONTAINER_NAME})" ]; then
-                            echo 'Stopping and removing existing app container...'
-                            docker stop ${CONTAINER_NAME} || true
-                            docker rm ${CONTAINER_NAME} || true
-                        fi
+                            # Check if the app container exists and remove it
+                            if [ "$(docker ps -a -q -f name=${CONTAINER_NAME})" ]; then
+                                echo 'Stopping and removing existing app container...'
+                                docker stop ${CONTAINER_NAME} || true
+                                docker rm ${CONTAINER_NAME} || true
+                            fi
 
-                        echo 'Starting new app container...'
-                        docker run -d --restart=always --name ${CONTAINER_NAME} --network wesalvator_network -p 8000:8000 \
-                          -e DATABASE_HOST=${DATABASE_HOST} \
-                          -e DATABASE_USER=${DATABASE_USER} \
-                          -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
-                          -e DATABASE_NAME=${DATABASE_NAME} \
-                          -e SECRET_KEY=${SECRET_KEY} \
-                          -e EMAIL_HOST="smtp.gmail.com" \
-                          -e EMAIL_PORT="587" \
-                          -e EMAIL_USE_TLS="True" \
-                          -e EMAIL_HOST_USER="mohdasad.9506@gmail.com" \
-                          -e EMAIL_HOST_PASSWORD="kurw zdlp skop yaun" \
-                          -e DEFAULT_FROM_EMAIL="ycn2kh2g@mailpwr.com" \
-                          -e ADMIN_EMAIL="contact@wesalvator.com" \
-                          -e GDAL_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/libgdal.so \
-                          -v static_volume:/app/staticfiles \
-                          -v media_volume:/usr/share/nginx/html/media \
-                          ${DOCKER_IMAGE}:latest
-                        docker system prune -a -f
-                        '''
-                    } catch (Exception e) {
-                        error "UAT Deployment failed: ${e.message}"
+                            echo 'Starting new app container...'
+                            docker run -d --restart=always --name ${CONTAINER_NAME} --network wesalvator_network -p 8000:8000 \
+                              -e DATABASE_HOST=${DATABASE_HOST} \
+                              -e DATABASE_USER=${DATABASE_USER} \
+                              -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
+                              -e DATABASE_NAME=${DATABASE_NAME} \
+                              -e SECRET_KEY=${SECRET_KEY} \
+                              -e EMAIL_HOST="smtp.gmail.com" \
+                              -e EMAIL_PORT="587" \
+                              -e EMAIL_USE_TLS="True" \
+                              -e EMAIL_HOST_USER="${EMAIL_HOST_USER}" \
+                              -e EMAIL_HOST_PASSWORD="${EMAIL_HOST_PASSWORD}" \
+                              -e DEFAULT_FROM_EMAIL="${DEFAULT_FROM_EMAIL}" \
+                              -e ADMIN_EMAIL="${ADMIN_EMAIL}" \
+                              -e GDAL_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/libgdal.so \
+                              -v static_volume:/app/staticfiles \
+                              -v media_volume:/usr/share/nginx/html/media \
+                              ${DOCKER_IMAGE}:latest
+                            docker system prune -a -f
+                            '''
+                        } catch (Exception e) {
+                            error "UAT Deployment failed: ${e.message}"
+                        }
                     }
                 }
             }
