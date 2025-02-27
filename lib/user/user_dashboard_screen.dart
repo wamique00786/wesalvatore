@@ -25,6 +25,9 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
   String _selectedPriority = 'MEDIUM';
   final TextEditingController _descriptionController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isLoadingLocation = false;
+  final _storage = const FlutterSecureStorage();
+  final _imagePicker = ImagePicker();
 
   @override
   void dispose() {
@@ -33,9 +36,13 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
   }
 
   Future<bool> _fetchLocation() async {
+    if (_isLoadingLocation) return false;
+
+    setState(() => _isLoadingLocation = true);
+
     try {
       if (!await Geolocator.isLocationServiceEnabled()) {
-        _showSnackbar('Enable GPS to continue.');
+        _showSnackbar('Please enable GPS to continue');
         return false;
       }
 
@@ -43,13 +50,14 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          _showSnackbar('Location permissions are required.');
+          _showSnackbar('Location permissions are required');
           return false;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _showSnackbar('Location access is permanently denied.');
+        _showSnackbar(
+            'Location access is permanently denied. Please enable in settings.');
         return false;
       }
 
@@ -58,58 +66,80 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
       );
       return true;
     } catch (e) {
-      _showSnackbar('Error fetching location: $e');
+      _showSnackbar(
+          'Error fetching location: ${e.toString().substring(0, 50)}');
       return false;
+    } finally {
+      if (mounted) setState(() => _isLoadingLocation = false);
     }
   }
 
   Future<void> _pickImage() async {
-    _showSnackbar('Fetching location, please wait...');
-    if (!await _fetchLocation()) return;
+    if (_capturedImages.length >= 5) {
+      _showSnackbar('Maximum 5 images allowed');
+      return;
+    }
+
+    if (_currentPosition == null) {
+      _showSnackbar('Getting your location...');
+      final hasLocation = await _fetchLocation();
+      if (!hasLocation) return;
+    }
 
     try {
-      final XFile? photo = await ImagePicker().pickImage(
+      final XFile? photo = await _imagePicker.pickImage(
         source: ImageSource.camera,
         imageQuality: 80,
       );
-      if (photo != null) {
+      if (photo != null && mounted) {
         setState(() => _capturedImages.add(photo));
       }
     } catch (e) {
-      _showSnackbar('Error capturing image: $e');
+      _showSnackbar('Could not capture image');
     }
   }
 
   void _removeImage(int index) {
-    setState(() => _capturedImages.removeAt(index));
+    if (index >= 0 && index < _capturedImages.length) {
+      setState(() => _capturedImages.removeAt(index));
+    }
   }
 
   void _showSnackbar(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Theme.of(context).colorScheme.primary,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
 
-  Future<String?> getBaseUrl() async {
-    return await const FlutterSecureStorage().read(key: "BASE_URL");
+  Future<String?> _getBaseUrl() async {
+    return await _storage.read(key: "BASE_URL");
   }
 
   Future<void> _submitReport() async {
     if (_capturedImages.isEmpty) {
-      _showSnackbar('Capture at least one image.');
+      _showSnackbar('Please capture at least one image');
       return;
     }
-    if (_descriptionController.text.trim().isEmpty) {
-      _showSnackbar('Provide a description.');
+
+    final description = _descriptionController.text.trim();
+    if (description.isEmpty) {
+      _showSnackbar('Please provide a description');
       return;
     }
+
     if (_currentPosition == null) {
-      _showSnackbar('Fetching location, please wait...');
-      return;
+      _showSnackbar('Getting your location...');
+      final hasLocation = await _fetchLocation();
+      if (!hasLocation) return;
     }
 
     setState(() => _isSubmitting = true);
@@ -117,10 +147,10 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final String? token = userProvider.authToken;
-      final String? baseUrl = await getBaseUrl();
+      final String? baseUrl = await _getBaseUrl();
 
       if (token == null || baseUrl == null) {
-        _showSnackbar('Authentication failed. Please log in again.');
+        _showSnackbar('Authentication failed. Please log in again');
         return;
       }
 
@@ -128,35 +158,44 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
       final request = http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Token $token'
         ..headers['Accept'] = 'application/json'
-        ..fields['description'] = _descriptionController.text.trim()
+        ..fields['description'] = description
         ..fields['priority'] = _selectedPriority
         ..fields['latitude'] = _currentPosition!.latitude.toString()
         ..fields['longitude'] = _currentPosition!.longitude.toString();
 
-      for (XFile image in _capturedImages) {
-        File compressedImage = await compressImage(File(image.path));
-        String mimeType = lookupMimeType(compressedImage.path) ?? 'image/jpeg';
+      // Process images in parallel
+      final compressedImages =
+          await Future.wait(_capturedImages.map((image) async {
+        final compressed = await compressImage(File(image.path));
+        final mimeType = lookupMimeType(compressed.path) ?? 'image/jpeg';
 
+        return {
+          'path': compressed.path,
+          'mimeType': mimeType,
+        };
+      }));
+
+      for (final image in compressedImages) {
         request.files.add(await http.MultipartFile.fromPath(
           'photo',
-          compressedImage.path,
-          contentType: MediaType.parse(mimeType),
+          image['path']!,
+          contentType: MediaType.parse(image['mimeType']!),
         ));
       }
 
       final response = await request.send();
-      final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 201) {
-        _showSnackbar('Report submitted successfully.');
+        _showSnackbar('Report submitted successfully');
         _resetForm();
       } else {
-        _showSnackbar('Failed to submit. Try again.');
+        final responseBody = await response.stream.bytesToString();
+        _showSnackbar('Failed to submit: ${response.statusCode}');
       }
     } catch (e) {
-      _showSnackbar('Error submitting report. Check connection.');
+      _showSnackbar('Error submitting report. Check your connection');
     } finally {
-      setState(() => _isSubmitting = false);
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -165,59 +204,93 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
       _capturedImages.clear();
       _descriptionController.clear();
       _selectedPriority = 'MEDIUM';
-      _currentPosition = null;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: colorScheme.background,
       drawer: const NavBar(),
-      appBar: AppBar(title: const Text('Animal Rescue'), centerTitle: true),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildCameraSection(theme),
-            if (_capturedImages.isNotEmpty) _buildImagePreviewList(),
-            const SizedBox(height: 24),
-            _buildPriorityDropdown(theme),
-            const SizedBox(height: 16),
-            _buildDescriptionField(theme),
-            const SizedBox(height: 24),
-            _buildSubmitButton(theme),
-          ],
+      appBar: AppBar(
+        title: const Text('Animal Rescue'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildCameraSection(colorScheme),
+              const SizedBox(height: 16),
+              if (_capturedImages.isNotEmpty) ...[
+                _buildImagePreviewList(),
+                const SizedBox(height: 24),
+              ],
+              _buildReportForm(colorScheme),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCameraSection(ThemeData theme) {
+  Widget _buildCameraSection(ColorScheme colorScheme) {
     return Card(
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: _pickImage,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Column(
+          children: [
+            Text(
+              'Take Photos',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
               ),
-              child: Icon(Icons.camera_alt,
-                  size: 64, color: theme.colorScheme.primary),
             ),
-          ),
-          const SizedBox(height: 16),
-          const Text('Tap to take a photo'),
-          const SizedBox(height: 16),
-        ],
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colorScheme.primary, width: 2),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(
+                      Icons.camera_alt,
+                      size: 64,
+                      color: colorScheme.primary,
+                    ),
+                    if (_isLoadingLocation)
+                      CircularProgressIndicator(
+                        color: colorScheme.primary,
+                        strokeWidth: 2,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Tap to take a photo (${_capturedImages.length}/5)',
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -229,54 +302,209 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
         scrollDirection: Axis.horizontal,
         itemCount: _capturedImages.length,
         itemBuilder: (context, index) {
-          return Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(File(_capturedImages[index].path),
-                      width: 100, height: 100, fit: BoxFit.cover),
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      File(_capturedImages[index].path),
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: () => _removeImage(index),
-                  child: const Icon(Icons.close, color: Colors.white, size: 18),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: () => _removeImage(index),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildPriorityDropdown(ThemeData theme) {
-    return DropdownButtonFormField<String>(
-      value: _selectedPriority,
-      items: ['HIGH', 'MEDIUM', 'LOW'].map((priority) {
-        return DropdownMenuItem(value: priority, child: Text(priority));
-      }).toList(),
-      onChanged: (value) => setState(() => _selectedPriority = value!),
+  Widget _buildReportForm(ColorScheme colorScheme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Report Details',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildPriorityDropdown(colorScheme),
+            const SizedBox(height: 16),
+            _buildDescriptionField(colorScheme),
+            const SizedBox(height: 24),
+            _buildSubmitButton(colorScheme),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildDescriptionField(ThemeData theme) {
-    return TextField(
-      controller: _descriptionController,
-      decoration: const InputDecoration(labelText: 'Description'),
+  Widget _buildPriorityDropdown(ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Priority',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: colorScheme.outline),
+          ),
+          child: DropdownButtonFormField<String>(
+            value: _selectedPriority,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              border: InputBorder.none,
+            ),
+            items: [
+              DropdownMenuItem(
+                value: 'HIGH',
+                child: Row(
+                  children: [
+                    Icon(Icons.priority_high, color: Colors.red, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('HIGH'),
+                  ],
+                ),
+              ),
+              DropdownMenuItem(
+                value: 'MEDIUM',
+                child: Row(
+                  children: [
+                    Icon(Icons.remove_circle_outline,
+                        color: Colors.orange, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('MEDIUM'),
+                  ],
+                ),
+              ),
+              DropdownMenuItem(
+                value: 'LOW',
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_downward, color: Colors.green, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('LOW'),
+                  ],
+                ),
+              ),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                setState(() => _selectedPriority = value);
+              }
+            },
+            dropdownColor: colorScheme.surface,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildSubmitButton(ThemeData theme) {
+  Widget _buildDescriptionField(ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Description',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _descriptionController,
+          decoration: InputDecoration(
+            hintText: 'Describe the situation...',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: colorScheme.surface,
+          ),
+          maxLines: 4,
+          textCapitalization: TextCapitalization.sentences,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton(ColorScheme colorScheme) {
     return ElevatedButton(
       onPressed: _isSubmitting ? null : _submitReport,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 2,
+      ),
       child: _isSubmitting
-          ? const CircularProgressIndicator()
-          : const Text('Submit Report'),
+          ? SizedBox(
+              height: 24,
+              width: 24,
+              child: CircularProgressIndicator(
+                color: colorScheme.onPrimary,
+                strokeWidth: 2,
+              ),
+            )
+          : const Text(
+              'SUBMIT REPORT',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
     );
   }
 }
