@@ -68,7 +68,7 @@ class NearbyVolunteersView(generics.ListAPIView):
 
 class UserReportView(generics.CreateAPIView):
     serializer_class = AnimalReportSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         try:
