@@ -20,6 +20,8 @@ pipeline {
         
         // Slack API token for sending notifications
         SLACK_API_TOKEN = credentials('slack_api')  // This references your Slack API token
+        
+        SCANNER_HOME = tool 'SonarQube Scanner'
     }
 
     stages {
@@ -35,7 +37,21 @@ pipeline {
                 }
             }
         }
-
+        
+        stage('sonareque analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv('sonar-server') {
+                         sh '''
+                            ${SCANNER_HOME}/bin/sonar-scanner \
+                            -Dsonar.projectName=wesalvator \
+                            -Dsonar.projectKey=wesalvator \
+                        '''
+                    }
+                }
+            }
+        }
+       
         stage('Docker Build') {
             steps {
                 script {
@@ -50,6 +66,14 @@ pipeline {
                     }
                 }
             }
+        }
+        stage('Trivy Scan Docker') {
+            steps {
+                script {
+                    echo "Running Trivy scan..."
+                    sh "trivy image ${DOCKER_IMAGE}:latest"
+                }
+            }       
         }
 
         stage('Docker Push') {
@@ -72,6 +96,8 @@ pipeline {
                 }
             }
         }
+        
+        
 
         stage('UAT Deployment') {
             steps {
