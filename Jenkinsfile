@@ -101,6 +101,13 @@ pipeline {
                           -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
                           -e DATABASE_NAME=${DATABASE_NAME} \
                           -e SECRET_KEY=${SECRET_KEY} \
+                          -e EMAIL_HOST=smtp.gmail.com \
+                          -e EMAIL_PORT=587 \
+                          -e EMAIL_USE_TLS=True \
+                          -e EMAIL_HOST_USER=${EMAIL_HOST_USER} \
+                          -e EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD} \
+                          -e DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL} \
+                          -e ADMIN_EMAIL=${ADMIN_EMAIL} \
                           -e GDAL_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/libgdal.so \
                           -v static_volume:/app/staticfiles \
                           -v media_volume:/app/media \
