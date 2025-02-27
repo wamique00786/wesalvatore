@@ -10,9 +10,9 @@ class VolunteerDashboard extends StatefulWidget {
 
 class VolunteerDashboardState extends State<VolunteerDashboard> {
   // Function to handle task completion
-  void _completeTask(int taskIndex) {
-    setState(() {});
-  }
+  // void _completeTask(int taskIndex) {
+  //   setState(() {});
+  // }
 
   @override
   Widget build(BuildContext context) {
