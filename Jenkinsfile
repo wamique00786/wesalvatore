@@ -15,11 +15,6 @@ pipeline {
         DATABASE_NAME = credentials('DATABASE_NAME')
         SECRET_KEY = credentials('SECRET_KEY')
 
-        EMAIL_HOST_USER = credentials('EMAIL_HOST_USER')
-        EMAIL_HOST_PASSWORD = credentials('EMAIL_HOST_PASSWORD')
-        DEFAULT_FROM_EMAIL = credentials('DEFAULT_FROM_EMAIL')
-        ADMIN_EMAIL = credentials('ADMIN_EMAIL')
-
         // Email recipient
         EMAIL_RECIPIENT = "pavansingh3000@gmail.com"
         
@@ -106,16 +101,16 @@ pipeline {
                           -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
                           -e DATABASE_NAME=${DATABASE_NAME} \
                           -e SECRET_KEY=${SECRET_KEY} \
-                          -e EMAIL_HOST=smtp.gmail.com \
-                          -e EMAIL_PORT=587 \
-                          -e EMAIL_USE_TLS=True \
-                          -e EMAIL_HOST_USER=${EMAIL_HOST_USER} \
-                          -e EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD} \
-                          -e DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL} \
-                          -e ADMIN_EMAIL=${ADMIN_EMAIL} \
+                          -e EMAIL_HOST="smtp.gmail.com" \
+                          -e EMAIL_PORT="587" \
+                          -e EMAIL_USE_TLS="True" \
+                          -e EMAIL_HOST_USER="mohdasad.9506@gmail.com" \
+                          -e EMAIL_HOST_PASSWORD="kurw zdlp skop yaun" \
+                          -e DEFAULT_FROM_EMAIL="ycn2kh2g@mailpwr.com" \
+                          -e ADMIN_EMAIL="contact@wesalvator.com" \
                           -e GDAL_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/libgdal.so \
                           -v static_volume:/app/staticfiles \
-                          -v media_volume:/app/media \
+                          -v media_volume:/usr/share/nginx/html/media:ro \
                           ${DOCKER_IMAGE}:latest
                         docker system prune -a -f
                         '''
