@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -23,8 +22,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   bool _obscurePassword = true;
   String? _selectedUserType;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
 
   @override
   void dispose() {
@@ -33,11 +39,27 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<String?> getBaseUrl() async {
-    final storage = FlutterSecureStorage();
-    return await storage.read(key: "BASE_URL");
+  // Check if user is already logged in
+  Future<void> _checkLoginStatus() async {
+    String? token = await _secureStorage.read(key: "TOKEN");
+    String? userType = await _secureStorage.read(key: "USER_TYPE");
+
+    if (token != null && userType != null) {
+      Provider.of<UserProvider>(context, listen: false).setUser(
+        await _secureStorage.read(key: "USERNAME") ?? "",
+        userType,
+        token,
+      );
+
+      _navigateToDashboard(userType);
+    }
   }
 
+  Future<String?> getBaseUrl() async {
+    return await _secureStorage.read(key: "BASE_URL");
+  }
+
+  // Function to login
   void _login(BuildContext context) async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
@@ -47,9 +69,14 @@ class _LoginScreenState extends State<LoginScreen> {
           msg: "Please fill all fields and select user type");
       return;
     }
+
     final String? baseUrl = await getBaseUrl();
+    if (baseUrl == null) {
+      Fluttertoast.showToast(msg: "Error: Base URL not found");
+      return;
+    }
+
     final Uri loginUrl = Uri.parse("$baseUrl/login/");
-    print(loginUrl);
     try {
       final response = await http.post(
         loginUrl,
@@ -60,9 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
           "user_type": _selectedUserType
         }),
       );
-
-      print("Response Status Code: ${response.statusCode}");
-      print("Response Body: ${response.body}");
 
       if (response.body.isEmpty) {
         Fluttertoast.showToast(msg: "Error: Empty response from server.");
@@ -75,21 +99,17 @@ class _LoginScreenState extends State<LoginScreen> {
         String token = responseData["token"];
         String userType = responseData["user_type"];
 
+        // Store login details securely
+        await _secureStorage.write(key: "TOKEN", value: token);
+        await _secureStorage.write(key: "USER_TYPE", value: userType);
+        await _secureStorage.write(key: "USERNAME", value: username);
+
         Provider.of<UserProvider>(context, listen: false)
             .setUser(username, userType, token);
 
         Fluttertoast.showToast(msg: "Login successful!");
 
-        if (userType == "ADMIN") {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => AdminDashboard()));
-        } else if (userType == "USER") {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => UserDashBoardScreen()));
-        } else {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => VolunteerDashboard()));
-        }
+        _navigateToDashboard(userType);
       } else {
         Fluttertoast.showToast(
             msg: responseData["error"] ?? "Invalid login credentials");
@@ -97,6 +117,31 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       Fluttertoast.showToast(msg: "Error: ${e.toString()}");
     }
+  }
+
+  // Navigate to correct dashboard
+  void _navigateToDashboard(String userType) {
+    Widget dashboard;
+    if (userType == "ADMIN") {
+      dashboard = AdminDashboard();
+    } else if (userType == "USER") {
+      dashboard = UserDashBoardScreen();
+    } else {
+      dashboard = VolunteerDashboard();
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => dashboard),
+    );
+  }
+
+  // Logout function
+  Future<void> logout() async {
+    await _secureStorage.deleteAll();
+    Fluttertoast.showToast(msg: "Logged out successfully");
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => const LoginScreen()));
   }
 
   @override
@@ -108,7 +153,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -117,8 +161,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-
-          // Login Form
           SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.symmetric(
@@ -144,8 +186,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       isPassword: true),
                   SizedBox(height: screenHeight * 0.02),
                   _buildDropdownField(Icons.person, "Select User Type"),
-
-                  // Forgot Password Button
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -162,12 +202,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: screenHeight * 0.02),
                   _buildButton("Login", Colors.teal[900]!,
                       () => _login(context), screenWidth),
-
-                  // Sign Up Button
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(
