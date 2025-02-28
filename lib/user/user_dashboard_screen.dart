@@ -189,7 +189,6 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
         _showSnackbar('Report submitted successfully');
         _resetForm();
       } else {
-        final responseBody = await response.stream.bytesToString();
         _showSnackbar('Failed to submit: ${response.statusCode}');
       }
     } catch (e) {
@@ -209,16 +208,10 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.background,
       drawer: const NavBar(),
       appBar: AppBar(
         title: const Text('Animal Rescue'),
-        centerTitle: true,
-        elevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -226,13 +219,13 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildCameraSection(colorScheme),
-              const SizedBox(height: 16),
+              _buildCameraSection(),
+              const SizedBox(height: 20),
               if (_capturedImages.isNotEmpty) ...[
                 _buildImagePreviewList(),
                 const SizedBox(height: 24),
               ],
-              _buildReportForm(colorScheme),
+              _buildReportForm(),
             ],
           ),
         ),
@@ -240,23 +233,20 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
     );
   }
 
-  Widget _buildCameraSection(ColorScheme colorScheme) {
+  Widget _buildCameraSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         child: Column(
           children: [
             Text(
               'Take Photos',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
-              ),
+              style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             GestureDetector(
               onTap: _pickImage,
               child: Container(
@@ -277,7 +267,7 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
                     ),
                     if (_isLoadingLocation)
                       CircularProgressIndicator(
-                        color: colorScheme.primary,
+                        color: colorScheme.secondary,
                         strokeWidth: 2,
                       ),
                   ],
@@ -287,7 +277,9 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
             const SizedBox(height: 16),
             Text(
               'Tap to take a photo (${_capturedImages.length}/5)',
-              style: TextStyle(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.7),
+              ),
             ),
           ],
         ),
@@ -296,6 +288,9 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
   }
 
   Widget _buildImagePreviewList() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SizedBox(
       height: 120,
       child: ListView.builder(
@@ -303,22 +298,26 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
         itemCount: _capturedImages.length,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: 12.0),
             child: Stack(
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colorScheme.primary.withOpacity(0.6),
+                      width: 2,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withOpacity(0.15),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     child: Image.file(
                       File(_capturedImages[index].path),
                       width: 100,
@@ -328,20 +327,24 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
                   ),
                 ),
                 Positioned(
-                  top: 0,
-                  right: 0,
+                  top: -4,
+                  right: -4,
                   child: GestureDetector(
                     onTap: () => _removeImage(index),
                     child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.error,
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: colorScheme.surface,
+                          width: 1.5,
+                        ),
                       ),
                       child: const Icon(
                         Icons.close,
                         color: Colors.white,
-                        size: 16,
+                        size: 14,
                       ),
                     ),
                   ),
@@ -354,57 +357,60 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
     );
   }
 
-  Widget _buildReportForm(ColorScheme colorScheme) {
+  Widget _buildReportForm() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'Report Details',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
-              ),
+              style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 16),
-            _buildPriorityDropdown(colorScheme),
-            const SizedBox(height: 16),
-            _buildDescriptionField(colorScheme),
+            const SizedBox(height: 20),
+            _buildPriorityDropdown(),
+            const SizedBox(height: 20),
+            _buildDescriptionField(),
             const SizedBox(height: 24),
-            _buildSubmitButton(colorScheme),
+            _buildSubmitButton(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPriorityDropdown(ColorScheme colorScheme) {
+  Widget _buildPriorityDropdown() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Priority',
-          style: TextStyle(
+          style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.w500,
-            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: colorScheme.outline),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.primary.withOpacity(0.3),
+            ),
           ),
           child: DropdownButtonFormField<String>(
             value: _selectedPriority,
             decoration: const InputDecoration(
               contentPadding: EdgeInsets.symmetric(horizontal: 16),
               border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
             ),
             items: [
               DropdownMenuItem(
@@ -413,7 +419,7 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
                   children: [
                     Icon(Icons.priority_high, color: Colors.red, size: 20),
                     const SizedBox(width: 8),
-                    const Text('HIGH'),
+                    Text('HIGH'),
                   ],
                 ),
               ),
@@ -424,7 +430,7 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
                     Icon(Icons.remove_circle_outline,
                         color: Colors.orange, size: 20),
                     const SizedBox(width: 8),
-                    const Text('MEDIUM'),
+                    Text('MEDIUM'),
                   ],
                 ),
               ),
@@ -434,7 +440,7 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
                   children: [
                     Icon(Icons.arrow_downward, color: Colors.green, size: 20),
                     const SizedBox(width: 8),
-                    const Text('LOW'),
+                    Text('LOW'),
                   ],
                 ),
               ),
@@ -445,66 +451,60 @@ class _UserDashBoardScreenState extends State<UserDashBoardScreen> {
               }
             },
             dropdownColor: colorScheme.surface,
+            icon: Icon(Icons.arrow_drop_down, color: colorScheme.primary),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDescriptionField(ColorScheme colorScheme) {
+  Widget _buildDescriptionField() {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Description',
-          style: TextStyle(
+          style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.w500,
-            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: _descriptionController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Describe the situation...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            filled: true,
-            fillColor: colorScheme.surface,
           ),
           maxLines: 4,
           textCapitalization: TextCapitalization.sentences,
+          style: theme.textTheme.bodyLarge,
         ),
       ],
     );
   }
 
-  Widget _buildSubmitButton(ColorScheme colorScheme) {
+  Widget _buildSubmitButton() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return ElevatedButton(
       onPressed: _isSubmitting ? null : _submitReport,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        elevation: 2,
-      ),
-      child: _isSubmitting
-          ? SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(
-                color: colorScheme.onPrimary,
-                strokeWidth: 2,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: _isSubmitting
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  color: colorScheme.onPrimary,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text(
+                'SUBMIT REPORT',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            )
-          : const Text(
-              'SUBMIT REPORT',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+      ),
     );
   }
 }
